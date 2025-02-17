@@ -20,7 +20,6 @@ class TEAM8_PROJECT_API IDamageable
 
 public:
 	virtual float GetHP() const = 0;
-	virtual float SetHP() = 0;
-
+	virtual void SetHP() = 0;
 	
 };
