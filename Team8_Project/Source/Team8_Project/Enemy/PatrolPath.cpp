@@ -6,12 +6,12 @@ APatrolPath::APatrolPath()
 
 }
 
-TObjectPtr<AActor> APatrolPath::GetWaypoint(int32 Index) const
+FVector APatrolPath::GetWaypoint(int32 Index) const
 {
 	if (Waypoints.IsValidIndex(Index))
 		return Waypoints[Index];
 
-	return nullptr;
+	return FVector::Zero();
 }
 
 int32 APatrolPath::Num() const

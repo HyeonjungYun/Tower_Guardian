@@ -14,12 +14,12 @@ class TEAM8_PROJECT_API APatrolPath : public AActor
 public:	
 	APatrolPath();
 
-	TObjectPtr<AActor> GetWaypoint(int32 Index) const;
+	FVector GetWaypoint(int32 Index) const;
 	int32 Num() const;
 	
 public:
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Patrol")
-	TArray<TObjectPtr<AActor>> Waypoints;
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Patrol", meta=(MakeEditWidget))
+	TArray<FVector> Waypoints;
 	
 	
 };
