@@ -20,9 +20,9 @@ ABaseItem::ABaseItem()
     // 루트 컴포넌트로 설정
     Collision->SetupAttachment(Scene);
 
-    // 스태틱 메시 컴포넌트 생성 및 설정
-    StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
-    StaticMesh->SetupAttachment(Collision);
+    //// 스태틱 메시 컴포넌트 생성 및 설정
+    //StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
+    //StaticMesh->SetupAttachment(Collision);
     // 메시가 불필요하게 충돌을 막지 않도록 하기 위해, 별도로 NoCollision 등으로 설정할 수 있음.
 
     // Overlap 이벤트 바인딩
