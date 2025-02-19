@@ -8,6 +8,8 @@ ACH8_GameState::ACH8_GameState()
 	, CurrentWaveIndex(0)
 	, WaveDuration(5.0f)
 	, StartDuration(60.0f)
+	, EnemySpawnDuration(0.5f)
+	, EnemySpawnConut(0)
 {
 }
 
@@ -24,17 +26,45 @@ int32 ACH8_GameState::GetGold()
 void ACH8_GameState::StartGame()
 {
 	GetWorldTimerManager().SetTimer(
-		SpawnStartTimerHandle,
+		GameTimerHandle,
 		this,
 		&ACH8_GameState::SpawnWave,
-		StartDuration,
-		false
+		WaveDuration,
+		true,
+		StartDuration
 	);
 }
 
 void ACH8_GameState::SpawnWave()
 {
-	
+	GetWorldTimerManager().SetTimer(
+		SpawnDurationTimerHandle,
+		this,
+		&ACH8_GameState::SpawnEnemy,
+		EnemySpawnDuration,
+		true,
+		StartDuration
+	);
+}
+
+void ACH8_GameState::SpawnEnemy()
+{
+	if (EnemySpawnConut < MinionToSpawnPerWave.GetAllocatedSize())
+	{
+		if (ASpawnVolume* SpawnVolume = GetSpawnVolume())
+		{
+			if (MinionToSpawnPerWave.IsValidIndex(EnemySpawnConut))
+			{
+				//SpawnVolume->SpawnEnemy(MinionToSpawnPerWave[EnemySpawnConut]);
+			}
+		}
+
+		EnemySpawnConut++;
+	}
+	else
+	{
+		GetWorldTimerManager().ClearTimer(SpawnDurationTimerHandle);
+	}
 }
 
 ASpawnVolume* ACH8_GameState::GetSpawnVolume() const

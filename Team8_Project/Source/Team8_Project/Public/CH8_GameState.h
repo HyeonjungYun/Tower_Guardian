@@ -18,7 +18,13 @@ public:
 	float WaveDuration;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave")
+	float EnemySpawnDuration;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave")
 	float StartDuration;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Wave")
+	int32 EnemySpawnConut;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Wave")
 	int32 CurrentWaveIndex;
@@ -30,7 +36,7 @@ public:
 	int32 Gold;
 
 	FTimerHandle GameTimerHandle;
-	FTimerHandle SpawnStartTimerHandle;
+	FTimerHandle SpawnDurationTimerHandle;
 	FTimerHandle HUDUpdateTimerHandle;
 
 	UFUNCTION(BlueprintPure, Category = "Score")
@@ -42,6 +48,7 @@ public:
 	void StartGame();
 	void EndGame();
 	void SpawnWave();
+	void SpawnEnemy();
 
 private:
 	UPROPERTY()
