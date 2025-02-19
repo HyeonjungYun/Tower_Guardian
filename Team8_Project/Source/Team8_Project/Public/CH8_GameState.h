@@ -4,6 +4,8 @@
 #include "GameFramework/GameState.h"
 #include "CH8_GameState.generated.h"
 
+class ASpawnVolume;
+
 UCLASS()
 class TEAM8_PROJECT_API ACH8_GameState : public AGameState
 {
@@ -15,6 +17,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave")
 	float WaveDuration;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave")
+	float StartDuration;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Wave")
 	int32 CurrentWaveIndex;
 
@@ -25,6 +30,7 @@ public:
 	int32 Gold;
 
 	FTimerHandle GameTimerHandle;
+	FTimerHandle SpawnStartTimerHandle;
 	FTimerHandle HUDUpdateTimerHandle;
 
 	UFUNCTION(BlueprintPure, Category = "Score")
@@ -35,9 +41,12 @@ public:
 
 	void StartGame();
 	void EndGame();
-	void SpawnWave(TArray<AActor*> MinionToSpawnPerWave);
+	void SpawnWave();
 
 private:
 	UPROPERTY()
 	TArray<AActor*> MinionToSpawnPerWave;
+
+	// ÇïÆÛ ÇÔ¼ö
+	ASpawnVolume* GetSpawnVolume() const;
 };
