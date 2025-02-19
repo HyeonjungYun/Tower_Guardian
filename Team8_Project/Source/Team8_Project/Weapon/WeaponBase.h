@@ -67,6 +67,9 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Ammo")
     int32 MaxWeaponAmmo;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties")
+    class UAnimationAsset* FireAnimation;
+
 public:
     AWeaponBase();
 
@@ -83,6 +86,8 @@ protected:
 
     void SetCurrentWeaponAmmo(int32 _ammo);
 
+    UFUNCTION(BlueprintCallable)
     virtual void Fire();
+    UFUNCTION(BlueprintCallable)
     virtual void Reload();
 };

@@ -3,6 +3,9 @@
 
 #include "WeaponBase.h"
 #include "Components/SphereComponent.h"
+#include "Animation/AnimationAsset.h"
+#include "Components/SkeletalMeshComponent.h"
+
 AWeaponBase::AWeaponBase() :
 WeaponState(EWeaponState::EWT_Equipped)
 {
@@ -65,6 +68,11 @@ void AWeaponBase::SetCurrentWeaponAmmo(int32 _ammo)
 void AWeaponBase::Fire()
 {
 	// 무기 발사
+	if (FireAnimation)
+	{
+		// 스켈레탈 애니메이션을 반복하지 않고 재생
+		WeaponSkeletalMesh->PlayAnimation(FireAnimation, false);
+	}
 }
 
 void AWeaponBase::Reload()
