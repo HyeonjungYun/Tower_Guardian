@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -17,19 +17,19 @@ struct FInventoryConsumable
 {
 	GENERATED_BODY()
 
-	// ¾ÆÀÌÅÛ ½Äº°¿ë ID
+	// ì•„ì´í…œ ì‹ë³„ìš© ID
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 	FName ItemID;
 
-	// ¾ÆÀÌÅÛ ÀÌ¸§ (UI Ç¥½Ã¿ë)
+	// ì•„ì´í…œ ì´ë¦„ (UI í‘œì‹œìš©)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 	FString ItemName;
 
-	// ¾ÆÀÌÅÛ ¼ö·®
+	// ì•„ì´í…œ ìˆ˜ëŸ‰
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 	int32 Quantity;
 
-	// ¾ÆÀÌÅÛ ¾ÆÀÌÄÜ (UTexture2D ¿¡¼Â)
+	// ì•„ì´í…œ ì•„ì´ì½˜ (UTexture2D ì—ì…‹)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 	UTexture2D* ItemImage;
 
@@ -50,7 +50,7 @@ struct FInventoryEquipment
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 	FString ItemName;
 
-	// ÀÏ¹İÀûÀ¸·Î Àåºñ´Â 1°³Áö¸¸ È®ÀåÀ» À§ÇØ ¼ö·®À» µÒ
+	// ì¼ë°˜ì ìœ¼ë¡œ ì¥ë¹„ëŠ” 1ê°œì§€ë§Œ í™•ì¥ì„ ìœ„í•´ ìˆ˜ëŸ‰ì„ ë‘ 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 	int32 Quantity;
 
