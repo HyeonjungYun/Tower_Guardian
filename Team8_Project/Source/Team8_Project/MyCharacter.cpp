@@ -4,6 +4,8 @@
 #include "MyPlayerController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/Engine.h" //뷰포트에 로그를 출력 위함
+#include "Weapon/PlayerCombatComponent.h"
+#include "Weapon/WeaponBase.h"
 
 AMyCharacter::AMyCharacter()
 {
@@ -13,6 +15,7 @@ AMyCharacter::AMyCharacter()
 
 	//Capsule컴포넌트 -> Overlap에 이벤트 바인딩
 
+	CombatComponent = CreateDefaultSubobject<UPlayerCombatComponent>(TEXT("CombatComponent"));
 }
 
 void AMyCharacter::BeginPlay()
@@ -202,7 +205,7 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 			{
 				EnhancedInput->BindAction(
 					PlayerController->FireAction,
-					ETriggerEvent::Triggered,
+					ETriggerEvent::Started,
 					this,
 					&AMyCharacter::StartFire
 				);
@@ -221,6 +224,16 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		}
 	}
 
+}
+
+void AMyCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	if (CombatComponent)
+	{
+		CombatComponent->PlayerCharacter = this;
+	}
 }
 
 void AMyCharacter::Move(const FInputActionValue& value)
@@ -296,13 +309,20 @@ void AMyCharacter::StopSprint(const FInputActionValue& value)
 
 void AMyCharacter::StartPickUp(const FInputActionValue& value)
 {
+	// 개발용, 무기 주으면 바로 장착할 수 있도록 구현
 	if (value.Get<bool>())
 	{
-		if (GetCharacterMovement())
+		// 지금은 바로 낄수있도록 구현합니다.
+		if (CombatComponent)
 		{
-			if (GEngine) //for debug
+			AWeaponBase* WeaponToEquip =
+				Cast<AWeaponBase>(PickableItem);
+			
+
+			if (WeaponToEquip && CombatComponent->EquippedWeapon == nullptr)
 			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StartPickUp!"));
+				// 주울수있는 아이템이 무기 인경우 && 빈손인 경우
+				CombatComponent->EquipWeapon(WeaponToEquip);
 			}
 		}
 	}
@@ -451,29 +471,39 @@ void AMyCharacter::StopReload(const FInputActionValue& value)
 
 void AMyCharacter::StartFire(const FInputActionValue& value)
 {
-	if (value.Get<bool>())
+	if (CombatComponent)
 	{
-		if (GetCharacterMovement())
-		{
-			if (GEngine) //for debug
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StartFire!"));
-			}
-		}
+		CombatComponent->FireButtonPressed(true);
 	}
 }
 
 void AMyCharacter::StopFire(const FInputActionValue& value)
 {
-	if (!value.Get<bool>())
+	if (CombatComponent)
 	{
-		if (GetCharacterMovement())
-		{
-			if (GEngine) //for debug
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StopFire!"));
-			}
-		}
+		CombatComponent->FireButtonPressed(false);
 	}
+}
+
+void AMyCharacter::PlayFireMontage(bool bAiming)
+{
+	if (CombatComponent == nullptr ||
+		CombatComponent->EquippedWeapon == nullptr)
+	{
+		return;
+	}
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && FireRifleAnimMontage)
+	{
+		AnimInstance->Montage_Play(FireRifleAnimMontage);
+		FName SectionName;
+		SectionName = bAiming ? FName("RifleAim") : FName("RifleHip");
+		AnimInstance->Montage_JumpToSection(SectionName);
+	}
+}
+
+void AMyCharacter::SetPickableItem(ABaseItem* OverlappedItem)
+{
+	PickableItem = OverlappedItem;
 }
 

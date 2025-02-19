@@ -6,6 +6,7 @@
 #include "Animation/AnimationAsset.h"
 #include "Components/SkeletalMeshComponent.h"
 
+
 AWeaponBase::AWeaponBase() :
 WeaponState(EWeaponState::EWT_Equipped)
 {
@@ -26,6 +27,11 @@ WeaponState(EWeaponState::EWT_Equipped)
 
 	//StaticMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	//StaticMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void AWeaponBase::SetWeaponState(EWeaponState CurWeaponState)
+{
+	WeaponState = CurWeaponState;
 }
 
 void AWeaponBase::BeginPlay()

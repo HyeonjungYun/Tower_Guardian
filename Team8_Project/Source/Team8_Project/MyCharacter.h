@@ -14,12 +14,16 @@ class TEAM8_PROJECT_API AMyCharacter : public ACharacter
 
 public:
 	AMyCharacter();
+	void SetPickableItem(class ABaseItem* OverlappedItem);
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
+	// 전투 컴포넌트 초기화
+	virtual void PostInitializeComponents() override;
+
 	UPROPERTY(VisibleAnywhere)
 	UCapsuleComponent* Capsule;
 
@@ -43,6 +47,10 @@ protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
 	bool bIsSlowWalking = false;
+
+
+
+	ABaseItem* PickableItem;
 
 	UFUNCTION()
 	void Move(const FInputActionValue& value);
@@ -97,4 +105,19 @@ protected:
 
 	UFUNCTION()
 	void StopFire(const FInputActionValue& value);
+
+
+	/*
+	전투를 위한 기능들
+*/
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	class UPlayerCombatComponent* CombatComponent;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Combat")
+	class UAnimMontage* FireRifleAnimMontage;
+
+	public:
+	UFUNCTION()
+	void PlayFireMontage(bool bAiming);
 };

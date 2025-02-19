@@ -72,7 +72,9 @@ protected:
 
 public:
     AWeaponBase();
-
+    void SetWeaponState(EWeaponState CurWeaponState);
+    UFUNCTION(BlueprintCallable)
+    virtual void Fire();
 protected:
     virtual void BeginPlay() override;
 
@@ -86,8 +88,7 @@ protected:
 
     void SetCurrentWeaponAmmo(int32 _ammo);
 
-    UFUNCTION(BlueprintCallable)
-    virtual void Fire();
+
     UFUNCTION(BlueprintCallable)
     virtual void Reload();
 };
