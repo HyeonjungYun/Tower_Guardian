@@ -246,6 +246,7 @@ void AMyCharacter::StartJump(const FInputActionValue& value)
 	{
 		Jump();
 	}
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }
 
 void AMyCharacter::StopJump(const FInputActionValue& value)
@@ -301,7 +302,7 @@ void AMyCharacter::StartPickUp(const FInputActionValue& value)
 		{
 			if (GEngine) //for debug
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StartPickUp!"));
+				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StartPickUp!"));
 			}
 		}
 	}
@@ -315,7 +316,7 @@ void AMyCharacter::StopPickUp(const FInputActionValue& value)
 		{
 			if (GEngine) //for debug
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StopPickUp!"));
+				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StopPickUp!"));
 			}
 		}
 	}
@@ -329,7 +330,7 @@ void AMyCharacter::StartProne(const FInputActionValue& value)
 		{
 			if (GEngine) //for debug
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StartProne!"));
+				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StartProne!"));
 			}
 		}
 	}
@@ -343,7 +344,7 @@ void AMyCharacter::StopProne(const FInputActionValue& value)
 		{
 			if (GEngine) //for debug
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StopProne!"));
+				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StopProne!"));
 			}
 		}
 	}
@@ -359,11 +360,11 @@ void AMyCharacter::StartCrouch(const FInputActionValue& value)
 		{
 			if (GEngine) //for debug
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StartCrouch!"));
+				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StartCrouch!"));
 			}
 		}
 		GetCharacterMovement()->MaxWalkSpeed = SlowWalk;
-		Crouch();
+		Crouch(bIsCrouching);
 	}
 	
 }
@@ -378,11 +379,11 @@ void AMyCharacter::StopCrouch(const FInputActionValue& value)
 		{
 			if (GEngine) //for debug
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StopCrouch!"));
+				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StopCrouch!"));
 			}
 		}
 		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
-		UnCrouch();
+		UnCrouch(bIsCrouching);
 	}
 }
 
@@ -396,7 +397,7 @@ void AMyCharacter::StartSlowWalking(const FInputActionValue& value)
 		{
 			if (GEngine) //for debug
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StartSlowWalking!"));
+				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StartSlowWalking!"));
 			}
 		}
 		GetCharacterMovement()->MaxWalkSpeed = SlowWalk;
@@ -413,7 +414,7 @@ void AMyCharacter::StopSlowWalking(const FInputActionValue& value)
 		{
 			if (GEngine) //for debug
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StopSlowWalking!"));
+				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StopSlowWalking!"));
 			}
 		}
 		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
@@ -428,7 +429,7 @@ void AMyCharacter::StartReload(const FInputActionValue& value)
 		{
 			if (GEngine) //for debug
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StartReload!"));
+				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StartReload!"));
 			}
 		}
 	}
@@ -442,7 +443,7 @@ void AMyCharacter::StopReload(const FInputActionValue& value)
 		{
 			if (GEngine) //for debug
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StopReload!"));
+				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StopReload!"));
 			}
 		}
 	}
@@ -456,7 +457,7 @@ void AMyCharacter::StartFire(const FInputActionValue& value)
 		{
 			if (GEngine) //for debug
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StartFire!"));
+				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StartFire!"));
 			}
 		}
 	}
@@ -470,7 +471,7 @@ void AMyCharacter::StopFire(const FInputActionValue& value)
 		{
 			if (GEngine) //for debug
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StopFire!"));
+				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StopFire!"));
 			}
 		}
 	}
