@@ -45,14 +45,17 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Gold")
 	int32 GetGold();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning")
+	TArray<AActor*> MinionToSpawnPerWave;
+
+	virtual void BeginPlay() override;
+
 	void StartGame();
 	void EndGame();
 	void SpawnWave();
-	void SpawnEnemy();
+	void SpawnEnemyPerTime();
 
 private:
-	UPROPERTY()
-	TArray<AActor*> MinionToSpawnPerWave;
 
 	// ÇïÆÛ ÇÔ¼ö
 	ASpawnVolume* GetSpawnVolume() const;

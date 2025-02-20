@@ -1,5 +1,7 @@
 #include "CH8_GameState.h"
 #include "SpawnVolume.h"
+#include "EnemySpawnRow.h"
+#include "Team8_Project/Enemy/BaseEnemy.h"
 #include "Kismet/GameplayStatics.h"
 
 ACH8_GameState::ACH8_GameState() 
@@ -7,7 +9,7 @@ ACH8_GameState::ACH8_GameState()
 	, Gold(0)
 	, CurrentWaveIndex(0)
 	, WaveDuration(5.0f)
-	, StartDuration(60.0f)
+	, StartDuration(5.0f)
 	, EnemySpawnDuration(0.5f)
 	, EnemySpawnConut(0)
 {
@@ -21,6 +23,11 @@ int32 ACH8_GameState::GetScore()
 int32 ACH8_GameState::GetGold()
 {
 	return Gold;
+}
+
+void ACH8_GameState::BeginPlay()
+{
+	StartGame();
 }
 
 void ACH8_GameState::StartGame()
@@ -40,29 +47,32 @@ void ACH8_GameState::SpawnWave()
 	GetWorldTimerManager().SetTimer(
 		SpawnDurationTimerHandle,
 		this,
-		&ACH8_GameState::SpawnEnemy,
+		&ACH8_GameState::SpawnEnemyPerTime,
 		EnemySpawnDuration,
 		true,
-		StartDuration
+		0.0f
 	);
 }
 
-void ACH8_GameState::SpawnEnemy()
+void ACH8_GameState::SpawnEnemyPerTime()
 {
-	if (EnemySpawnConut < MinionToSpawnPerWave.GetAllocatedSize())
+	if (EnemySpawnConut < 5)
 	{
 		if (ASpawnVolume* SpawnVolume = GetSpawnVolume())
 		{
-			if (MinionToSpawnPerWave.IsValidIndex(EnemySpawnConut))
+			if (TSubclassOf<AActor> Enemy = SpawnVolume->SpawnNormalEnemy())
 			{
-				//SpawnVolume->SpawnEnemy(MinionToSpawnPerWave[EnemySpawnConut]);
+				UE_LOG(LogTemp, Warning, TEXT("Start Spawn Per Time"));
+				SpawnVolume->SpawnEnemy(Enemy);
 			}
 		}
 
+		UE_LOG(LogTemp, Warning, TEXT("EnemySpawnConut : %d"), EnemySpawnConut);
 		EnemySpawnConut++;
 	}
 	else
 	{
+		EnemySpawnConut = 0;
 		GetWorldTimerManager().ClearTimer(SpawnDurationTimerHandle);
 	}
 }

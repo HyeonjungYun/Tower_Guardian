@@ -21,8 +21,13 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spawning")
 	UBoxComponent* SpawningBox;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
+	UDataTable* EnemyDataTable;
+
 	FVector GetSpawnPosition();
 
 	UFUNCTION(BlueprintCallable, Category = "Spawning")
 	AActor* SpawnEnemy(TSubclassOf<AActor> EnemyClass);
+
+	TSubclassOf<AActor> SpawnNormalEnemy();
 };
