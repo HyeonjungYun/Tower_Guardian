@@ -6,6 +6,8 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h" // Tracer
 #include "Particles/ParticleSystemComponent.h"
+#include "Sound/SoundCue.h"
+
 // Sets default values
 AProjectileBase::AProjectileBase()
 {
@@ -48,6 +50,13 @@ void AProjectileBase::BeginPlay()
 				EAttachLocation::KeepWorldPosition
 			);
 	}
+	// Onhit의 시그니처는 OnComponentHit의 정의에 나오는 구조체
+	CollisionBox->OnComponentHit.AddDynamic(this, &AProjectileBase::OnHit);
+}
+
+void AProjectileBase::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	Destroy();
 }
 
 // Called every frame
@@ -56,5 +65,21 @@ void AProjectileBase::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	//CheckRebase
 
+}
+
+void AProjectileBase::Destroyed()
+{
+	Super::Destroyed();
+
+	if (ImpactParticles)
+	{
+		//SpawnEmitterAtLocation 함수에서 자동 파괴 기능은 default 값이 true인 인자이다
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, GetActorTransform());
+	}
+	// 소리 재생
+	if (ImpactSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
+	}
 }
 
