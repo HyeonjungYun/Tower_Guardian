@@ -39,10 +39,7 @@ public:
 	FTimerHandle SpawnDurationTimerHandle;
 	FTimerHandle HUDUpdateTimerHandle;
 
-	UFUNCTION(BlueprintPure, Category = "Score")
 	void UpdateEnemyAtHUD();
-
-	UFUNCTION(BlueprintPure, Category = "Gold")
 	void UpdateGoldAtHUD();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning")
