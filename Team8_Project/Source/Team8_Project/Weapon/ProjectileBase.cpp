@@ -3,6 +3,9 @@
 
 #include "ProjectileBase.h"
 #include "Components/BoxComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
+#include "Kismet/GameplayStatics.h" // Tracer
+#include "Particles/ParticleSystemComponent.h"
 // Sets default values
 AProjectileBase::AProjectileBase()
 {
@@ -18,6 +21,13 @@ AProjectileBase::AProjectileBase()
 	CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility,ECollisionResponse::ECR_Block);
 	CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic,ECollisionResponse::ECR_Block);
+	
+	ProjectileMovementComponent = 
+		CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
+	ProjectileMovementComponent->bRotationFollowsVelocity = true;
+	
+	ProjectileMovementComponent->InitialSpeed = 30000.f;
+	ProjectileMovementComponent->MaxSpeed = 30000.f;
 }
 
 // Called when the game starts or when spawned
@@ -25,6 +35,19 @@ void AProjectileBase::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	// 총알 발사 후 총알 표현
+	if (Tracer)
+	{
+		TracerComponent =
+			UGameplayStatics::SpawnEmitterAttached(
+				Tracer,
+				CollisionBox,
+				FName(),
+				GetActorLocation(),
+				GetActorRotation(),
+				EAttachLocation::KeepWorldPosition
+			);
+	}
 }
 
 // Called every frame

@@ -6,15 +6,25 @@
 #include "Engine/Engine.h" //뷰포트에 로그를 출력 위함
 #include "Weapon/PlayerCombatComponent.h"
 #include "Weapon/WeaponBase.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "Camera/CameraComponent.h"
 
 AMyCharacter::AMyCharacter()
 {
  	PrimaryActorTick.bCanEverTick = true;
 
 	Capsule = GetCapsuleComponent(); //기본 캡슐 컴포넌트만 반환
+	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraArm"));
+	CameraBoom->TargetArmLength = 350.0f;
+	CameraBoom->SetupAttachment(GetMesh());
+	CameraBoom->bUsePawnControlRotation = true;
+
+	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+	Camera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+	Camera->bUsePawnControlRotation = false;
+
 
 	//Capsule컴포넌트 -> Overlap에 이벤트 바인딩
-
 	CombatComponent = CreateDefaultSubobject<UPlayerCombatComponent>(TEXT("CombatComponent"));
 }
 
@@ -241,16 +251,25 @@ void AMyCharacter::Move(const FInputActionValue& value)
 	if (!Controller) return;
 
 	const FVector2D MoveInput = value.Get<FVector2D>();
+	const FRotator ControlRotation = Controller->GetControlRotation(); // 카메라 회전 값 가져오기
+
+	// 카메라 방향에 맞춰 이동 벡터를 수정
+	FVector ForwardDirection = FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::X); // 전방 방향
+	FVector RightDirection = FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::Y); // 우측 방향
 
 	if (!FMath::IsNearlyZero(MoveInput.X))
 	{
-		AddMovementInput(GetActorForwardVector(), MoveInput.X);
+		//AddMovementInput(GetActorForwardVector(), MoveInput.X);
+		AddMovementInput(ForwardDirection, MoveInput.X);
 	}
 
 	if (!FMath::IsNearlyZero(MoveInput.Y))
 	{
-		AddMovementInput(GetActorRightVector(), MoveInput.Y);
+		//AddMovementInput(GetActorRightVector(), MoveInput.Y);
+		AddMovementInput(RightDirection, MoveInput.Y);
 	}
+
+
 }
 
 void AMyCharacter::StartJump(const FInputActionValue& value)
