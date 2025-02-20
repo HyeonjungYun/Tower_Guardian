@@ -5,8 +5,8 @@
 #include "Components/SphereComponent.h"
 #include "Animation/AnimationAsset.h"
 #include "Components/SkeletalMeshComponent.h"
-
-
+#include "BulletCaseBase.h"
+#include "Engine/SkeletalMeshSocket.h" // 탄피배출(BulletCase)
 AWeaponBase::AWeaponBase() :
 WeaponState(EWeaponState::EWT_Equipped)
 {
@@ -79,6 +79,28 @@ void AWeaponBase::Fire(const FVector& HitTarget)
 	{
 		// 스켈레탈 애니메이션을 반복하지 않고 재생
 		WeaponSkeletalMesh->PlayAnimation(FireAnimation, false);
+	}
+
+	if (BulletCaseClass)
+	{
+		const USkeletalMeshSocket* AmmoEjectSocket =
+			GetWeaponMesh()->GetSocketByName(FName("AmmoEject"));
+
+		if (AmmoEjectSocket)
+		{
+			// mesh로 부터 탄피배출 위치 소켓의 Transform 받기
+			FTransform SocketTransform =
+				AmmoEjectSocket->GetSocketTransform(GetWeaponMesh());
+
+			UWorld* World = GetWorld();
+			if (World)
+			{
+				World->SpawnActor<ABulletCaseBase>(
+					BulletCaseClass,
+					SocketTransform.GetLocation(),
+					SocketTransform.GetRotation().Rotator());
+			}
+		}
 	}
 }
 
