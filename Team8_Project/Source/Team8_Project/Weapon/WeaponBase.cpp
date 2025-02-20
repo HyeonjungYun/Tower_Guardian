@@ -71,8 +71,9 @@ void AWeaponBase::SetCurrentWeaponAmmo(int32 _ammo)
 {
 }
 
-void AWeaponBase::Fire()
+void AWeaponBase::Fire(const FVector& HitTarget)
 {
+	
 	// 무기 발사
 	if (FireAnimation)
 	{
