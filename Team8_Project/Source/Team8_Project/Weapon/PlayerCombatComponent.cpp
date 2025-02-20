@@ -126,6 +126,10 @@ void UPlayerCombatComponent::FireButtonPressed(bool bPressed)
 	// 애니메이션 재생
 	if (PlayerCharacter&& bFireButtonPressed)
 	{
+
+		FHitResult HitResult;
+		TraceUnderCrosshairs(HitResult);
+
 		PlayerCharacter->PlayFireMontage(bIsAiming);
 		EquippedWeapon->Fire(HitTargetPos);
 	
@@ -139,7 +143,5 @@ void UPlayerCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	FHitResult HitResult;
-	TraceUnderCrosshairs(HitResult);
 }
 
