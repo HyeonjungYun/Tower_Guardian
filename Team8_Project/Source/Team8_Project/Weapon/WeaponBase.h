@@ -69,12 +69,14 @@ protected:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties")
     class UAnimationAsset* FireAnimation;
-
+    
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|Component")
+    class USphereComponent* AreaSphere;
 public:
     AWeaponBase();
     void SetWeaponState(EWeaponState CurWeaponState);
     UFUNCTION(BlueprintCallable)
-    virtual void Fire();
+    virtual void Fire(const FVector& HitTarget);
 protected:
     virtual void BeginPlay() override;
 
@@ -88,6 +90,8 @@ protected:
 
     void SetCurrentWeaponAmmo(int32 _ammo);
 
+    USphereComponent* GetAreaSphere() const { return AreaSphere; }
+    USkeletalMeshComponent* GetWeaponMesh() const { return WeaponSkeletalMesh; }
 
     UFUNCTION(BlueprintCallable)
     virtual void Reload();
