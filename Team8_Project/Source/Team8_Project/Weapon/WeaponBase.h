@@ -72,6 +72,10 @@ protected:
     
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|Component")
     class USphereComponent* AreaSphere;
+
+    UPROPERTY(EditAnywhere)
+    TSubclassOf<class ABulletCaseBase> BulletCaseClass;
+
 public:
     AWeaponBase();
     void SetWeaponState(EWeaponState CurWeaponState);
