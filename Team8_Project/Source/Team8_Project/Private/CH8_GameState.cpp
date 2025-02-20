@@ -15,14 +15,14 @@ ACH8_GameState::ACH8_GameState()
 {
 }
 
-int32 ACH8_GameState::GetScore()
+void ACH8_GameState::UpdateEnemyAtHUD()
 {
-	return Score;
+
 }
 
-int32 ACH8_GameState::GetGold()
+void ACH8_GameState::UpdateGoldAtHUD()
 {
-	return Gold;
+
 }
 
 void ACH8_GameState::BeginPlay()
@@ -62,12 +62,10 @@ void ACH8_GameState::SpawnEnemyPerTime()
 		{
 			if (TSubclassOf<AActor> Enemy = SpawnVolume->SpawnNormalEnemy())
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Start Spawn Per Time"));
 				SpawnVolume->SpawnEnemy(Enemy);
 			}
 		}
 
-		UE_LOG(LogTemp, Warning, TEXT("EnemySpawnConut : %d"), EnemySpawnConut);
 		EnemySpawnConut++;
 	}
 	else

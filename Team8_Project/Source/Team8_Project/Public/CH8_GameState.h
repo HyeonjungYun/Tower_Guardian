@@ -1,4 +1,4 @@
-#pragma once
+Ôªø#pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameState.h"
@@ -40,10 +40,10 @@ public:
 	FTimerHandle HUDUpdateTimerHandle;
 
 	UFUNCTION(BlueprintPure, Category = "Score")
-	int32 GetScore();
+	void UpdateEnemyAtHUD();
 
 	UFUNCTION(BlueprintPure, Category = "Gold")
-	int32 GetGold();
+	void UpdateGoldAtHUD();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning")
 	TArray<AActor*> MinionToSpawnPerWave;
@@ -57,6 +57,6 @@ public:
 
 private:
 
-	// «Ô∆€ «‘ºˆ
+	// Ìó¨Ìçº Ìï®Ïàò
 	ASpawnVolume* GetSpawnVolume() const;
 };

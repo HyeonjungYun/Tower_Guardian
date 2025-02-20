@@ -27,12 +27,12 @@ FVector ASpawnVolume::GetSpawnPosition()
 
 AActor* ASpawnVolume::SpawnEnemy(TSubclassOf<AActor> EnemyClass)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Check EnemyClass"));
+	
 	if (!EnemyClass)
 	{
 		return nullptr;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Spawn Enemy Start"));
+	
 	FVector SpawnPosition = GetSpawnPosition();
 
 	AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(
@@ -40,13 +40,13 @@ AActor* ASpawnVolume::SpawnEnemy(TSubclassOf<AActor> EnemyClass)
 		SpawnPosition,
 		FRotator::ZeroRotator
 	);
-	UE_LOG(LogTemp, Warning, TEXT("Spawn Success"));
+	
 	return SpawnedActor;
 }
 
 TSubclassOf<AActor> ASpawnVolume::SpawnNormalEnemy()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Spawn Check"));
+	
 	if (!EnemyDataTable) return nullptr;
 
 	TArray<FEnemySpawnRow*> AllRows;
@@ -54,7 +54,7 @@ TSubclassOf<AActor> ASpawnVolume::SpawnNormalEnemy()
 	EnemyDataTable->GetAllRows(ContextString, AllRows);
 
 	if (AllRows.IsEmpty()) return nullptr;
-	UE_LOG(LogTemp, Warning, TEXT("Spawn Start"));
+	
 	if (AllRows.IsValidIndex(0))
 	{
 		if (TSubclassOf<AActor> NormalEnemy = AllRows[0]->EnemyClass.Get())
@@ -62,7 +62,6 @@ TSubclassOf<AActor> ASpawnVolume::SpawnNormalEnemy()
 			return NormalEnemy;
 		}
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Spawn Check Failed"));
 	return nullptr;
 }
 
