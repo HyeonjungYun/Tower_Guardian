@@ -24,8 +24,21 @@ protected:
 	// 전투 컴포넌트 초기화
 	virtual void PostInitializeComponents() override;
 
+	UPROPERTY(VisibleAnywhere, Category = "Camera")
+	class USpringArmComponent* CameraBoom;
+
+	UPROPERTY(VisibleAnywhere, Category = "Camera")
+	class UCameraComponent* Camera;
+
+
+
+
+
 	UPROPERTY(VisibleAnywhere)
 	UCapsuleComponent* Capsule;
+
+
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSpeed")
 	float WalkSpeed = 400.0f;
@@ -109,7 +122,7 @@ protected:
 
 	/*
 	전투를 위한 기능들
-*/
+	*/
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	class UPlayerCombatComponent* CombatComponent;
