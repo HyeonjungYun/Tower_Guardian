@@ -253,20 +253,20 @@ void AMyCharacter::Move(const FInputActionValue& value)
 	const FVector2D MoveInput = value.Get<FVector2D>();
 	const FRotator ControlRotation = Controller->GetControlRotation(); // 카메라 회전 값 가져오기
 
-	// 카메라 방향에 맞춰 이동 벡터를 수정
-	FVector ForwardDirection = FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::X); // 전방 방향
-	FVector RightDirection = FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::Y); // 우측 방향
+	//// 카메라 방향에 맞춰 이동 벡터를 수정
+	//FVector ForwardDirection = FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::X); // 전방 방향
+	//FVector RightDirection = FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::Y); // 우측 방향
 
 	if (!FMath::IsNearlyZero(MoveInput.X))
 	{
-		//AddMovementInput(GetActorForwardVector(), MoveInput.X);
-		AddMovementInput(ForwardDirection, MoveInput.X);
+		AddMovementInput(GetActorForwardVector(), MoveInput.X);
+		//AddMovementInput(ForwardDirection, MoveInput.X);
 	}
 
 	if (!FMath::IsNearlyZero(MoveInput.Y))
 	{
-		//AddMovementInput(GetActorRightVector(), MoveInput.Y);
-		AddMovementInput(RightDirection, MoveInput.Y);
+		AddMovementInput(GetActorRightVector(), MoveInput.Y);
+		//AddMovementInput(RightDirection, MoveInput.Y);
 	}
 
 
