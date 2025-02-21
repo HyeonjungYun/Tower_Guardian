@@ -25,5 +25,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
 	UTexture2D* ItemImage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
+	float ItemSalePrice;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
+	float ItemPurchasePrice;
+
 	
 };

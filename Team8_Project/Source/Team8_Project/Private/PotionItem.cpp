@@ -1,11 +1,11 @@
-﻿#include "HealingItem.h"
+﻿#include "PotionItem.h"
 #include "MyCharacter.h" 
 
-AHealingItem::AHealingItem()
+APotionItem::APotionItem()
 {
-
 }
-void AHealingItem::ActivateItem(AActor* Activator)
+
+void APotionItem::ActivateItem(AActor* Activator)
 {
     if (Activator && Activator->ActorHasTag("Player"))
     {

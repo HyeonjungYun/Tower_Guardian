@@ -11,8 +11,8 @@ ABaseItem::ABaseItem()
     Collision = CreateDefaultSubobject<USphereComponent>(TEXT("Collision"));
     Collision->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
     Collision->SetupAttachment(Scene);
-    StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
-    StaticMesh->SetupAttachment(Collision);
+    /*StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
+    StaticMesh->SetupAttachment(Collision);*/
     Collision->OnComponentBeginOverlap.AddDynamic(this, &ABaseItem::OnItemOverlap);
     Collision->OnComponentEndOverlap.AddDynamic(this, &ABaseItem::OnItemEndOverlap);
 }
