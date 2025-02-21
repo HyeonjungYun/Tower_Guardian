@@ -1,8 +1,19 @@
 #include "Tower.h"
+#include "Components/BoxComponent.h"
 
 ATower::ATower() :
 	TowerHP(1000.0f)
 {
+	Scene = CreateDefaultSubobject<USceneComponent>(TEXT("Scene"));
+	SetRootComponent(Scene);
+
+	BoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxCollision"));
+	BoxCollision->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+	BoxCollision->SetupAttachment(Scene);
+
+	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
+	StaticMesh->SetupAttachment(Scene);
+
 	PrimaryActorTick.bCanEverTick = false;
 }
 

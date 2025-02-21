@@ -5,6 +5,8 @@
 #include "GameFramework/Actor.h"
 #include "Tower.generated.h"
 
+class UBoxComponent;
+
 UCLASS()
 class TEAM8_PROJECT_API ATower : public AActor, public IDamageable
 {
@@ -17,6 +19,16 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Scene")
+	USceneComponent* Scene;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
+	UStaticMeshComponent* StaticMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Collision")
+	UBoxComponent* BoxCollision;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TowerHP")
 	float TowerHP;
 
