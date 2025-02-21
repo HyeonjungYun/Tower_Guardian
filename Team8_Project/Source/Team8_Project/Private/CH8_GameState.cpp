@@ -1,4 +1,4 @@
-#include "CH8_GameState.h"
+﻿#include "CH8_GameState.h"
 #include "SpawnVolume.h"
 #include "EnemySpawnRow.h"
 #include "Team8_Project/MyPlayerController.h"
@@ -9,14 +9,18 @@
 
 ACH8_GameState::ACH8_GameState() 
 	: Score(0)
-	, Gold(0)
-	, CurrentWaveIndex(0)
+	, Gold(100)
+	, CurrentWaveIndex(10)
 	, WaveDuration(5.0f)
 	, StartDuration(5.0f)
 	, EnemySpawnDuration(0.5f)
 	, EnemySpawnConut(0)
 	, ElapsedSeconds(0)
+	, SpawnedEnemy(0)
+	, KilledEnemy(0)
 {
+	OnGameSetGold.BindUObject(this, &ACH8_GameState::SetGold);
+	OnGameKillEnemy.BindUObject(this, &ACH8_GameState::UpdatedKilledEnemy);
 }
 
 void ACH8_GameState::UpdateHUD()
@@ -37,6 +41,16 @@ void ACH8_GameState::UpdateHUD()
 				if (UTextBlock* WaveText = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("WaveText"))))
 				{
 					WaveText->SetText(FText::FromString(FString::Printf(TEXT("Wave : %d"), CurrentWaveIndex)));
+				}
+
+				if (UTextBlock* GoldText = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("GoldText"))))
+				{
+					GoldText->SetText(FText::FromString(FString::Printf(TEXT("Gold : %d"), Gold)));
+				}
+
+				if (UTextBlock* TempEnemyText = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("TempEnemyText"))))
+				{
+					TempEnemyText->SetText(FText::FromString(FString::Printf(TEXT("KilledEnemy / SpawnedEnemy :\n%d\t\t\t/ %d"), KilledEnemy, SpawnedEnemy)));
 				}
 			}
 		}
@@ -62,6 +76,11 @@ void ACH8_GameState::BeginPlay()
 	);
 
 	StartGame();
+}
+
+void ACH8_GameState::SetGold(int32 TempGold)
+{
+	Gold += TempGold;
 }
 
 void ACH8_GameState::StartGame()
@@ -92,20 +111,20 @@ void ACH8_GameState::SpawnWave()
 		this,
 		&ACH8_GameState::SpawnEnemyPerTime,
 		EnemySpawnDuration,
-		true,
-		0.0f
+		true
 	);
 }
 
 void ACH8_GameState::SpawnEnemyPerTime()
 {
-	if (EnemySpawnConut < 5)
+	if (EnemySpawnConut < 5)	// 웨이브 당 생성될 Enemy 숫자는 별도로 수정 필요
 	{
 		if (ASpawnVolume* SpawnVolume = GetSpawnVolume())
 		{
 			if (TSubclassOf<AActor> Enemy = SpawnVolume->SpawnNormalEnemy())
 			{
 				SpawnVolume->SpawnEnemy(Enemy);
+				UpdatedSpawnedEnemy();
 			}
 		}
 
@@ -116,6 +135,16 @@ void ACH8_GameState::SpawnEnemyPerTime()
 		EnemySpawnConut = 0;
 		GetWorldTimerManager().ClearTimer(SpawnDurationTimerHandle);
 	}
+}
+
+void ACH8_GameState::UpdatedSpawnedEnemy()
+{
+	SpawnedEnemy++;
+}
+
+void ACH8_GameState::UpdatedKilledEnemy()
+{
+	KilledEnemy++;
 }
 
 ASpawnVolume* ACH8_GameState::GetSpawnVolume() const

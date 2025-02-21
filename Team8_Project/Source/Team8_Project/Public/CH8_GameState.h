@@ -6,6 +6,9 @@
 
 class ASpawnVolume;
 
+DECLARE_DELEGATE_OneParam(FOnGameGetGold, int32);
+DECLARE_DELEGATE(FOnGameKillEnemy);
+
 UCLASS()
 class TEAM8_PROJECT_API ACH8_GameState : public AGameState
 {
@@ -38,7 +41,11 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Gold")
 	int32 Gold;
 
-	
+	int32 SpawnedEnemy;
+	int32 KilledEnemy;
+
+	FOnGameGetGold OnGameSetGold;
+	FOnGameKillEnemy OnGameKillEnemy;
 
 	FTimerHandle GameTimerHandle;
 	FTimerHandle SpawnTimerHandle;
@@ -53,10 +60,13 @@ public:
 
 	virtual void BeginPlay() override;
 
+	void SetGold(int32 TempGold);
 	void StartGame();
 	void EndGame();
 	void SpawnWave();
 	void SpawnEnemyPerTime();
+	void UpdatedSpawnedEnemy();
+	void UpdatedKilledEnemy();
 
 private:
 
