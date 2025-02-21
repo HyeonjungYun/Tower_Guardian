@@ -23,6 +23,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave")
 	float StartDuration;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave")
+	int32 ElapsedSeconds;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Wave")
 	int32 EnemySpawnConut;
 
@@ -35,12 +38,15 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Gold")
 	int32 Gold;
 
+	
+
 	FTimerHandle GameTimerHandle;
+	FTimerHandle SpawnTimerHandle;
 	FTimerHandle SpawnDurationTimerHandle;
 	FTimerHandle HUDUpdateTimerHandle;
 
-	void UpdateEnemyAtHUD();
-	void UpdateGoldAtHUD();
+	void UpdateHUD();
+	void UpdateGameTimer();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning")
 	TArray<AActor*> MinionToSpawnPerWave;

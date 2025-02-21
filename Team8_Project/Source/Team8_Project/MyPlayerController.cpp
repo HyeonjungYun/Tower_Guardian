@@ -1,12 +1,16 @@
 #include "MyPlayerController.h"
+#include "Team8_Project/Public/CH8_GameState.h"
 #include "EnhancedInputSubsystems.h"
+#include "Blueprint/UserWidget.h"
 
 AMyPlayerController::AMyPlayerController()
 	:InputMappingContext(nullptr),
 	MoveAction(nullptr),
 	JumpAction(nullptr),
 	SprintAction(nullptr),
-	LookAction(nullptr)
+	LookAction(nullptr),
+	HUDWidgetClass(nullptr),
+	HUDWidgetInstance(nullptr)
 {
 }
 
@@ -24,4 +28,23 @@ void AMyPlayerController::BeginPlay()
 			}
 		}
 	}
+
+	if (HUDWidgetClass)
+	{
+		HUDWidgetInstance = CreateWidget<UUserWidget>(this, HUDWidgetClass);
+		if (HUDWidgetInstance)
+		{
+			HUDWidgetInstance->AddToViewport();
+		}
+	}
+
+	if (ACH8_GameState* CH8GameState = GetWorld() ? GetWorld()->GetGameState<ACH8_GameState>() : nullptr)
+	{
+		CH8GameState->UpdateHUD();
+	}
+}
+
+UUserWidget* AMyPlayerController::GetHUDWidget() const
+{
+	return HUDWidgetInstance;
 }

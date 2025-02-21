@@ -15,6 +15,12 @@ class TEAM8_PROJECT_API AMyPlayerController : public APlayerController
 public:
 	AMyPlayerController();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<UUserWidget> HUDWidgetClass;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HUD")
+	UUserWidget* HUDWidgetInstance;
+
 	virtual void BeginPlay() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inputs")
@@ -49,4 +55,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inputs")
 	UInputAction* FireAction;
+
+	UFUNCTION(BlueprintPure, Category = "HUD")
+	UUserWidget* GetHUDWidget() const;
 };

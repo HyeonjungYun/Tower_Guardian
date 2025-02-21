@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+﻿// Copyright Epic Games, Inc. All Rights Reserved.
 
 using UnrealBuildTool;
 
@@ -8,7 +8,15 @@ public class Team8_Project : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "AIModule"});
+		PublicDependencyModuleNames.AddRange(new string[] { 
+			"Core", 
+			"CoreUObject",
+			"Engine", 
+			"InputCore", 
+			"EnhancedInput", 
+			"AIModule",
+			"UMG"	//  UMG 모듈 추가
+		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
