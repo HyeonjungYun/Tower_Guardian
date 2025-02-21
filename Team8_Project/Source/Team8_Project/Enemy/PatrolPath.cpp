@@ -9,8 +9,9 @@ APatrolPath::APatrolPath()
 FVector APatrolPath::GetWaypoint(int32 Index) const
 {
 	if (Waypoints.IsValidIndex(Index))
-		return Waypoints[Index];
+		return GetActorLocation() + Waypoints[Index];
 
+	UE_LOG(LogTemp, Warning, TEXT("Waypoint 반환 실패"));
 	return FVector::Zero();
 }
 
