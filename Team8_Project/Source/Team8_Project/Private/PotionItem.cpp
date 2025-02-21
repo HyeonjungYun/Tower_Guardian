@@ -3,6 +3,7 @@
 
 APotionItem::APotionItem()
 {
+    FItemType = "PotionSmall";
 }
 
 void APotionItem::ActivateItem(AActor* Activator)
@@ -12,7 +13,8 @@ void APotionItem::ActivateItem(AActor* Activator)
         if (AMyCharacter* Player = Cast<AMyCharacter>(Activator))
         {
             UE_LOG(LogTemp, Warning, TEXT("OverLap!"));
+            UE_LOG(LogTemp, Warning, TEXT("%s!"), *FItemType.ToString());
         }
-        DestroyItem();
+        /*DestroyItem();*/
     }
 }

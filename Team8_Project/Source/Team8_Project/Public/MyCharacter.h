@@ -11,6 +11,10 @@ class UCameraComponent;
 class UWidgetComponent;
 struct FInputActionValue;
 
+class UInventoryComponent;
+class ABaseItem;
+
+
 UCLASS()
 class TEAM8_PROJECT_API AMyCharacter : public ACharacter
 {
@@ -26,6 +30,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
 	UWidgetComponent* OverheadWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "inventory")
+	UInventoryComponent* Inventory;
+
 protected:
 	float NormalSpeed = 600.f;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -40,5 +48,17 @@ protected:
 	void PickUp(const FInputActionValue& Value);
 
 
+	UFUNCTION()
+	void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	UFUNCTION()
+	void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+		bool bFromSweep, const FHitResult& SweepResult);
+
+	void OnPickupItem();
+
+	UPROPERTY()
+	ABaseItem* OverlappingItem;
 
 };

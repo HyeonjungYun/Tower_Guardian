@@ -7,7 +7,7 @@
 #include "BuffItemData.generated.h"
 
 UENUM(BlueprintType)
-enum class EBuffType : uint8
+enum class EEBuffType : uint8
 {
 	Buff,
 	Debuff
@@ -19,7 +19,7 @@ class TEAM8_PROJECT_API UBuffItemData : public UConsumableItemData
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, Category = "Item")
-	EBuffType BuffType;
+	EEBuffType BuffType;
 
 	UPROPERTY(EditAnywhere, Category = "Item")
 	float Duration;

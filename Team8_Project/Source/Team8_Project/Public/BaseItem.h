@@ -37,11 +37,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
 	int32 Quantity = 1;
 
-	//delete
 	FName FItemType;
 
 public:	
 	ABaseItem();
+
+	virtual FName GetItemType() const override;
 
 protected:
 	virtual void OnItemOverlap(
@@ -59,7 +60,7 @@ protected:
 		int32 OtherBodyIndex) override;
 	virtual void ActivateItem(AActor* Activator) override;
 	
-	virtual FName GetItemType() const override;
+	
 
 	virtual void DestroyItem();
 };
