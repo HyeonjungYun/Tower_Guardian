@@ -7,6 +7,9 @@
 #include "Engine/SkeletalMeshSocket.h"// 소켓
 #include "Kismet/GameplayStatics.h"//crosshair
 #include "DrawDebugHelpers.h"
+#include "../MyPlayerController.h"
+#include "WeaponCrosshairHUD.h"
+
 UPlayerCombatComponent::UPlayerCombatComponent()
 {
 
@@ -86,11 +89,53 @@ void UPlayerCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 	}
 }
 
+void UPlayerCombatComponent::SetHUDCrosshairs(float DeltaTime)
+{
+	if (PlayerCharacter == nullptr || PlayerController == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Player 또는 Controller없음"));
+		return;
+	}
+	PlayerController = PlayerController == nullptr ?
+		Cast<AMyPlayerController>(PlayerCharacter->Controller) : PlayerController ;
+	if (PlayerController)
+	{
+		PlayerCrosshairHUD = PlayerCrosshairHUD == nullptr ?
+			Cast<AWeaponCrosshairHUD>(PlayerController->GetHUD()) : PlayerCrosshairHUD;
+		if (PlayerCrosshairHUD)
+		{
+			FHUDPackage HUDPackage;
+			if (EquippedWeapon)
+			{
+				HUDPackage.CrosshairsCenter = EquippedWeapon->CrosshairsCenter;
+				HUDPackage.CrosshairsLeft = EquippedWeapon->CrosshairsLeft;
+				HUDPackage.CrosshairsRight = EquippedWeapon->CrosshairsRight;
+				HUDPackage.CrosshairsTop = EquippedWeapon->CrosshairsTop;
+				HUDPackage.CrosshairsBottom = EquippedWeapon->CrosshairsBottom;
+			}
+			else
+			{// 무기 미장착시
+				HUDPackage.CrosshairsCenter = nullptr;
+				HUDPackage.CrosshairsLeft = nullptr;
+				HUDPackage.CrosshairsRight = nullptr;
+				HUDPackage.CrosshairsTop = nullptr;
+				HUDPackage.CrosshairsBottom = nullptr;
+			}
+			PlayerCrosshairHUD->SetHUDPackage(HUDPackage);
+		}
+	
+	}
+
+
+}
+
 
 void UPlayerCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
+	APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
+	PlayerController = Cast<AMyPlayerController>(PC);
 	
 }
 
@@ -143,5 +188,6 @@ void UPlayerCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	SetHUDCrosshairs(DeltaTime);
 }
 

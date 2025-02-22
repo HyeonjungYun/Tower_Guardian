@@ -21,6 +21,8 @@ public:
 	friend class AMyCharacter;
 
 	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
+
+	void SetHUDCrosshairs(float DeltaTime); // 총 타입마다 달라질 크로스헤어조절
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -32,6 +34,8 @@ protected:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction);
 protected:
 	class AMyCharacter* PlayerCharacter;
+	class AMyPlayerController* PlayerController;
+	class AWeaponCrosshairHUD* PlayerCrosshairHUD;
 	AWeaponBase* EquippedWeapon;
 	bool bIsAiming = false;
 	bool bFireButtonPressed = false;

@@ -49,7 +49,23 @@ class TEAM8_PROJECT_API AWeaponBase : public ABaseItem
 	GENERATED_BODY()
 	
 public:
-   
+
+    // CombatComponent와 HUD에서 사용할 텍스처들
+
+    UPROPERTY(EditAnywhere, Category = "Crosshairs")
+    class UTexture2D* CrosshairsCenter;
+
+    UPROPERTY(EditAnywhere, Category = "Crosshairs")
+    UTexture2D* CrosshairsLeft;
+
+    UPROPERTY(EditAnywhere, Category = "Crosshairs")
+    UTexture2D* CrosshairsRight;
+
+    UPROPERTY(EditAnywhere, Category = "Crosshairs")
+    UTexture2D* CrosshairsTop;
+
+    UPROPERTY(EditAnywhere, Category = "Crosshairs")
+    UTexture2D* CrosshairsBottom;
 protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties")
     EWeaponType WeaponType;
