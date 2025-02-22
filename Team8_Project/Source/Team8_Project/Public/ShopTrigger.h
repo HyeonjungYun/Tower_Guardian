@@ -6,6 +6,8 @@
 
 class UBoxComponent;
 class UUserWidget;
+class UShopComponent;
+class ACH8_GameState;
 
 UCLASS()
 class TEAM8_PROJECT_API AShopTrigger : public AActor
@@ -24,9 +26,13 @@ public:
 	UPROPERTY(EditAnywhere, Category = "ShopUI")
 	TSubclassOf<UUserWidget> ShopWidgetClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shop")
+	UShopComponent* ShopComponent;
+
 	UPROPERTY()
 	UUserWidget* ShopWidgetInstance;
 
+	ACH8_GameState* GameStateRef;
 	bool bIsPlayerInRange;
 
 	UFUNCTION()
@@ -49,6 +55,7 @@ public:
 
 	void SetupInputComponent();
 	void OpenShop();
+	void UpdateShopUI();
 
 private:
 	UInputComponent* InputComponent;

@@ -6,7 +6,7 @@
 
 class ASpawnVolume;
 
-DECLARE_DELEGATE_OneParam(FOnGameGetGold, int32);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnGameGetGold, int32);
 DECLARE_DELEGATE(FOnGameKillEnemy);
 
 UCLASS()
@@ -55,9 +55,6 @@ public:
 	void UpdateHUD();
 	void UpdateGameTimer();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawning")
-	TArray<AActor*> MinionToSpawnPerWave;
-
 	virtual void BeginPlay() override;
 
 	void SetGold(int32 TempGold);
@@ -67,6 +64,7 @@ public:
 	void SpawnEnemyPerTime();
 	void UpdatedSpawnedEnemy();
 	void UpdatedKilledEnemy();
+	int32 GetGold();
 
 private:
 

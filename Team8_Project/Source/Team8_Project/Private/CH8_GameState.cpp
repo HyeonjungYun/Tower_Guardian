@@ -9,7 +9,7 @@
 
 ACH8_GameState::ACH8_GameState() 
 	: Score(0)
-	, Gold(100)
+	, Gold(1000)
 	, CurrentWaveIndex(10)
 	, WaveDuration(5.0f)
 	, StartDuration(5.0f)
@@ -19,7 +19,7 @@ ACH8_GameState::ACH8_GameState()
 	, SpawnedEnemy(0)
 	, KilledEnemy(0)
 {
-	OnGameSetGold.BindUObject(this, &ACH8_GameState::SetGold);
+	OnGameSetGold.AddUObject(this, &ACH8_GameState::SetGold);
 	OnGameKillEnemy.BindUObject(this, &ACH8_GameState::UpdatedKilledEnemy);
 }
 
@@ -145,6 +145,11 @@ void ACH8_GameState::UpdatedSpawnedEnemy()
 void ACH8_GameState::UpdatedKilledEnemy()
 {
 	KilledEnemy++;
+}
+
+int32 ACH8_GameState::GetGold()
+{
+	return Gold;
 }
 
 ASpawnVolume* ACH8_GameState::GetSpawnVolume() const

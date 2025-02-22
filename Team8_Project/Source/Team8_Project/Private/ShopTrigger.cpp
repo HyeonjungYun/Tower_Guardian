@@ -1,7 +1,10 @@
 ﻿#include "ShopTrigger.h"
 #include "Components/BoxComponent.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/TextBlock.h"
 #include "Team8_Project/MyCharacter.h"
+#include "Team8_Project/Public/ShopComponent.h"
+#include "Team8_Project/Public/CH8_GameState.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -15,6 +18,8 @@ AShopTrigger::AShopTrigger()
 	TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &AShopTrigger::OnOverlapBegin);
 	TriggerBox->OnComponentEndOverlap.AddDynamic(this, &AShopTrigger::OnOverlapEnd);
 
+	ShopComponent = CreateDefaultSubobject<UShopComponent>(TEXT("ShopComponent"));
+
 	bIsPlayerInRange = false;
 
 	PrimaryActorTick.bCanEverTick = false;
@@ -23,6 +28,9 @@ AShopTrigger::AShopTrigger()
 void AShopTrigger::BeginPlay()
 {
 	Super::BeginPlay();
+
+	GameStateRef = Cast<ACH8_GameState>(GetWorld()->GetGameState());
+
 	SetupInputComponent();
 }
 
@@ -93,12 +101,27 @@ void AShopTrigger::OpenShop()
 			if (ShopWidgetInstance)
 			{
 				ShopWidgetInstance->AddToViewport();
+				UpdateShopUI();
 
 				// 마우스 커서 표시 및 입력 모드 변경
 				PlayerController->bShowMouseCursor = true;
 				FInputModeUIOnly InputMode;
 				InputMode.SetWidgetToFocus(ShopWidgetInstance->TakeWidget());
 				PlayerController->SetInputMode(InputMode);
+			}
+		}
+	}
+}
+
+void AShopTrigger::UpdateShopUI()
+{
+	if (GameStateRef)
+	{
+		if (ShopWidgetInstance)
+		{
+			if (UTextBlock* GoldText = Cast<UTextBlock>(ShopWidgetInstance->GetWidgetFromName(TEXT("GoldText"))))
+			{
+				GoldText->SetText(FText::FromString(FString::Printf(TEXT("Gold : %d"), GameStateRef->GetGold())));
 			}
 		}
 	}
