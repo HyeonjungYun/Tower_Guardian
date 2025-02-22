@@ -2,6 +2,7 @@
 #include "Components/BoxComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Team8_Project/MyCharacter.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 AShopTrigger::AShopTrigger()
@@ -74,19 +75,23 @@ void AShopTrigger::SetupInputComponent()
 
 void AShopTrigger::OpenShop()
 {
+	AMyCharacter* Player = Cast<AMyCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	if (Player && Player->GetCharacterMovement())
+	{
+		Player->GetCharacterMovement()->StopMovementImmediately();
+		Player->GetCharacterMovement()->SetMovementMode(MOVE_None);
+	}
+
 	if (bIsPlayerInRange && ShopWidgetClass)
 	{
-		UE_LOG(LogTemp, Log, TEXT("범위 내에서 F키 누름"));
 		
 		if (ShopWidgetClass)
 		{
-			UE_LOG(LogTemp, Log, TEXT("상점 오픈 시작"));
 			APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 
 			ShopWidgetInstance = CreateWidget<UUserWidget>(PlayerController, ShopWidgetClass);
 			if (ShopWidgetInstance)
 			{
-				UE_LOG(LogTemp, Log, TEXT("상점 오픈"));
 				ShopWidgetInstance->AddToViewport();
 
 				// 마우스 커서 표시 및 입력 모드 변경
