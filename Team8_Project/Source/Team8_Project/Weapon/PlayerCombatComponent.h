@@ -41,4 +41,8 @@ protected:
 	bool bFireButtonPressed = false;
 	
 	FVector HitTargetPos;
+	
+	// 이동, 점프 동작시 조준선 벌어짐의 영향을 줄 요인들
+	float CrosshairVelocityFactor;
+	float CrosshairinAirFactor;
 };

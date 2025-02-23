@@ -22,25 +22,32 @@ void AWeaponCrosshairHUD::DrawHUD()
 
 	const FVector2D ViewportCenter(ViewportSize.X / 2.f, ViewportSize.Y / 2.f);
 
+	float SpreadScaled = CrosshairSpreadMax * HUDPackage.CrosshairsSpread;
+
 	if (HUDPackage.CrosshairsCenter)
 	{
-		DrawCrosshair(HUDPackage.CrosshairsCenter, ViewportCenter);
+		FVector2D Spread(0.f, 0.f);
+		DrawCrosshair(HUDPackage.CrosshairsCenter, ViewportCenter, Spread);
 	}
 	if (HUDPackage.CrosshairsLeft)
 	{
-		DrawCrosshair(HUDPackage.CrosshairsLeft, ViewportCenter);
+		FVector2D Spread(-SpreadScaled, 0.f);
+		DrawCrosshair(HUDPackage.CrosshairsLeft, ViewportCenter, Spread);
 	}
 	if (HUDPackage.CrosshairsRight)
 	{
-		DrawCrosshair(HUDPackage.CrosshairsRight, ViewportCenter);
+		FVector2D Spread(SpreadScaled, 0.f);
+		DrawCrosshair(HUDPackage.CrosshairsRight, ViewportCenter, Spread);
 	}
 	if (HUDPackage.CrosshairsTop)
 	{
-		DrawCrosshair(HUDPackage.CrosshairsTop, ViewportCenter);
+		FVector2D Spread(0.f, -SpreadScaled);// UV는 윗방향이 음의 수치이다..
+		DrawCrosshair(HUDPackage.CrosshairsTop, ViewportCenter,Spread);
 	}
 	if (HUDPackage.CrosshairsBottom)
 	{
-		DrawCrosshair(HUDPackage.CrosshairsBottom, ViewportCenter);
+		FVector2D Spread(0.f, SpreadScaled);
+		DrawCrosshair(HUDPackage.CrosshairsBottom, ViewportCenter,Spread);
 	}
 }
 
@@ -49,14 +56,14 @@ void AWeaponCrosshairHUD::SetHUDPackage(const FHUDPackage& Package)
 	HUDPackage = Package;
 }
 
-void AWeaponCrosshairHUD::DrawCrosshair(UTexture2D* Texture, FVector2D ViewportCenter)
+void AWeaponCrosshairHUD::DrawCrosshair(UTexture2D* Texture, FVector2D ViewportCenter, FVector2D Spread)
 {
 	const float TextureWidth = Texture->GetSizeX();
 	const float TextureHeight = Texture->GetSizeY();
 
 	const FVector2D TextureDrawPoint(
-		ViewportCenter.X - (TextureWidth/2.f),
-		ViewportCenter.Y - (TextureHeight/2.f)
+		ViewportCenter.X - (TextureWidth/2.f) + Spread.X,
+		ViewportCenter.Y - (TextureHeight/2.f) + Spread.Y
 	);
 
 	DrawTexture(

@@ -17,6 +17,7 @@ public:
 	UTexture2D* CrosshairsRight;
 	UTexture2D* CrosshairsTop;
 	UTexture2D* CrosshairsBottom;
+	float CrosshairsSpread;
 };
 
 /**
@@ -30,7 +31,8 @@ class TEAM8_PROJECT_API AWeaponCrosshairHUD : public AHUD
 public:
 	virtual void DrawHUD() override;
 	void SetHUDPackage(const FHUDPackage& Package);
-	void DrawCrosshair(UTexture2D* Texture, FVector2D ViewportCenter);
+	void DrawCrosshair(UTexture2D* Texture, FVector2D ViewportCenter,FVector2D Spread);
 protected:
 	FHUDPackage HUDPackage;
+	float CrosshairSpreadMax = 16.f;
 };

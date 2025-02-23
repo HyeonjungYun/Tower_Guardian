@@ -9,6 +9,7 @@
 #include "DrawDebugHelpers.h"
 #include "../MyPlayerController.h"
 #include "WeaponCrosshairHUD.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 UPlayerCombatComponent::UPlayerCombatComponent()
 {
@@ -121,6 +122,33 @@ void UPlayerCombatComponent::SetHUDCrosshairs(float DeltaTime)
 				HUDPackage.CrosshairsTop = nullptr;
 				HUDPackage.CrosshairsBottom = nullptr;
 			}
+
+			// 조준선 퍼짐 결정하기
+			// 걷기 상태의 퍼짐
+			// 현재 걷기상태의 임의 값이 600이기 때문에 0~600을 0~1로 맵핑
+			FVector2D WalkSpeedRange(0.f, PlayerCharacter->GetCharacterMovement()->MaxWalkSpeed);
+			FVector2D VelocityMultiplierRange(0.f, 1.f);
+			FVector Velocity = PlayerCharacter->GetVelocity();
+			Velocity.Z = 0.f;
+			CrosshairVelocityFactor =
+				FMath::GetMappedRangeValueClamped(WalkSpeedRange, VelocityMultiplierRange, Velocity.Size());
+			// 현재 속도에 따른 0~1 사이의 범위가 정해져 이것이
+			// HUD에 넘어갈구조체의 조준선 퍼짐 값으로 결정됨
+
+
+
+			if (PlayerCharacter->GetCharacterMovement()->IsFalling())
+			{
+				CrosshairinAirFactor
+					= FMath::FInterpTo(CrosshairinAirFactor,2.25f,DeltaTime,2.25f);
+			}
+			else
+			{
+				CrosshairinAirFactor
+					= FMath::FInterpTo(CrosshairinAirFactor, 0.f, DeltaTime, 30.f);
+			}// 기본 값, 범위 값, 적용 시간, 적용 시간 수치(얼마나 빠르게)
+			// 앉기도 구현하는가?
+			HUDPackage.CrosshairsSpread = CrosshairVelocityFactor + CrosshairinAirFactor;
 			PlayerCrosshairHUD->SetHUDPackage(HUDPackage);
 		}
 	
