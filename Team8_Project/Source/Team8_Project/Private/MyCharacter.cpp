@@ -1,6 +1,7 @@
 ﻿#include "MyCharacter.h"
 #include "MyPlayerController.h"
 #include "InventoryComponent.h"
+#include "InventorySubsystem.h"
 #include "Components/CapsuleComponent.h"
 #include "BaseItem.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -173,5 +174,95 @@ void AMyCharacter::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Oth
 	{
 		UE_LOG(LogTemp, Log, TEXT("Item ended overlap: %s"), *OtherActor->GetName());
 		OverlappingItem = nullptr;
+	}
+}
+// ------------------------------
+// Interface Implementation
+// ------------------------------
+void AMyCharacter::SortEquipmentItems(bool bIsAscending)
+{
+	if (Inventory)
+	{
+		Inventory->SortEquipmentItems(bIsAscending);
+	}
+}
+void AMyCharacter::SortConsumableItems(bool bIsAscending)
+{
+	if (Inventory)
+	{
+		Inventory->SortConsumableItems(bIsAscending);
+	}
+}
+void AMyCharacter::SortOthersItems(bool bIsAscending)
+{
+	if (Inventory)
+	{
+		Inventory->SortOthersItems(bIsAscending);
+	}
+}
+int32 AMyCharacter::GetGold() const
+{
+	if (Inventory && Inventory->InventorySubsystem)
+	{
+		return Inventory->InventorySubsystem->GetGold();
+	}
+	return 0;
+}
+const TArray<FInventoryConsumable>& AMyCharacter::GetConsumableItems() const
+{
+	if (Inventory && Inventory->InventorySubsystem)
+	{
+		return Inventory->InventorySubsystem->GetConsumableItems();
+	}
+	static TArray<FInventoryConsumable> EmptyConsumables;
+	return EmptyConsumables;
+}
+const TArray<FInventoryEquipment>& AMyCharacter::GetEquipmentItems() const
+{
+	if (Inventory && Inventory->InventorySubsystem)
+	{
+		return Inventory->InventorySubsystem->GetEquipmentItems();
+	}
+	static TArray<FInventoryEquipment> EmptyEquipments;
+	return EmptyEquipments;
+}
+const TArray<FInventoryOthers>& AMyCharacter::GetOthersItems() const
+{
+	if (Inventory && Inventory->InventorySubsystem)
+	{
+		return Inventory->InventorySubsystem->GetOthersItems();
+	}
+	static TArray<FInventoryOthers> EmptyOthers;
+	return EmptyOthers;
+}
+bool AMyCharacter::AddItem(const FName& ItemKey, int32 Quantity)
+{
+	if (Inventory)
+	{
+		return Inventory->AddItem(ItemKey, Quantity);
+	}
+	return false;
+}
+bool AMyCharacter::RemoveItem(const FName& ItemKey, int32 Quantity)
+{
+	if (Inventory)
+	{
+		return Inventory->RemoveItem(ItemKey, Quantity);
+	}
+	return false;
+}
+bool AMyCharacter::UseItem(int32 SlotIndex, EItemType ItemType)
+{
+	if (Inventory)
+	{
+		return Inventory->UseItem(SlotIndex, ItemType);
+	}
+	return false;
+}
+void AMyCharacter::SetGold(int32 NewGold)
+{
+	if (Inventory)
+	{
+		Inventory->SetGold(NewGold);
 	}
 }

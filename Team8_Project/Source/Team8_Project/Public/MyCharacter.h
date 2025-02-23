@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "InventoryInterface.h"
 #include "MyCharacter.generated.h"
 
 class USpringArmComponent;
@@ -16,9 +17,29 @@ class ABaseItem;
 
 
 UCLASS()
-class TEAM8_PROJECT_API AMyCharacter : public ACharacter
+class TEAM8_PROJECT_API AMyCharacter : public ACharacter ,public IInventoryInterface
 {
 	GENERATED_BODY()
+
+public:
+// ------------------------------
+// Interface Method
+// ------------------------------
+	// Sort Method
+	virtual void SortEquipmentItems(bool bIsAscending) override;
+	virtual void SortConsumableItems(bool bIsAscending) override;
+	virtual void SortOthersItems(bool bIsAscending) override;
+	// Get Method
+	virtual int32 GetGold() const override;
+	virtual const TArray<FInventoryConsumable>& GetConsumableItems() const override;
+	virtual const TArray<FInventoryEquipment>& GetEquipmentItems() const override;
+	virtual const TArray<FInventoryOthers>& GetOthersItems() const override;
+	// Set Method
+	virtual bool AddItem(const FName& ItemKey, int32 Quantity) override;
+	virtual bool RemoveItem(const FName& ItemKey, int32 Quantity) override;
+	virtual bool UseItem(int32 SlotIndex, EItemType ItemType) override;
+	virtual void SetGold(int32 NewGold) override;
+
 
 public:
 	AMyCharacter();
