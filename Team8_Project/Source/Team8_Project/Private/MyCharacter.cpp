@@ -169,7 +169,6 @@ void AMyCharacter::OnPickupItem()
 void AMyCharacter::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	// 겹침 종료된 액터가 OverlappingItem이라면 초기화합니다.
 	if (OtherActor && OtherActor == OverlappingItem)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Item ended overlap: %s"), *OtherActor->GetName());

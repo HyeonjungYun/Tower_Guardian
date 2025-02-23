@@ -7,6 +7,10 @@
 #include "Components/ActorComponent.h"
 #include "InventoryComponent.generated.h"
 
+// delete ItemData.h
+
+class UInventorySubsystem;
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class TEAM8_PROJECT_API UInventoryComponent : public UActorComponent
 {
@@ -22,9 +26,6 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
 	TArray<FInventoryOthers> OthersItems;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
-	int32 CurrentGold;
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	int32 GetGold() const;
@@ -56,12 +57,20 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory")
 	UDataTable* ItemDataTable = nullptr;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
+	UInventorySubsystem* InventorySubsystem = nullptr;
+
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory|UI")
+	//TSubclassOf<UUserWidget> InventoryWidgetClass;
+
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory|UI")
+	//UUserWidget* InventoryWidget = nullptr;
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void UpdateInventoryUI();
+
+
 protected:
 	virtual void BeginPlay() override;
 
-private:
-	int32 FindEquipmentIndex(const FName& ItemKey) const;
-	int32 FindConsumableIndex(const FName& ItemKey) const;
-	int32 FindOthersIndex(const FName& ItemKey) const;
 
 };
