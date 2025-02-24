@@ -45,8 +45,18 @@ protected:
 	FVector HitTargetPos;
 	
 	// 이동, 점프 동작시 조준선 벌어짐의 영향을 줄 요인들
+	
+	UPROPERTY(EditAnywhere)
 	float CrosshairVelocityFactor;
+	
+	UPROPERTY(EditAnywhere)
 	float CrosshairinAirFactor;
+	
+	UPROPERTY(EditAnywhere)
+	float CrosshairAimFactor;
+
+	UPROPERTY(EditAnywhere)
+	float CrosshairBaseFactor = 0.5f;
 
 	// 조준
 	float DefaultFOV; // 기본 조준

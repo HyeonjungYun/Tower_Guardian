@@ -136,7 +136,22 @@ void UPlayerCombatComponent::SetHUDCrosshairs(float DeltaTime)
 					= FMath::FInterpTo(CrosshairinAirFactor, 0.f, DeltaTime, 30.f);
 			}// 기본 값, 범위 값, 적용 시간, 적용 시간 수치(얼마나 빠르게)
 			// 앉기도 구현하는가?
-			HUDPackage.CrosshairsSpread = CrosshairVelocityFactor + CrosshairinAirFactor;
+			
+			
+			if (bIsAiming)
+			{
+				CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor,0.58f , DeltaTime,30.f);
+			}
+			else
+			{
+				CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, 0.f, DeltaTime, 30.f);
+			}
+
+			HUDPackage.CrosshairsSpread =
+				CrosshairBaseFactor	+ CrosshairVelocityFactor 
+				+ CrosshairinAirFactor
+				- CrosshairAimFactor;
+
 			PlayerCrosshairHUD->SetHUDPackage(HUDPackage);
 		}
 	
