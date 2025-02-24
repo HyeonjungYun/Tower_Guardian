@@ -6,7 +6,8 @@ AMyPlayerController::AMyPlayerController()
 	MoveAction(nullptr),
 	JumpAction(nullptr),
 	SprintAction(nullptr),
-	LookAction(nullptr)
+	LookAction(nullptr),
+	AimingAction(nullptr)
 {
 }
 

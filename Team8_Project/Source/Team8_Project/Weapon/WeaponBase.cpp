@@ -104,6 +104,16 @@ void AWeaponBase::Fire(const FVector& HitTarget)
 	}
 }
 
+float AWeaponBase::GetWeaponZoomFov() const
+{
+	return ZoomedFOV;
+}
+
+float AWeaponBase::GetWeaponZoomInterpSpeed() const
+{
+	return ZoomInterpSpeed;
+}
+
 void AWeaponBase::Reload()
 {
 }
