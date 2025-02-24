@@ -25,6 +25,11 @@ void ABulletCaseBase::BeginPlay()
 	Super::BeginPlay();
 	CasingMesh->OnComponentHit.AddDynamic(this, &ABulletCaseBase::OnHit);
 	CasingMesh->AddImpulse(GetActorForwardVector()* ShellEjectionImpulse);
+
+
+	GetWorldTimerManager().SetTimer(
+		ShellTimerHandle, this, &ABulletCaseBase::ShellDestroy, 3.0f, false);
+
 }
 
 void ABulletCaseBase::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
@@ -33,8 +38,6 @@ void ABulletCaseBase::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UP
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, ShellSound, GetActorLocation());
 	}
-	GetWorldTimerManager().SetTimer(
-		ShellTimerHandle,this,&ABulletCaseBase::ShellDestroy,5.0f,false);
 
 }
 
