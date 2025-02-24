@@ -1,5 +1,6 @@
 ﻿#include "InventoryComponent.h"
 #include "InventorySubsystem.h"
+#include "InventoryWidget.h"
 #include "Engine/GameInstance.h"
 #include "Blueprint/UserWidget.h"
 
@@ -11,7 +12,7 @@ UInventoryComponent::UInventoryComponent()
 void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	//todo : has Component BeginPlay?
+	
 	if (GetWorld())
 	{
 		if (UGameInstance* GI = GetWorld()->GetGameInstance())
@@ -19,15 +20,17 @@ void UInventoryComponent::BeginPlay()
 			InventorySubsystem = GI->GetSubsystem<UInventorySubsystem>();
 		}
 	}
-	//if (InventoryWidgetClass)
-	//{
-	//	InventoryWidget = CreateWidget<UUserWidget>(GetWorld(), InventoryWidgetClass);
-	//	if (InventoryWidget)
-	//	{
-	//		InventoryWidget->AddToViewport();
-	//		UpdateInventoryUI();
-	//	}
-	//}
+	if (InventoryWidgetClass)
+	{
+		InventoryWidget = CreateWidget<UInventoryWidget>(GetWorld(), InventoryWidgetClass);
+		if (InventoryWidget)
+		{
+			InventoryWidget->SetOwningActor(GetOwner());
+			InventoryWidget->AddToViewport();
+			InventoryWidget->SetVisibility(ESlateVisibility::Collapsed);
+			UpdateInventoryUI();
+		}
+	}
 }
 
 bool UInventoryComponent::AddItem(const FName& ItemKey, int32 Quantity)
@@ -97,7 +100,7 @@ void UInventoryComponent::SortEquipmentItems(bool bIsAscending)
 	if (InventorySubsystem)
 	{
 		InventorySubsystem->SortEquipmentItems(bIsAscending);
-		UpdateInventoryUI();
+		//UpdateInventoryUI();
 	}
 }
 
@@ -106,7 +109,7 @@ void UInventoryComponent::SortConsumableItems(bool bIsAscending)
 	if (InventorySubsystem)
 	{
 		InventorySubsystem->SortConsumableItems(bIsAscending);
-		UpdateInventoryUI();
+		//UpdateInventoryUI();
 	}
 }
 
@@ -115,7 +118,7 @@ void UInventoryComponent::SortOthersItems(bool bIsAscending)
 	if (InventorySubsystem)
 	{
 		InventorySubsystem->SortOthersItems(bIsAscending);
-		UpdateInventoryUI();
+		//UpdateInventoryUI();
 	}
 }
 
@@ -127,7 +130,7 @@ bool UInventoryComponent::UseItem(int32 SlotIndex, EItemType ItemType)
 		bool bResult = InventorySubsystem->UseItem(SlotIndex, ItemType);
 		if (bResult)
 		{
-			UpdateInventoryUI();
+			//UpdateInventoryUI();
 		}
 		return bResult;
 	}
@@ -135,5 +138,17 @@ bool UInventoryComponent::UseItem(int32 SlotIndex, EItemType ItemType)
 }
 void UInventoryComponent::UpdateInventoryUI()
 {
-	UE_LOG(LogTemp, Log, TEXT("Inventory UI Updated."));
+	if (InventoryWidget)
+	{
+		InventoryWidget->UpdateInventoryUI();
+	}
+}
+void UInventoryComponent::SwapItem(int32 PrevIndex, int32 CurrentIndex, EItemType PrevSlotType, EItemType CurrentSlotType)
+{
+	if (PrevSlotType == CurrentSlotType)
+	{
+		check(InventorySubsystem);
+		InventorySubsystem->SwapItem(PrevIndex, CurrentIndex, PrevSlotType, CurrentSlotType);
+		UpdateInventoryUI();
+	}
 }

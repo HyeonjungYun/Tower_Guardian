@@ -7,7 +7,7 @@
 #include "ConsumableItem.generated.h"
 
 
-class UConsumableItemData;
+
 
 UCLASS()
 class TEAM8_PROJECT_API AConsumableItem : public ABaseItem
@@ -16,11 +16,7 @@ class TEAM8_PROJECT_API AConsumableItem : public ABaseItem
 public:
 	AConsumableItem();
 protected:
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-	TObjectPtr<UConsumableItemData> ItemData = nullptr;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item|Component")
 	UStaticMeshComponent* StaticMesh;
-
+	//
 };

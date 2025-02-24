@@ -4,6 +4,9 @@
 UInventorySubsystem::UInventorySubsystem()
 {
 	CurrentGold = 0;
+	EquipmentItems.Init(FInventoryEquipment(), MaxInventoryNum);
+	ConsumableItems.Init(FInventoryConsumable(), MaxInventoryNum);
+	OthersItems.Init(FInventoryOthers(), MaxInventoryNum);
 }
 int32 UInventorySubsystem::FindEquipmentIndex(const FName& ItemKey) const
 {
@@ -72,16 +75,32 @@ bool UInventorySubsystem::AddItem(const FName& ItemKey, int32 Quantity, UDataTab
 			NewEquipment.ItemName = Row->ItemName;
 			NewEquipment.Quantity = 1;
 			NewEquipment.ItemImage = Row->ItemImage;
-			EquipmentItems.Add(NewEquipment);
+			//EquipmentItems.Add(NewEquipment);
 		}
 		else
 		{
-			FInventoryEquipment NewEquipment;
-			NewEquipment.ItemID = ItemKey;
-			NewEquipment.ItemName = Row->ItemName;
-			NewEquipment.Quantity = 1;
-			NewEquipment.ItemImage = Row->ItemImage;
-			EquipmentItems.Add(NewEquipment);
+			int32 EmptyIndex = INDEX_NONE;
+			for (int32 i = 0; i < EquipmentItems.Num(); ++i)
+			{
+				if (EquipmentItems[i].ItemID.IsNone())
+				{
+					EmptyIndex = i;
+					break;
+				}
+			}
+			if (EmptyIndex != INDEX_NONE)
+			{
+				FInventoryEquipment NewEquipment;
+				NewEquipment.ItemID = ItemKey;
+				NewEquipment.ItemName = Row->ItemName;
+				NewEquipment.Quantity = 1;
+				NewEquipment.ItemImage = Row->ItemImage;
+				EquipmentItems[EmptyIndex] = NewEquipment;
+			}
+			else
+			{
+				return false;
+			}
 		}
 		break;
 	}
@@ -95,15 +114,41 @@ bool UInventorySubsystem::AddItem(const FName& ItemKey, int32 Quantity, UDataTab
 		}
 		else
 		{
-			FInventoryConsumable NewConsumable;
-			NewConsumable.ItemID = ItemKey;
-			NewConsumable.ItemName = Row->ItemName;
-			NewConsumable.Quantity = Quantity;
-			NewConsumable.ItemImage = Row->ItemImage;
-			ConsumableItems.Add(NewConsumable);
-			UE_LOG(LogTemp, Log, TEXT("Item In InventorySubsystem %s added to inventory."), *NewConsumable.ItemID.ToString());
-			UE_LOG(LogTemp, Log, TEXT("ItemName In InventorySubsystem %s added to inventory."), *NewConsumable.ItemName);
+			int32 EmptyIndex = INDEX_NONE;
+			for (int32 i = 0; i < ConsumableItems.Num(); ++i)
+			{
+				if (ConsumableItems[i].ItemID.IsNone())
+				{
+					EmptyIndex = i;
+					break;
+				}
+			}
+			if (EmptyIndex != INDEX_NONE)
+			{
+				FInventoryConsumable NewConsumable;
+				NewConsumable.ItemID = ItemKey;
+				NewConsumable.ItemName = Row->ItemName;
+				NewConsumable.Quantity = Quantity;
+				NewConsumable.ItemImage = Row->ItemImage;
+				ConsumableItems[EmptyIndex] = NewConsumable;
+			}
+			else
+			{
+				return false;
+			}
 		}
+
+		UE_LOG(LogTemp, Log, TEXT("=== Debug Print Consumable Items ==="));
+		for (int32 i = 0; i < ConsumableItems.Num(); ++i)
+		{
+			const FInventoryConsumable& Item = ConsumableItems[i];
+			UE_LOG(LogTemp, Log, TEXT("Index %d: ItemID: %s, ItemName: %s, Quantity: %d"),
+				i,
+				*Item.ItemID.ToString(),
+				*Item.ItemName,
+				Item.Quantity);
+		}
+
 		break;
 	}
 
@@ -116,12 +161,30 @@ bool UInventorySubsystem::AddItem(const FName& ItemKey, int32 Quantity, UDataTab
 		}
 		else
 		{
-			FInventoryOthers NewOthers;
-			NewOthers.ItemID = ItemKey;
-			NewOthers.ItemName = Row->ItemName;
-			NewOthers.Quantity = Quantity;
-			NewOthers.ItemImage = Row->ItemImage;
-			OthersItems.Add(NewOthers);
+			int32 EmptyIndex = INDEX_NONE;
+			for (int32 i = 0; i < OthersItems.Num(); ++i)
+			{
+				if (OthersItems[i].ItemID.IsNone())
+				{
+					EmptyIndex = i;
+					break;
+				}
+			}
+
+			if (EmptyIndex != INDEX_NONE)
+			{
+				FInventoryOthers NewOthers;
+				NewOthers.ItemID = ItemKey;
+				NewOthers.ItemName = Row->ItemName;
+				NewOthers.Quantity = Quantity;
+				NewOthers.ItemImage = Row->ItemImage;
+				OthersItems[EmptyIndex] = NewOthers;
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Others inventory is full."));
+				return false;
+			}
 		}
 		break;
 	}
@@ -214,8 +277,8 @@ void UInventorySubsystem::SortEquipmentItems(bool bIsAscending)
 {
 	Algo::Sort(EquipmentItems, [bIsAscending](const FInventoryEquipment& A, const FInventoryEquipment& B)
 		{
-			bool bIsAEmpty = A.ItemName.IsEmpty();
-			bool bIsBEmpty = B.ItemName.IsEmpty();
+			bool bIsAEmpty = A.ItemID.IsNone();
+			bool bIsBEmpty = B.ItemID.IsNone();
 
 			if (bIsAEmpty && !bIsBEmpty)
 			{
@@ -241,8 +304,8 @@ void UInventorySubsystem::SortConsumableItems(bool bIsAscending)
 {
 	Algo::Sort(ConsumableItems, [bIsAscending](const FInventoryConsumable& A, const FInventoryConsumable& B)
 		{
-			bool bIsAEmpty = A.ItemName.IsEmpty();
-			bool bIsBEmpty = B.ItemName.IsEmpty();
+			bool bIsAEmpty = A.ItemID.IsNone();
+			bool bIsBEmpty = B.ItemID.IsNone();
 
 			if (bIsAEmpty && !bIsBEmpty)
 			{
@@ -268,8 +331,8 @@ void UInventorySubsystem::SortOthersItems(bool bIsAscending)
 {
 	Algo::Sort(OthersItems, [bIsAscending](const FInventoryOthers& A, const FInventoryOthers& B)
 		{
-			bool bIsAEmpty = A.ItemName.IsEmpty();
-			bool bIsBEmpty = B.ItemName.IsEmpty();
+			bool bIsAEmpty = A.ItemID.IsNone();
+			bool bIsBEmpty = B.ItemID.IsNone();
 
 			if (bIsAEmpty && !bIsBEmpty)
 			{
@@ -291,6 +354,7 @@ void UInventorySubsystem::SortOthersItems(bool bIsAscending)
 		});
 }
 
+//return item ?
 bool UInventorySubsystem::UseItem(int32 SlotIndex, EItemType ItemType)
 {
 	switch (ItemType)
@@ -348,4 +412,33 @@ const TArray<FInventoryEquipment>& UInventorySubsystem::GetEquipmentItems() cons
 const TArray<FInventoryOthers>& UInventorySubsystem::GetOthersItems() const
 {
 	return OthersItems;
+}
+void UInventorySubsystem::SwapItem(int32 PrevIndex, int32 CurrentIndex, EItemType PrevSlotType, EItemType CurrentSlotType)
+{
+	switch (CurrentSlotType)
+	{
+	case EItemType::Equipment:
+
+		if (EquipmentItems.IsValidIndex(PrevIndex) && EquipmentItems.IsValidIndex(CurrentIndex))
+		{
+			EquipmentItems.Swap(PrevIndex,CurrentIndex);
+		}
+		break;
+
+	case EItemType::Consumable:
+
+		if (ConsumableItems.IsValidIndex(PrevIndex) && ConsumableItems.IsValidIndex(CurrentIndex))
+		{
+			ConsumableItems.Swap(PrevIndex,CurrentIndex);
+		}
+		break;
+
+	case EItemType::Others:
+
+		if (OthersItems.IsValidIndex(PrevIndex) && OthersItems.IsValidIndex(CurrentIndex))
+		{
+			OthersItems.Swap(PrevIndex, CurrentIndex);
+		}
+		break;
+	}
 }

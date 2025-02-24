@@ -2,14 +2,14 @@
 
 #include "CoreMinimal.h"
 #include "InventoryType.h"
-#include "ItemData.h"
 #include "ConsumableItemRow.h"
 #include "Components/ActorComponent.h"
 #include "InventoryComponent.generated.h"
 
-// delete ItemData.h
 
 class UInventorySubsystem;
+class UCustomWidget;
+class UInventoryWidget;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class TEAM8_PROJECT_API UInventoryComponent : public UActorComponent
@@ -18,14 +18,14 @@ class TEAM8_PROJECT_API UInventoryComponent : public UActorComponent
 public:
 	UInventoryComponent();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
+	/*UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
 	TArray<FInventoryEquipment> EquipmentItems;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
 	TArray<FInventoryConsumable> ConsumableItems;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
-	TArray<FInventoryOthers> OthersItems;
+	TArray<FInventoryOthers> OthersItems;*/
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	int32 GetGold() const;
@@ -54,18 +54,22 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	bool UseItem(int32 SlotIndex, EItemType ItemType);
 
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void SwapItem(int32 PrevIndex, int32 CurrentIndex, EItemType PrevSlotType, EItemType CurrentSlotType);
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory")
 	UDataTable* ItemDataTable = nullptr;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
 	UInventorySubsystem* InventorySubsystem = nullptr;
 
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory|UI")
-	//TSubclassOf<UUserWidget> InventoryWidgetClass;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory|UI")
+	TSubclassOf<UCustomWidget> InventoryWidgetClass;
 
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory|UI")
-	//UUserWidget* InventoryWidget = nullptr;
-	UFUNCTION(BlueprintCallable, Category = "UI")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory|UI")
+	UInventoryWidget* InventoryWidget = nullptr;
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory|UI")
 	void UpdateInventoryUI();
 
 

@@ -2,6 +2,7 @@
 #include "MyPlayerController.h"
 #include "InventoryComponent.h"
 #include "InventorySubsystem.h"
+#include "InventoryWidget.h"
 #include "Components/CapsuleComponent.h"
 #include "BaseItem.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -42,14 +43,6 @@ void AMyCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 }
-//
-//// Called every frame
-//void AMyCharacter::Tick(float DeltaTime)
-//{
-//	Super::Tick(DeltaTime);
-//
-//}
-//
 void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -84,6 +77,15 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 					ETriggerEvent::Triggered,
 					this,
 					&AMyCharacter::PickUp
+				);
+			}
+			if (PlayerController->InventoryToggleAction)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->InventoryToggleAction,
+					ETriggerEvent::Triggered,
+					this,
+					&AMyCharacter::ToggleInventory
 				);
 			}
 		}
@@ -176,6 +178,38 @@ void AMyCharacter::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Oth
 		OverlappingItem = nullptr;
 	}
 }
+void AMyCharacter::ToggleInventory(const FInputActionValue& Value)
+{
+	APlayerController* PC = Cast<APlayerController>(GetController());
+	if (!PC || !Inventory || !Inventory->InventoryWidget)
+	{
+		return;
+	}
+
+	if (Inventory->InventoryWidget->IsVisible())
+	{
+		Inventory->InventoryWidget->SetVisibility(ESlateVisibility::Collapsed);
+		FInputModeGameOnly InputMode;
+		PC->SetInputMode(InputMode);
+		PC->bShowMouseCursor = false;
+	
+	}
+	else
+	{
+		Inventory->InventoryWidget->SetVisibility(ESlateVisibility::Visible);
+		
+		Inventory->InventoryWidget->UpdateInventoryUI();
+		FInputModeGameAndUI  InputMode;
+		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+		/*InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::LockInFullscreen);*/
+		InputMode.SetHideCursorDuringCapture(false);  // Added this line
+		/*InputMode.SetWidgetToFocus(Inventory->InventoryWidget->TakeWidget());*/
+		PC->SetInputMode(InputMode);
+		PC->bShowMouseCursor = true;
+	}
+
+}
+
 // ------------------------------
 // Interface Implementation
 // ------------------------------
@@ -266,3 +300,9 @@ void AMyCharacter::SetGold(int32 NewGold)
 		Inventory->SetGold(NewGold);
 	}
 }
+void AMyCharacter::SwapItem(int32 PrevIndex, int32 CurrentIndex, EItemType PrevSlotType, EItemType CurrentSlotType)
+{
+	check(Inventory);
+	Inventory->SwapItem(PrevIndex, CurrentIndex, PrevSlotType, CurrentSlotType);
+}
+

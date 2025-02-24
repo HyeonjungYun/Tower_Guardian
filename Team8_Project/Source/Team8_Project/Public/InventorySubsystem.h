@@ -40,6 +40,10 @@ public:
 	bool UseItem(int32 SlotIndex, EItemType ItemType);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void SwapItem(int32 PrevIndex,int32 CurrentIndex,EItemType PrevSlotType, EItemType CurrentSlotType);
+
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	int32 GetGold() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
@@ -67,6 +71,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
 	int32 CurrentGold;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
+	int32 MaxInventoryNum = 30;
 
 private:
 	int32 FindEquipmentIndex(const FName& ItemKey) const;

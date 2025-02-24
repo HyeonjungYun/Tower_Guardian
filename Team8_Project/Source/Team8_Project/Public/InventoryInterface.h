@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -34,6 +34,7 @@ public:
 	virtual bool RemoveItem(const FName& ItemKey, int32 Quantity) = 0;
 	virtual bool UseItem(int32 SlotIndex, EItemType ItemType) = 0;
 	virtual void SetGold(int32 NewGold) = 0;
+	virtual void SwapItem(int32 PrevIndex, int32 CurrentIndex, EItemType PrevSlotType, EItemType CurrentSlotType) = 0;
 
 	// Sort Method
 	virtual void SortEquipmentItems(bool bIsAscending) = 0;

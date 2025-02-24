@@ -39,7 +39,7 @@ public:
 	virtual bool RemoveItem(const FName& ItemKey, int32 Quantity) override;
 	virtual bool UseItem(int32 SlotIndex, EItemType ItemType) override;
 	virtual void SetGold(int32 NewGold) override;
-
+	virtual void SwapItem(int32 PrevIndex, int32 CurrentIndex, EItemType PrevSlotType, EItemType CurrentSlotType)override;
 
 public:
 	AMyCharacter();
@@ -68,7 +68,9 @@ protected:
 	UFUNCTION()
 	void PickUp(const FInputActionValue& Value);
 
-
+	UFUNCTION()
+	void ToggleInventory(const FInputActionValue& Value);
+	
 	UFUNCTION()
 	void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);

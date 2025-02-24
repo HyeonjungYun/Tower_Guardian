@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
 #include "InventoryType.h" 
+#include "BaseItem.h"
 #include "ConsumableItemRow.generated.h"
 
 UENUM(BlueprintType)
@@ -44,5 +45,6 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
     float ItemPurchasePrice;
+
    
 };

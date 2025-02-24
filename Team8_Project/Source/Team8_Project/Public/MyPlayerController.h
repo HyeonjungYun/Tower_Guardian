@@ -29,6 +29,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	UInputAction* PickUpAction = nullptr;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UInputAction* InventoryToggleAction = nullptr;
+
 protected:
 	virtual void BeginPlay() override;
 
