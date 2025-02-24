@@ -32,6 +32,8 @@ protected:
 	void FireButtonPressed(bool bPressed);
 
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction);
+
+	void InterpFOV(float DeltaTime);
 protected:
 	class AMyCharacter* PlayerCharacter;
 	class AMyPlayerController* PlayerController;
@@ -45,4 +47,14 @@ protected:
 	// 이동, 점프 동작시 조준선 벌어짐의 영향을 줄 요인들
 	float CrosshairVelocityFactor;
 	float CrosshairinAirFactor;
+
+	// 조준
+	float DefaultFOV; // 기본 조준
+	
+	float CurrentFOV;
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	float ZoomedFov = 30.f;
+	
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	float ZoomInterpSpeed = 20.f;
 };

@@ -92,11 +92,23 @@ protected:
     UPROPERTY(EditAnywhere)
     TSubclassOf<class ABulletCaseBase> BulletCaseClass;
 
+
+    // 조준
+    UPROPERTY(EditAnywhere)
+    float ZoomedFOV = 30.f;
+
+    UPROPERTY(EditAnywhere)
+    float ZoomInterpSpeed = 20.f;
+
 public:
     AWeaponBase();
     void SetWeaponState(EWeaponState CurWeaponState);
     UFUNCTION(BlueprintCallable)
     virtual void Fire(const FVector& HitTarget);
+
+    float GetWeaponZoomFov() const;
+    
+    float GetWeaponZoomInterpSpeed() const;
 protected:
     virtual void BeginPlay() override;
 
@@ -115,4 +127,6 @@ protected:
 
     UFUNCTION(BlueprintCallable)
     virtual void Reload();
+
+    
 };

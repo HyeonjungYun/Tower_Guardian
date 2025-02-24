@@ -230,7 +230,15 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 					&AMyCharacter::StopFire
 				);
 			}
-			
+			if (PlayerController->AimingAction)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->AimingAction,
+					ETriggerEvent::Completed,
+					this,
+					&AMyCharacter::OnAiming
+				);
+			}
 		}
 	}
 
@@ -502,6 +510,28 @@ void AMyCharacter::StopFire(const FInputActionValue& value)
 	{
 		CombatComponent->FireButtonPressed(false);
 	}
+}
+
+void AMyCharacter::OnAiming(const FInputActionValue& value)
+{
+	if (CombatComponent == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("전투 컴포넌트 없음"));
+		return;
+	}
+	else
+	{
+		if (CombatComponent->bIsAiming)
+		{
+			CombatComponent->bIsAiming = false;
+		}
+		else
+		{
+			CombatComponent->bIsAiming = true;
+		}
+
+	}
+
 }
 
 void AMyCharacter::PlayFireMontage(bool bAiming)

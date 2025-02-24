@@ -10,6 +10,7 @@
 #include "../MyPlayerController.h"
 #include "WeaponCrosshairHUD.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Camera/CameraComponent.h"
 
 UPlayerCombatComponent::UPlayerCombatComponent()
 {
@@ -36,12 +37,6 @@ void UPlayerCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 
 	// 매개변수에게 뷰포트 값이붙음(OUT 매크로)
 
-	//if (GEngine && GEngine->GameViewport)
-	//{
-	//	
-	//	GEngine->GameViewport->GetViewportSize(ViewportSize);
-	//}
-
 	FVector2D CrosshairLocation(ViewportSize.X / 2.f, ViewportSize.Y / 2.f);// 스크린 화면의 중앙
 
 	FVector CrosshairWorldPosition;
@@ -51,7 +46,6 @@ void UPlayerCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 		CrosshairLocation,
 		CrosshairWorldPosition,
 		CrosshairWorldDirection);
-	//PC->GetPlayerViewPoint(CrosshairWorldPosition,Crosshair);
 
 	if (bScreenToWorld)
 	{// 뷰포트 정중앙에서 World의 한지점까지 deproject한 것이 성공했나
@@ -79,12 +73,6 @@ void UPlayerCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 		else
 		{
 			HitTargetPos = TraceHitResult.ImpactPoint;
-			// 디버그출력
-			DrawDebugSphere(GetWorld(), 
-				TraceHitResult.ImpactPoint,
-				12.f,
-				12,
-				FColor::Red);
 		}
 
 	}
@@ -164,6 +152,16 @@ void UPlayerCombatComponent::BeginPlay()
 	
 	APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
 	PlayerController = Cast<AMyPlayerController>(PC);
+
+	if (PlayerCharacter)
+	{
+		if (PlayerCharacter->GetFollowCamera())
+		{
+			DefaultFOV = PlayerCharacter->GetFollowCamera()->FieldOfView;
+			CurrentFOV = DefaultFOV;
+		}
+		
+	}
 	
 }
 
@@ -212,10 +210,38 @@ void UPlayerCombatComponent::FireButtonPressed(bool bPressed)
 
 }
 
+void UPlayerCombatComponent::InterpFOV(float DeltaTime)
+{
+	if (EquippedWeapon == nullptr)
+	{
+		return;
+	}
+
+	if (bIsAiming)
+	{
+		CurrentFOV=FMath::FInterpTo(
+			CurrentFOV,
+			EquippedWeapon->GetWeaponZoomFov(),
+			DeltaTime,EquippedWeapon->GetWeaponZoomInterpSpeed());
+	}
+	else
+	{
+		CurrentFOV = FMath::FInterpTo(
+			CurrentFOV,
+			DefaultFOV,
+			DeltaTime, ZoomInterpSpeed);
+	}
+	if (PlayerCharacter && PlayerCharacter->GetFollowCamera())
+	{
+		PlayerCharacter->GetFollowCamera()->SetFieldOfView(CurrentFOV);
+	}
+}
+
 void UPlayerCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	SetHUDCrosshairs(DeltaTime);
+	InterpFOV(DeltaTime);
 }
 
