@@ -119,6 +119,8 @@ protected:
 	UFUNCTION()
 	void StopFire(const FInputActionValue& value);
 
+	UFUNCTION()
+	void OnAiming(const FInputActionValue& value);
 
 	/*
 	전투를 위한 기능들
@@ -133,4 +135,6 @@ protected:
 	public:
 	UFUNCTION()
 	void PlayFireMontage(bool bAiming);
+
+	FORCEINLINE UCameraComponent* GetFollowCamera() const { return Camera; };
 };
