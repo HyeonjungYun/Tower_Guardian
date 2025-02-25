@@ -81,7 +81,7 @@ void ABaseEnemy::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 }
 
 float ABaseEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator,
-                             AActor* DamageCauser)
+	AActor* DamageCauser)
 {
 	float RealDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	SetHP(HP - RealDamage);
@@ -129,7 +129,6 @@ bool ABaseEnemy::CanAttackToType(TSubclassOf<AActor> AttackType, TArray<FOverlap
 				return true;
 		}
 	}
-
 	return false;
 }
 

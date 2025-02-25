@@ -7,7 +7,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 
-ACH8_GameState::ACH8_GameState() 
+ACH8_GameState::ACH8_GameState()
 	: Score(0)
 	, Gold(1000)
 	, CurrentWaveIndex(10)
