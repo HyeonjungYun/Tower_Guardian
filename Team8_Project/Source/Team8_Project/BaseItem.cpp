@@ -3,7 +3,7 @@
 
 #include "BaseItem.h"
 #include "Components/SphereComponent.h"
-
+#include "../MyCharacter.h"
 // Sets default values
 ABaseItem::ABaseItem()
 {
@@ -43,14 +43,27 @@ void ABaseItem::OnItemOverlap(UPrimitiveComponent* OverlappedComp, AActor* Other
     // OtherActor가 플레이어인지 확인 ("Player" 태그 활용)
     if (OtherActor && OtherActor->ActorHasTag("Player"))
     {
-        GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("Overlap!!!")));
         // 아이템 사용 (획득) 로직 호출
-        ActivateItem(OtherActor);
+        // ActivateItem(OtherActor);
+        AMyCharacter* PlayerCharacter = Cast<AMyCharacter>(OtherActor);
+        if (PlayerCharacter)
+        {
+            PlayerCharacter->SetPickableItem(this);
+        }
     }
 }
 
 void ABaseItem::OnItemEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+    if (OtherActor && OtherActor->ActorHasTag("Player"))
+    {
+       
+        AMyCharacter* PlayerCharacter = Cast<AMyCharacter>(OtherActor);
+        if (PlayerCharacter)
+        {// 범위에서 벗어난 경우 nullptr 초기화
+            PlayerCharacter->SetPickableItem(nullptr);
+        }
+    }
 }
 
 // 아이템이 사용(Activate)되었을 때 동작

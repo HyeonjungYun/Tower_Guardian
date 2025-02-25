@@ -10,7 +10,8 @@ AMyPlayerController::AMyPlayerController()
 	SprintAction(nullptr),
 	LookAction(nullptr),
 	HUDWidgetClass(nullptr),
-	HUDWidgetInstance(nullptr)
+	HUDWidgetInstance(nullptr),
+	AimingAction(nullptr)
 {
 }
 

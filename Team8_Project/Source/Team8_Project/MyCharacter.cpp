@@ -4,15 +4,33 @@
 #include "MyPlayerController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/Engine.h" //뷰포트에 로그를 출력 위함
+#include "Weapon/PlayerCombatComponent.h"
+#include "Weapon/WeaponBase.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "Camera/CameraComponent.h"
 
 AMyCharacter::AMyCharacter()
 {
  	PrimaryActorTick.bCanEverTick = true;
 
 	Capsule = GetCapsuleComponent(); //기본 캡슐 컴포넌트만 반환
+	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraArm"));
+	CameraBoom->TargetArmLength = 350.0f;
+	CameraBoom->SetupAttachment(GetMesh());
+	CameraBoom->bUsePawnControlRotation = true;
+	
+	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+	Camera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+	Camera->bUsePawnControlRotation = false;
+
 
 	//Capsule컴포넌트 -> Overlap에 이벤트 바인딩
+	CombatComponent = CreateDefaultSubobject<UPlayerCombatComponent>(TEXT("CombatComponent"));
 
+	// mesh 카메라 관련 충돌
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 }
 
 void AMyCharacter::BeginPlay()
@@ -202,7 +220,7 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 			{
 				EnhancedInput->BindAction(
 					PlayerController->FireAction,
-					ETriggerEvent::Triggered,
+					ETriggerEvent::Started,
 					this,
 					&AMyCharacter::StartFire
 				);
@@ -217,10 +235,37 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 					&AMyCharacter::StopFire
 				);
 			}
-			
+			if (PlayerController->AimingAction)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->AimingAction,
+					ETriggerEvent::Started,
+					this,
+					&AMyCharacter::OnAiming
+				);
+			}
+			if (PlayerController->AimingAction)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->AimingAction,
+					ETriggerEvent::Completed,
+					this,
+					&AMyCharacter::ReleaseAiming
+				);
+			}
 		}
 	}
 
+}
+
+void AMyCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	if (CombatComponent)
+	{
+		CombatComponent->PlayerCharacter = this;
+	}
 }
 
 void AMyCharacter::Move(const FInputActionValue& value)
@@ -228,16 +273,25 @@ void AMyCharacter::Move(const FInputActionValue& value)
 	if (!Controller) return;
 
 	const FVector2D MoveInput = value.Get<FVector2D>();
+	const FRotator ControlRotation = Controller->GetControlRotation(); // 카메라 회전 값 가져오기
+
+	//// 카메라 방향에 맞춰 이동 벡터를 수정
+	//FVector ForwardDirection = FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::X); // 전방 방향
+	//FVector RightDirection = FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::Y); // 우측 방향
 
 	if (!FMath::IsNearlyZero(MoveInput.X))
 	{
 		AddMovementInput(GetActorForwardVector(), MoveInput.X);
+		//AddMovementInput(ForwardDirection, MoveInput.X);
 	}
 
 	if (!FMath::IsNearlyZero(MoveInput.Y))
 	{
 		AddMovementInput(GetActorRightVector(), MoveInput.Y);
+		//AddMovementInput(RightDirection, MoveInput.Y);
 	}
+
+
 }
 
 void AMyCharacter::StartJump(const FInputActionValue& value)
@@ -296,13 +350,20 @@ void AMyCharacter::StopSprint(const FInputActionValue& value)
 
 void AMyCharacter::StartPickUp(const FInputActionValue& value)
 {
+	// 개발용, 무기 주으면 바로 장착할 수 있도록 구현
 	if (value.Get<bool>())
 	{
-		if (GetCharacterMovement())
+		// 지금은 바로 낄수있도록 구현합니다.
+		if (CombatComponent)
 		{
-			if (GEngine) //for debug
+			AWeaponBase* WeaponToEquip =
+				Cast<AWeaponBase>(PickableItem);
+			
+
+			if (WeaponToEquip && CombatComponent->EquippedWeapon == nullptr)
 			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StartPickUp!"));
+				// 주울수있는 아이템이 무기 인경우 && 빈손인 경우
+				CombatComponent->EquipWeapon(WeaponToEquip);
 			}
 		}
 	}
@@ -451,29 +512,68 @@ void AMyCharacter::StopReload(const FInputActionValue& value)
 
 void AMyCharacter::StartFire(const FInputActionValue& value)
 {
-	if (value.Get<bool>())
+	if (CombatComponent)
 	{
-		if (GetCharacterMovement())
-		{
-			if (GEngine) //for debug
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StartFire!"));
-			}
-		}
+		CombatComponent->FireButtonPressed(true);
 	}
 }
 
 void AMyCharacter::StopFire(const FInputActionValue& value)
 {
-	if (!value.Get<bool>())
+	if (CombatComponent)
 	{
-		if (GetCharacterMovement())
-		{
-			if (GEngine) //for debug
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StopFire!"));
-			}
-		}
+		CombatComponent->FireButtonPressed(false);
 	}
+}
+
+void AMyCharacter::OnAiming()
+{
+	if (CombatComponent == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("전투 컴포넌트 없음"));
+		return;
+	}
+	else
+	{
+		CombatComponent->SetAiming(true);
+
+	}
+
+}
+
+void AMyCharacter::ReleaseAiming()
+{
+	if (CombatComponent == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("전투 컴포넌트 없음"));
+		return;
+	}
+	else
+	{
+		CombatComponent->SetAiming(false);
+
+	}
+}
+
+void AMyCharacter::PlayFireMontage(bool bAiming)
+{
+	if (CombatComponent == nullptr ||
+		CombatComponent->EquippedWeapon == nullptr)
+	{
+		return;
+	}
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && FireRifleAnimMontage)
+	{
+		AnimInstance->Montage_Play(FireRifleAnimMontage);
+		FName SectionName;
+		SectionName = bAiming ? FName("RifleAim") : FName("RifleHip");
+		AnimInstance->Montage_JumpToSection(SectionName);
+	}
+}
+
+void AMyCharacter::SetPickableItem(ABaseItem* OverlappedItem)
+{
+	PickableItem = OverlappedItem;
 }
 
