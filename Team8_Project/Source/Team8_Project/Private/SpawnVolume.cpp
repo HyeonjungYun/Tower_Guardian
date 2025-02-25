@@ -42,12 +42,7 @@ AActor* ASpawnVolume::SpawnEnemy(TSubclassOf<AActor> EnemyClass)
 	);
 
 	if (ABaseEnemy* Enemy = Cast<ABaseEnemy>(SpawnedActor))
-	{
 		Enemy->SetPatrolPath(PatrolPath);
-		
-		if (AEnemyAIController* Controller = Cast<AEnemyAIController>(Enemy->GetController()))
-			Controller->RunBehaviorTree(BehaviorTree);
-	}
 	
 	return SpawnedActor;
 }

@@ -42,6 +42,18 @@ void ABaseEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 
+	HP = MaxHP;
+
+	if (AEnemyAIController* EnemyController = Cast<AEnemyAIController>(GetController()))
+	{
+		if (BehaviorTree)
+			EnemyController->RunBehaviorTree(BehaviorTree);
+		else
+			UE_LOG(LogTemp, Warning, TEXT("BehaviorTree가 없습니다"));
+	}
+	else
+		UE_LOG(LogTemp, Warning, TEXT("Controller를 변환하지 못했습니다."));
+	
 	AI_Perception->OnTargetPerceptionUpdated.AddDynamic(this, &ABaseEnemy::OnTargetPerceptionUpdated);
 }
 
@@ -55,7 +67,7 @@ void ABaseEnemy::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 
 	UBlackboardComponent* BlackBoard = AIController->GetBlackboardComponent();
 	if (!BlackBoard) return;
-	
+
 	if (Stimulus.WasSuccessfullySensed())
 	{
 		BlackBoard->SetValueAsBool("DetectedPlayer", true);
@@ -74,6 +86,11 @@ float ABaseEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& Dama
 	float RealDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	SetHP(HP - RealDamage);
 
+	if (HP > 0)
+		if (USkeletalMeshComponent* Mesh = GetComponentByClass<USkeletalMeshComponent>())
+			if (UAnimInstance* AnimInstance = Mesh->GetAnimInstance())
+				AnimInstance->Montage_Play(DamagedMontage);
+
 	return RealDamage;
 }
 
@@ -90,20 +107,25 @@ bool ABaseEnemy::CanAttackToType(TSubclassOf<AActor> AttackType)
 
 bool ABaseEnemy::CanAttackToType(TSubclassOf<AActor> AttackType, TArray<FOverlapResult>& OutOverlapResults)
 {
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+	
 	//공격 중 제일 사정거리가 긴 공격
 	float MaxAttackRange = GetMaxAttackRange();
 	bool bOverlap = GetWorld()->OverlapMultiByObjectType(OutOverlapResults,
 	                                                     GetActorLocation(), GetActorQuat(),
 	                                                     FCollisionObjectQueryParams::DefaultObjectQueryParam,
-	                                                     FCollisionShape::MakeSphere(MaxAttackRange));
+	                                                     FCollisionShape::MakeSphere(MaxAttackRange),
+	                                                     Params);
 
 	DrawDebugSphere(GetWorld(), GetActorLocation(), MaxAttackRange, 30, FColor::Red);
 	if (bOverlap)
-	{			
+	{
 		for (auto& Element : OutOverlapResults)
 		{
 			if (Element.GetActor() != this && Element.GetActor()->Implements<UDamageable>() &&
-				(AttackType == nullptr || Element.GetActor()->IsA(AttackType.Get())))
+				(AttackType == nullptr || Element.GetActor()->IsA(AttackType.Get())) &&
+				!Element.GetActor()->IsA<ABaseEnemy>())
 				return true;
 		}
 	}
@@ -117,15 +139,15 @@ void ABaseEnemy::Attack()
 	if (!CanAttackToType(nullptr, OverlapResults))
 		return;
 
-	//가장 먼 공격 가능한 오브젝트와의 거리
+	//가장 가까운 공격 가능한 오브젝트와의 거리
 	float NearRange = MAX_FLT;
 	for (auto& Element : OverlapResults)
 	{
 		FVector ClosetLocation;
 		Element.GetComponent()->GetClosestPointOnCollision(GetActorLocation(), ClosetLocation);
 
-		// GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, Element.GetComponent()->GetName());
-		// DrawDebugSphere(GetWorld(), ClosetLocation, 30, 20, FColor::Green);
+		GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, Element.GetComponent()->GetName());
+		DrawDebugSphere(GetWorld(), ClosetLocation, 30, 20, FColor::Green, false, 2);
 
 		float Distance = FVector::Distance(ClosetLocation, GetActorLocation());
 		if (Distance < NearRange)
@@ -152,7 +174,10 @@ void ABaseEnemy::Attack()
 		return NearRange - 10.f <= Pattern.AttackRange;
 	});
 
-	// GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, FString::Printf(TEXT("NearRange: %f"), NearRange));
+	// for (auto& Pattern : Patterns)
+	// 	GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Blue, Pattern.Anim->GetName());
+	
+	GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, FString::Printf(TEXT("NearRange: %f"), NearRange));
 	// GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, FString::Printf(TEXT("MaxAttackRange: %f"), MaxAttackRange));
 
 	if (USkeletalMeshComponent* Mesh = GetComponentByClass<USkeletalMeshComponent>())
@@ -206,16 +231,18 @@ FVector ABaseEnemy::GetPatrolLocation() const
 void ABaseEnemy::SetPatrolLocationToNext()
 {
 	check(PatrolPath);
-	
+
 	if (PatrolIndex < PatrolPath->Num() - 1)
 		PatrolIndex++;
 }
 
-void ABaseEnemy::OnDeath()
+void ABaseEnemy::Death()
 {
 	if (USkeletalMeshComponent* Mesh = GetComponentByClass<USkeletalMeshComponent>())
 		if (UAnimInstance* AnimInstance = Mesh->GetAnimInstance())
 			AnimInstance->Montage_Play(DeathMontage);
+
+	OnDeath.Broadcast(this);
 }
 
 float ABaseEnemy::GetMaxAttackRange() const
@@ -240,6 +267,6 @@ void ABaseEnemy::SetHP(float Value)
 	if (HP <= 0)
 	{
 		HP = 0;
-		OnDeath();
+		Death();
 	}
 }

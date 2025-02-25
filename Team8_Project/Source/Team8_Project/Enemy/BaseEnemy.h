@@ -5,10 +5,14 @@
 #include "Team8_Project/Damageable.h"
 #include "BaseEnemy.generated.h"
 
+class UBehaviorTree;
 class UAISenseConfig_Sight;
 class UAIPerceptionComponent;
 class UFloatingPawnMovement;
 class APatrolPath;
+class ABaseEnemy;
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FEnemyDeathDelegate, ABaseEnemy*)
 
 USTRUCT(BlueprintType)
 struct FAttackPattern
@@ -53,8 +57,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FVector GetPatrolLocation() const;
 
-	//임시로 달아줌. 스포너에서 달아주는 것으로 변경 후 삭제
-	UFUNCTION(BlueprintCallable)
 	void SetPatrolPath(APatrolPath* Value);
 	
 	virtual float GetHP() const override;
@@ -62,11 +64,11 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-
+	
 	UFUNCTION()
 	virtual void OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
 	
-	virtual void OnDeath();
+	virtual void Death();
 
 private:
 	float GetMaxAttackRange() const;
@@ -80,17 +82,30 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AI")
 	TObjectPtr<UAISenseConfig_Sight> AI_Sight;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
+	TObjectPtr<UBehaviorTree> BehaviorTree;
+
+	FEnemyDeathDelegate OnDeath;
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Attack")
 	TArray<FAttackPattern> AttackPatterns;
-
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<UAnimMontage> DamagedMontage;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UAnimMontage> DeathMontage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float MaxHP = 100;
 	
 	TObjectPtr<APatrolPath> PatrolPath;
 	int32 PatrolIndex;
 	
+	
 private:
 	float HP;
 };
+

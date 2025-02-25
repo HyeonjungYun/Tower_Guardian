@@ -26,9 +26,6 @@ public:
 	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Spawning")
 	APatrolPath* PatrolPath;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
-	UBehaviorTree* BehaviorTree;
-	
 	FVector GetSpawnPosition();
 
 	UFUNCTION(BlueprintCallable, Category = "Spawning")
