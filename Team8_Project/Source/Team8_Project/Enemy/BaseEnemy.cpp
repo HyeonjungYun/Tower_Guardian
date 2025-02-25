@@ -99,7 +99,7 @@ bool ABaseEnemy::CanAttackToType(TSubclassOf<AActor> AttackType, TArray<FOverlap
 
 	DrawDebugSphere(GetWorld(), GetActorLocation(), MaxAttackRange, 30, FColor::Red);
 	if (bOverlap)
-	{
+	{			
 		for (auto& Element : OutOverlapResults)
 		{
 			if (Element.GetActor() != this && Element.GetActor()->Implements<UDamageable>() &&
@@ -205,6 +205,8 @@ FVector ABaseEnemy::GetPatrolLocation() const
 
 void ABaseEnemy::SetPatrolLocationToNext()
 {
+	check(PatrolPath);
+	
 	if (PatrolIndex < PatrolPath->Num() - 1)
 		PatrolIndex++;
 }

@@ -4,6 +4,7 @@
 #include "GameFramework/GameState.h"
 #include "CH8_GameState.generated.h"
 
+class ABaseEnemy;
 class ASpawnVolume;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnGameGetGold, int32);
@@ -35,12 +36,16 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Wave")
 	int32 CurrentWaveIndex;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Wave")
+	TArray<TSubclassOf<ABaseEnemy>> EnemyTypes;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Score")
 	int32 Score;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Gold")
 	int32 Gold;
 
+	
 	int32 SpawnedEnemy;
 	int32 KilledEnemy;
 
@@ -52,6 +57,8 @@ public:
 	FTimerHandle SpawnDurationTimerHandle;
 	FTimerHandle HUDUpdateTimerHandle;
 
+	
+	
 	void UpdateHUD();
 	void UpdateGameTimer();
 

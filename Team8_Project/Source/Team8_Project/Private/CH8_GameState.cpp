@@ -121,14 +121,11 @@ void ACH8_GameState::SpawnEnemyPerTime()
 	{
 		if (ASpawnVolume* SpawnVolume = GetSpawnVolume())
 		{
-			if (TSubclassOf<AActor> Enemy = SpawnVolume->SpawnNormalEnemy())
-			{
-				SpawnVolume->SpawnEnemy(Enemy);
-				UpdatedSpawnedEnemy();
-			}
+			SpawnVolume->SpawnEnemy(EnemyTypes[0]);
+			
+			UpdatedSpawnedEnemy();
+			EnemySpawnConut++;
 		}
-
-		EnemySpawnConut++;
 	}
 	else
 	{
