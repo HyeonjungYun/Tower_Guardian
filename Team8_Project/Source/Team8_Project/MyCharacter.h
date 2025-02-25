@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "InventoryInterface.h"
+#include "Inventory/InventoryInterface.h"
 #include "MyCharacter.generated.h"
 
 class USpringArmComponent;

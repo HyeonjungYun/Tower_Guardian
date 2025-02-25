@@ -4,10 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "ItemInterface.h"
+#include "Inventory/ItemInterface.h"
 #include "BaseItem.generated.h"
 
-class UStaticMeshComponent;
+
 class USphereComponent;
 
 
@@ -28,8 +28,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item|Component")
 	USphereComponent* Collision;
 
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item|Component")
-	//UStaticMeshComponent* StaticMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item|Effects")
 	UParticleSystem* PickupParticle;

@@ -3,20 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BaseItem.h"
-#include "ConsumableItem.generated.h"
-
-
-
+#include "../BaseItem.h"
+#include "OtherItem.generated.h"
 
 UCLASS()
-class TEAM8_PROJECT_API AConsumableItem : public ABaseItem
+class TEAM8_PROJECT_API AOtherItem : public ABaseItem
 {
 	GENERATED_BODY()
 public:
-	AConsumableItem();
+	AOtherItem();
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item|Component")
 	UStaticMeshComponent* StaticMesh;
-	//
 };
