@@ -52,8 +52,10 @@ void ABaseEnemy::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 
 	AAIController* AIController = Cast<AAIController>(GetController());
 	if (!AIController) return;
-	
+
 	UBlackboardComponent* BlackBoard = AIController->GetBlackboardComponent();
+	if (!BlackBoard) return;
+	
 	if (Stimulus.WasSuccessfullySensed())
 	{
 		BlackBoard->SetValueAsBool("DetectedPlayer", true);

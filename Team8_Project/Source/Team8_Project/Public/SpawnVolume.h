@@ -4,6 +4,8 @@
 #include "GameFramework/Actor.h"
 #include "SpawnVolume.generated.h"
 
+class UBehaviorTree;
+class APatrolPath;
 class UBoxComponent;
 
 UCLASS()
@@ -21,6 +23,12 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spawning")
 	UBoxComponent* SpawningBox;
 
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Spawning")
+	APatrolPath* PatrolPath;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
+	UBehaviorTree* BehaviorTree;
+	
 	FVector GetSpawnPosition();
 
 	UFUNCTION(BlueprintCallable, Category = "Spawning")
