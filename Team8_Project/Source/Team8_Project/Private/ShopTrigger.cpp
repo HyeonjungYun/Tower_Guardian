@@ -86,8 +86,8 @@ void AShopTrigger::OpenShop()
 	AMyCharacter* Player = Cast<AMyCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	if (Player && Player->GetCharacterMovement())
 	{
-		Player->GetCharacterMovement()->StopMovementImmediately();
-		Player->GetCharacterMovement()->SetMovementMode(MOVE_None);
+		//Player->GetCharacterMovement()->StopMovementImmediately();
+		//Player->GetCharacterMovement()->SetMovementMode(MOVE_None);
 	}
 
 	if (bIsPlayerInRange && ShopWidgetClass)
