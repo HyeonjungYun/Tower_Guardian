@@ -1,10 +1,13 @@
-#pragma once
+Ôªø#pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameState.h"
 #include "CH8_GameState.generated.h"
 
 class ASpawnVolume;
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnGameGetGold, int32);
+DECLARE_DELEGATE(FOnGameKillEnemy);
 
 UCLASS()
 class TEAM8_PROJECT_API ACH8_GameState : public AGameState
@@ -23,6 +26,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave")
 	float StartDuration;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave")
+	int32 ElapsedSeconds;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Wave")
 	int32 EnemySpawnConut;
 
@@ -35,25 +41,33 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Gold")
 	int32 Gold;
 
+	int32 SpawnedEnemy;
+	int32 KilledEnemy;
+
+	FOnGameGetGold OnGameSetGold;
+	FOnGameKillEnemy OnGameKillEnemy;
+
 	FTimerHandle GameTimerHandle;
+	FTimerHandle SpawnTimerHandle;
 	FTimerHandle SpawnDurationTimerHandle;
 	FTimerHandle HUDUpdateTimerHandle;
 
-	UFUNCTION(BlueprintPure, Category = "Score")
-	int32 GetScore();
+	void UpdateHUD();
+	void UpdateGameTimer();
 
-	UFUNCTION(BlueprintPure, Category = "Gold")
-	int32 GetGold();
+	virtual void BeginPlay() override;
 
+	void SetGold(int32 TempGold);
 	void StartGame();
 	void EndGame();
 	void SpawnWave();
-	void SpawnEnemy();
+	void SpawnEnemyPerTime();
+	void UpdatedSpawnedEnemy();
+	void UpdatedKilledEnemy();
+	int32 GetGold();
 
 private:
-	UPROPERTY()
-	TArray<AActor*> MinionToSpawnPerWave;
 
-	// «Ô∆€ «‘ºˆ
+	// Ìó¨Ìçº Ìï®Ïàò
 	ASpawnVolume* GetSpawnVolume() const;
 };
