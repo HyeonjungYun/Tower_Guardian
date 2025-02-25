@@ -1,5 +1,5 @@
 ﻿#include "BananaItem.h"
-#include "MyCharacter.h" 
+#include "../MyCharacter.h" 
 
 ABananaItem::ABananaItem()
 {

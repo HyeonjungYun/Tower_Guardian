@@ -1,12 +1,12 @@
-﻿#include "BigPotionItem.h"
-#include "MyCharacter.h" 
+﻿#include "PotionItem.h"
+#include "../MyCharacter.h" 
 
-ABigPotionItem::ABigPotionItem()
+APotionItem::APotionItem()
 {
-    FItemType = "PotionBig";
+    FItemType = "PotionSmall";
 }
 
-void ABigPotionItem::ActivateItem(AActor* Activator)
+void APotionItem::ActivateItem(AActor* Activator)
 {
     if (Activator && Activator->ActorHasTag("Player"))
     {
