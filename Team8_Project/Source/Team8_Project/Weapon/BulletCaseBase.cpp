@@ -6,7 +6,7 @@
 #include "Kismet/GameplayStatics.h" // Tracer
 ABulletCaseBase::ABulletCaseBase()
 {
- 	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = false;
 
 	CasingMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BulletCaseMesh"));
 	SetRootComponent(CasingMesh);
@@ -24,7 +24,7 @@ void ABulletCaseBase::BeginPlay()
 {
 	Super::BeginPlay();
 	CasingMesh->OnComponentHit.AddDynamic(this, &ABulletCaseBase::OnHit);
-	CasingMesh->AddImpulse(GetActorForwardVector()* ShellEjectionImpulse);
+	CasingMesh->AddImpulse(GetActorForwardVector() * ShellEjectionImpulse);
 }
 
 void ABulletCaseBase::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
@@ -34,7 +34,7 @@ void ABulletCaseBase::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UP
 		UGameplayStatics::PlaySoundAtLocation(this, ShellSound, GetActorLocation());
 	}
 	GetWorldTimerManager().SetTimer(
-		ShellTimerHandle,this,&ABulletCaseBase::ShellDestroy,5.0f,false);
+		ShellTimerHandle, this, &ABulletCaseBase::ShellDestroy, 5.0f, false);
 
 }
 

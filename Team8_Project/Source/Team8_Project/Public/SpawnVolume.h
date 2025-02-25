@@ -10,8 +10,8 @@ UCLASS()
 class TEAM8_PROJECT_API ASpawnVolume : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	ASpawnVolume();
 
 public:

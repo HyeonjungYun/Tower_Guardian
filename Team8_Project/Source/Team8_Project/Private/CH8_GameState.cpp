@@ -2,7 +2,7 @@
 #include "SpawnVolume.h"
 #include "Kismet/GameplayStatics.h"
 
-ACH8_GameState::ACH8_GameState() 
+ACH8_GameState::ACH8_GameState()
 	: Score(0)
 	, Gold(0)
 	, CurrentWaveIndex(0)

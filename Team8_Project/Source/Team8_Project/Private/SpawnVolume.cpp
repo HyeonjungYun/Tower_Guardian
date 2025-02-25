@@ -18,7 +18,7 @@ FVector ASpawnVolume::GetSpawnPosition()
 	FVector BoxOrigin = SpawningBox->GetComponentLocation();
 
 	FVector SpawnPosition = FVector(BoxOrigin.X, BoxOrigin.Y - BoxExtent.Y, BoxOrigin.Z);
-	
+
 	return SpawnPosition;
 }
 

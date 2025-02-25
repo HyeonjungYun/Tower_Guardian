@@ -18,11 +18,11 @@ void ABaseEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 
-	
+
 }
 
 float ABaseEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator,
-                             AActor* DamageCauser)
+	AActor* DamageCauser)
 {
 	float RealDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	SetHP(HP - RealDamage);
@@ -35,10 +35,10 @@ bool ABaseEnemy::CanAttack()
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	check(PlayerController)
 
-	ACharacter* Player = PlayerController->GetCharacter();
+		ACharacter* Player = PlayerController->GetCharacter();
 	check(Player)
 
-	float Distance = FVector::Distance(Player->GetActorLocation(), GetActorLocation());
+		float Distance = FVector::Distance(Player->GetActorLocation(), GetActorLocation());
 	for (int i = 0; i < AttackPatterns.Num(); i++)
 		if (Distance <= AttackPatterns[i].AttackRange)
 			return true;
@@ -51,14 +51,14 @@ void ABaseEnemy::Attack()
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	check(PlayerController)
 
-	ACharacter* Player = PlayerController->GetCharacter();
+		ACharacter* Player = PlayerController->GetCharacter();
 	check(Player)
 
-	float Distance = FVector::Distance(Player->GetActorLocation(), GetActorLocation());
+		float Distance = FVector::Distance(Player->GetActorLocation(), GetActorLocation());
 	TArray<FAttackPattern> Patterns = AttackPatterns.FilterByPredicate([Distance](const FAttackPattern& Pattern)
-	{
-		return Distance <= Pattern.AttackRange;
-	});
+		{
+			return Distance <= Pattern.AttackRange;
+		});
 
 	if (USkeletalMeshComponent* Mesh = GetComponentByClass<USkeletalMeshComponent>())
 		if (UAnimInstance* AnimInstance = Mesh->GetAnimInstance())

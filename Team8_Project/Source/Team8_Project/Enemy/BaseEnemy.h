@@ -29,14 +29,14 @@ public:
 	ABaseEnemy();
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator,
-	                         AActor* DamageCauser) override;
+		AActor* DamageCauser) override;
 
 	UFUNCTION(BlueprintCallable)
 	bool CanAttack();
-	
+
 	UFUNCTION(BlueprintCallable)
 	void Attack();
-	
+
 	UFUNCTION(BlueprintCallable)
 	bool IsAttacking();
 
@@ -49,10 +49,10 @@ protected:
 	virtual void OnDeath();
 
 protected:
-	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="Attack")
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Attack")
 	TObjectPtr<APatrolPath> PatrolPath;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Attack")
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
 	TArray<FAttackPattern> AttackPatterns;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)

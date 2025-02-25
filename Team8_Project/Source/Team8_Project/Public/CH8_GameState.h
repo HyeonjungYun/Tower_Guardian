@@ -10,7 +10,7 @@ UCLASS()
 class TEAM8_PROJECT_API ACH8_GameState : public AGameState
 {
 	GENERATED_BODY()
-	
+
 public:
 	ACH8_GameState();
 
@@ -54,6 +54,6 @@ private:
 	UPROPERTY()
 	TArray<AActor*> MinionToSpawnPerWave;
 
-	// ÇïÆÛ ÇÔ¼ö
+	// ???? ???
 	ASpawnVolume* GetSpawnVolume() const;
 };

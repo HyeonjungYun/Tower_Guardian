@@ -14,7 +14,7 @@ void AEnemyAIController::OnPossess(APawn* InPawn)
 void AEnemyAIController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result)
 {
 	Super::OnMoveCompleted(RequestID, Result);
-	
+
 }
 
 void AEnemyAIController::BeginPlay()

@@ -7,7 +7,7 @@
 #include "EnemyAIController.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
 class TEAM8_PROJECT_API AEnemyAIController : public AAIController
