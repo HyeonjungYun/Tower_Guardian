@@ -18,7 +18,7 @@ AMyCharacter::AMyCharacter()
 	CameraBoom->TargetArmLength = 350.0f;
 	CameraBoom->SetupAttachment(GetMesh());
 	CameraBoom->bUsePawnControlRotation = true;
-
+	
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	Camera->bUsePawnControlRotation = false;
@@ -26,6 +26,11 @@ AMyCharacter::AMyCharacter()
 
 	//Capsule컴포넌트 -> Overlap에 이벤트 바인딩
 	CombatComponent = CreateDefaultSubobject<UPlayerCombatComponent>(TEXT("CombatComponent"));
+
+	// mesh 카메라 관련 충돌
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 }
 
 void AMyCharacter::BeginPlay()
@@ -234,9 +239,18 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 			{
 				EnhancedInput->BindAction(
 					PlayerController->AimingAction,
-					ETriggerEvent::Completed,
+					ETriggerEvent::Started,
 					this,
 					&AMyCharacter::OnAiming
+				);
+			}
+			if (PlayerController->AimingAction)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->AimingAction,
+					ETriggerEvent::Completed,
+					this,
+					&AMyCharacter::ReleaseAiming
 				);
 			}
 		}
@@ -512,7 +526,7 @@ void AMyCharacter::StopFire(const FInputActionValue& value)
 	}
 }
 
-void AMyCharacter::OnAiming(const FInputActionValue& value)
+void AMyCharacter::OnAiming()
 {
 	if (CombatComponent == nullptr)
 	{
@@ -521,17 +535,24 @@ void AMyCharacter::OnAiming(const FInputActionValue& value)
 	}
 	else
 	{
-		if (CombatComponent->bIsAiming)
-		{
-			CombatComponent->bIsAiming = false;
-		}
-		else
-		{
-			CombatComponent->bIsAiming = true;
-		}
+		CombatComponent->SetAiming(true);
 
 	}
 
+}
+
+void AMyCharacter::ReleaseAiming()
+{
+	if (CombatComponent == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("전투 컴포넌트 없음"));
+		return;
+	}
+	else
+	{
+		CombatComponent->SetAiming(false);
+
+	}
 }
 
 void AMyCharacter::PlayFireMontage(bool bAiming)

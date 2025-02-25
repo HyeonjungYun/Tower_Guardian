@@ -8,7 +8,7 @@
 #include "Kismet/GameplayStatics.h"//crosshair
 #include "DrawDebugHelpers.h"
 #include "../MyPlayerController.h"
-#include "WeaponCrosshairHUD.h"
+
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
 
@@ -93,7 +93,7 @@ void UPlayerCombatComponent::SetHUDCrosshairs(float DeltaTime)
 			Cast<AWeaponCrosshairHUD>(PlayerController->GetHUD()) : PlayerCrosshairHUD;
 		if (PlayerCrosshairHUD)
 		{
-			FHUDPackage HUDPackage;
+
 			if (EquippedWeapon)
 			{
 				HUDPackage.CrosshairsCenter = EquippedWeapon->CrosshairsCenter;
@@ -146,11 +146,14 @@ void UPlayerCombatComponent::SetHUDCrosshairs(float DeltaTime)
 			{
 				CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, 0.f, DeltaTime, 30.f);
 			}
+			// 총을 쐈을 때 벌어지는 수치가 점점 0으로 줄어드는 방식
+			CrosshairShootingFactor = FMath::FInterpTo(CrosshairShootingFactor, 0.f, DeltaTime,40.f);
 
 			HUDPackage.CrosshairsSpread =
 				CrosshairBaseFactor	+ CrosshairVelocityFactor 
 				+ CrosshairinAirFactor
-				- CrosshairAimFactor;
+				- CrosshairAimFactor
+				+ CrosshairShootingFactor;
 
 			PlayerCrosshairHUD->SetHUDPackage(HUDPackage);
 		}
@@ -159,7 +162,6 @@ void UPlayerCombatComponent::SetHUDCrosshairs(float DeltaTime)
 
 
 }
-
 
 void UPlayerCombatComponent::BeginPlay()
 {
@@ -219,8 +221,27 @@ void UPlayerCombatComponent::FireButtonPressed(bool bPressed)
 		PlayerCharacter->PlayFireMontage(bIsAiming);
 		EquippedWeapon->Fire(HitTargetPos);
 	
+		// 총을 쐈을 떄 벌어질 조준선에 크기에 더해질 값
+		CrosshairShootingFactor = 0.75f;
 	}
 
+
+
+}
+
+void UPlayerCombatComponent::SetAiming(bool _bIsAiming)
+{
+	if (PlayerCharacter == nullptr || EquippedWeapon == nullptr)
+	{
+		return;
+	}
+
+	bIsAiming = _bIsAiming;
+
+	if (EquippedWeapon->GetWeaponType() == EWeaponType::EWT_Sniper)
+	{
+		PlayerCharacter->ShowSniperScopeWidget(bIsAiming);
+	}
 
 
 }

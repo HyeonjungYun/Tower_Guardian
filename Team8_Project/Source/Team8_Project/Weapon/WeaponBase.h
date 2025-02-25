@@ -109,14 +109,10 @@ public:
     float GetWeaponZoomFov() const;
     
     float GetWeaponZoomInterpSpeed() const;
-protected:
-    virtual void BeginPlay() override;
-
-    virtual void ActivateItem(AActor* Activator) override;
 
     virtual FName GetItemType() const override;
 
-    EWeaponType GetWeaponType() const ;
+    EWeaponType GetWeaponType() const;
 
     int32 GetCurrrentWeaponAmmo() const;
 
@@ -127,6 +123,13 @@ protected:
 
     UFUNCTION(BlueprintCallable)
     virtual void Reload();
+protected:
+    virtual void BeginPlay() override;
+
+    virtual void ActivateItem(AActor* Activator) override;
+
+
+
 
     
 };

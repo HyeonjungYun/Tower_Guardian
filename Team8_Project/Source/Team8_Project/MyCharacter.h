@@ -120,7 +120,10 @@ protected:
 	void StopFire(const FInputActionValue& value);
 
 	UFUNCTION()
-	void OnAiming(const FInputActionValue& value);
+	void OnAiming();
+
+	UFUNCTION()
+	void ReleaseAiming();
 
 	/*
 	전투를 위한 기능들
@@ -135,6 +138,10 @@ protected:
 	public:
 	UFUNCTION()
 	void PlayFireMontage(bool bAiming);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void ShowSniperScopeWidget(bool bShowScope);
+	// 블루프린트에서 재생
 
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return Camera; };
 };

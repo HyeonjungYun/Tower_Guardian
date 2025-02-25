@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "WeaponCrosshairHUD.h"
 #include "PlayerCombatComponent.generated.h"
 
 class AWeaponBase;
@@ -23,6 +24,7 @@ public:
 	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
 
 	void SetHUDCrosshairs(float DeltaTime); // 총 타입마다 달라질 크로스헤어조절
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -31,6 +33,8 @@ protected:
 
 	void FireButtonPressed(bool bPressed);
 
+	void SetAiming(bool _bIsAiming);
+	
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction);
 
 	void InterpFOV(float DeltaTime);
@@ -45,7 +49,7 @@ protected:
 	FVector HitTargetPos;
 	
 	// 이동, 점프 동작시 조준선 벌어짐의 영향을 줄 요인들
-	
+	FHUDPackage HUDPackage;
 	UPROPERTY(EditAnywhere)
 	float CrosshairVelocityFactor;
 	
@@ -57,6 +61,9 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	float CrosshairBaseFactor = 0.5f;
+
+	UPROPERTY(EditAnywhere)
+	float CrosshairShootingFactor = 0.f;
 
 	// 조준
 	float DefaultFOV; // 기본 조준
