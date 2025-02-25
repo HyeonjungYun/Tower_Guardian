@@ -32,7 +32,6 @@ AProjectileBase::AProjectileBase()
 	ProjectileMovementComponent->MaxSpeed = 30000.f;
 }
 
-// Called when the game starts or when spawned
 void AProjectileBase::BeginPlay()
 {
 	Super::BeginPlay();
@@ -50,6 +49,9 @@ void AProjectileBase::BeginPlay()
 				EAttachLocation::KeepWorldPosition
 			);
 	}
+	SetLifeSpan(20.0f);// 충돌이 안되는 허공으로 날아가도 메모리 관리를 위해 제거
+	// 레벨의 액터 숨기기 해제로 적용되는 것 확인
+	
 	// Onhit의 시그니처는 OnComponentHit의 정의에 나오는 구조체
 	CollisionBox->OnComponentHit.AddDynamic(this, &AProjectileBase::OnHit);
 }

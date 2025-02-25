@@ -6,14 +6,24 @@
 
 class UInputMappingContext;
 class UInputAction;
+class UUserWidget;
+
 
 UCLASS()
 class TEAM8_PROJECT_API AMyPlayerController : public APlayerController
 {
 	GENERATED_BODY()
+
+
 	
 public:
 	AMyPlayerController();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<UUserWidget> HUDWidgetClass;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HUD")
+	UUserWidget* HUDWidgetInstance;
 
 	virtual void BeginPlay() override;
 
@@ -51,6 +61,11 @@ public:
 	UInputAction* FireAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inputs")
-	UInputAction* AimAction;
-	
+	UInputAction* AimingAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UInputAction* InventoryToggleAction = nullptr;
+
+	UFUNCTION(BlueprintPure, Category = "HUD")
+	UUserWidget* GetHUDWidget() const;
 };

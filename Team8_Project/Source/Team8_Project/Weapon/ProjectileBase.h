@@ -43,4 +43,6 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	class USoundCue* ImpactSound;
+
+	FTimerHandle ProjectileTimerHandle;
 };

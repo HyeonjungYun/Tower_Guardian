@@ -1,25 +1,81 @@
-﻿#pragma once
+#pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Inventory/InventoryInterface.h"
 #include "MyCharacter.generated.h"
 
+
+class USpringArmComponent;
+class UCameraComponent;
+class UWidgetComponent;
+struct FInputActionValue;
 class UCapsuleComponent;
-struct  FInputActionValue;
+class UInventoryComponent;
+class ABaseItem;
 
 UCLASS()
-class TEAM8_PROJECT_API AMyCharacter : public ACharacter
+class TEAM8_PROJECT_API AMyCharacter : public ACharacter ,public IInventoryInterface
 {
 	GENERATED_BODY()
 
+// ------------------------------
+// Interface Method
+// ------------------------------
+public:
+	// Sort Method
+	virtual void SortEquipmentItems(bool bIsAscending) override;
+	virtual void SortConsumableItems(bool bIsAscending) override;
+	virtual void SortOthersItems(bool bIsAscending) override;
+	// Get Method
+	virtual int32 GetGold() const override;
+	virtual const TArray<FInventoryConsumable>& GetConsumableItems() const override;
+	virtual const TArray<FInventoryEquipment>& GetEquipmentItems() const override;
+	virtual const TArray<FInventoryOthers>& GetOthersItems() const override;
+	// Set Method
+	virtual bool AddItem(const FName& ItemKey, int32 Quantity) override;
+	virtual bool RemoveItem(const FName& ItemKey, int32 Quantity) override;
+	virtual bool UseItem(int32 SlotIndex, EItemType ItemType) override;
+	virtual void SetGold(int32 NewGold) override;
+	virtual void SwapItem(int32 PrevIndex, int32 CurrentIndex, EItemType PrevSlotType, EItemType CurrentSlotType)override;
+
 public:
 	AMyCharacter();
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+	USpringArmComponent* SpringArmComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+	UCameraComponent* CameraComp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+	UWidgetComponent* OverheadWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "inventory")
+	UInventoryComponent* Inventory;
 	void SetPickableItem(class ABaseItem* OverlappedItem);
+protected:
+	float NormalSpeed = 600.f;
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	UFUNCTION()
+	void ToggleInventory(const FInputActionValue& Value);
+	
+	UFUNCTION()
+	void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	UFUNCTION()
+	void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+		bool bFromSweep, const FHitResult& SweepResult);
+
+	void OnPickupItem();
+
+	UPROPERTY()
+	ABaseItem* OverlappingItem;
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	// 전투 컴포넌트 초기화
 	virtual void PostInitializeComponents() override;
@@ -126,11 +182,12 @@ protected:
 	UFUNCTION()
 	void StopFire(const FInputActionValue& value);
 
-	UFUNCTION() //조준
-		void StartAim(const FInputActionValue& value);
 
 	UFUNCTION()
-	void StopAim(const FInputActionValue& value);
+	void OnAiming();
+
+	UFUNCTION()
+	void ReleaseAiming();
 
 	/*
 	전투를 위한 기능들
@@ -157,4 +214,11 @@ protected:
 public:
 	UFUNCTION(BlueprintCallable)
 	void PlayFireMontage(bool bAiming);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void ShowSniperScopeWidget(bool bShowScope);
+	// 블루프린트에서 재생
+
+
+	FORCEINLINE UCameraComponent* GetFollowCamera() const { return Camera; };
 };

@@ -49,7 +49,23 @@ class TEAM8_PROJECT_API AWeaponBase : public ABaseItem
 	GENERATED_BODY()
 	
 public:
-   
+
+    // CombatComponent와 HUD에서 사용할 텍스처들
+
+    UPROPERTY(EditAnywhere, Category = "Crosshairs")
+    class UTexture2D* CrosshairsCenter;
+
+    UPROPERTY(EditAnywhere, Category = "Crosshairs")
+    UTexture2D* CrosshairsLeft;
+
+    UPROPERTY(EditAnywhere, Category = "Crosshairs")
+    UTexture2D* CrosshairsRight;
+
+    UPROPERTY(EditAnywhere, Category = "Crosshairs")
+    UTexture2D* CrosshairsTop;
+
+    UPROPERTY(EditAnywhere, Category = "Crosshairs")
+    UTexture2D* CrosshairsBottom;
 protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties")
     EWeaponType WeaponType;
@@ -76,19 +92,27 @@ protected:
     UPROPERTY(EditAnywhere)
     TSubclassOf<class ABulletCaseBase> BulletCaseClass;
 
+
+    // 조준
+    UPROPERTY(EditAnywhere)
+    float ZoomedFOV = 30.f;
+
+    UPROPERTY(EditAnywhere)
+    float ZoomInterpSpeed = 20.f;
+
 public:
     AWeaponBase();
     void SetWeaponState(EWeaponState CurWeaponState);
     UFUNCTION(BlueprintCallable)
     virtual void Fire(const FVector& HitTarget);
-protected:
-    virtual void BeginPlay() override;
 
-    virtual void ActivateItem(AActor* Activator) override;
+    float GetWeaponZoomFov() const;
+    
+    float GetWeaponZoomInterpSpeed() const;
 
     virtual FName GetItemType() const override;
 
-    EWeaponType GetWeaponType() const ;
+    EWeaponType GetWeaponType() const;
 
     int32 GetCurrrentWeaponAmmo() const;
 
@@ -99,4 +123,13 @@ protected:
 
     UFUNCTION(BlueprintCallable)
     virtual void Reload();
+protected:
+    virtual void BeginPlay() override;
+
+    virtual void ActivateItem(AActor* Activator) override;
+
+
+
+
+    
 };

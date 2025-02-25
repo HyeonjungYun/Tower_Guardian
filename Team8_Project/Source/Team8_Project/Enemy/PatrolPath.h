@@ -17,7 +17,7 @@ public:
 	FVector GetWaypoint(int32 Index) const;
 	int32 Num() const;
 	
-public:
+protected:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Patrol", meta=(MakeEditWidget))
 	TArray<FVector> Waypoints;
 	

@@ -1,6 +1,8 @@
 #include "MyGameMode.h"
+#include "MyPlayerController.h" 
 #include "MyCharacter.h"
-#include "MyPlayerController.h"
+
+
 
 AMyGameMode::AMyGameMode()
 {
