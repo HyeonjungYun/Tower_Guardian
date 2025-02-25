@@ -152,12 +152,6 @@ protected:
 	UFUNCTION()
 	void StopPickUp(const FInputActionValue& value);
 
-	UFUNCTION() //엎드리기 Z
-		void StartProne(const FInputActionValue& value);
-
-	UFUNCTION()
-	void StopProne(const FInputActionValue& value);
-
 	UFUNCTION() //앉기 X
 		void StartCrouch(const FInputActionValue& value);
 

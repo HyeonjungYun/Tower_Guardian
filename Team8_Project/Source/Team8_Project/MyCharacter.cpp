@@ -141,26 +141,7 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 					&AMyCharacter::StopPickUp
 				);
 			}
-			//
-			if (PlayerController->ProneAction)
-			{
-				EnhancedInput->BindAction(
-					PlayerController->ProneAction,
-					ETriggerEvent::Triggered,
-					this,
-					&AMyCharacter::StartProne
-				);
-			}
 
-			if (PlayerController->ProneAction)
-			{
-				EnhancedInput->BindAction(
-					PlayerController->ProneAction,
-					ETriggerEvent::Completed,
-					this,
-					&AMyCharacter::StopProne
-				);
-			}
 			//
 			if (PlayerController->CrouchAction)
 			{
@@ -464,14 +445,10 @@ void AMyCharacter::StartPickUp(const FInputActionValue& value)
 			AWeaponBase* WeaponToEquip =
 				Cast<AWeaponBase>(PickableItem);
 
-
 			if (WeaponToEquip && CombatComponent->EquippedWeapon == nullptr)
 			{
 				// 주울수있는 아이템이 무기 인경우 && 빈손인 경우
 				CombatComponent->EquipWeapon(WeaponToEquip);
-
-				//임시 추가:전지현
-				bHasWeapon = true;
 			}
 			else if (ABaseItem* ItemToPickUp =
 				Cast<ABaseItem>(PickableItem))
@@ -496,34 +473,6 @@ void AMyCharacter::StopPickUp(const FInputActionValue& value)
 	}
 }
 
-void AMyCharacter::StartProne(const FInputActionValue& value)
-{
-	if (value.Get<bool>())
-	{
-		if (GetCharacterMovement())
-		{
-			if (GEngine) //for debug
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StartProne!"));
-			}
-		}
-	}
-}
-
-void AMyCharacter::StopProne(const FInputActionValue& value)
-{
-	if (!value.Get<bool>())
-	{
-		if (GetCharacterMovement())
-		{
-			if (GEngine) //for debug
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StopProne!"));
-			}
-		}
-	}
-}
-
 void AMyCharacter::StartCrouch(const FInputActionValue& value)
 {
 	if (!bIsCrouching)
@@ -532,12 +481,8 @@ void AMyCharacter::StartCrouch(const FInputActionValue& value)
 
 		if (GetCharacterMovement())
 		{
-			if (GEngine) //for debug
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StartCrouch!"));
-			}
+			GetCharacterMovement()->MaxWalkSpeed = SlowWalkSpeed;
 		}
-		GetCharacterMovement()->MaxWalkSpeed = SlowWalkSpeed;
 		Crouch(bIsCrouching);
 	}
 
@@ -551,12 +496,8 @@ void AMyCharacter::StopCrouch(const FInputActionValue& value)
 
 		if (GetCharacterMovement())
 		{
-			if (GEngine) //for debug
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StopCrouch!"));
-			}
+			GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 		}
-		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 		UnCrouch(bIsCrouching);
 	}
 }
@@ -569,12 +510,8 @@ void AMyCharacter::StartSlowWalking(const FInputActionValue& value)
 
 		if (GetCharacterMovement())
 		{
-			if (GEngine) //for debug
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StartSlowWalking!"));
-			}
+			GetCharacterMovement()->MaxWalkSpeed = SlowWalkSpeed;
 		}
-		GetCharacterMovement()->MaxWalkSpeed = SlowWalkSpeed;
 	}
 }
 
@@ -586,12 +523,8 @@ void AMyCharacter::StopSlowWalking(const FInputActionValue& value)
 
 		if (GetCharacterMovement())
 		{
-			if (GEngine) //for debug
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StopSlowWalking!"));
-			}
+			GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 		}
-		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	}
 }
 
