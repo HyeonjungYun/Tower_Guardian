@@ -7,6 +7,7 @@
 #include "Kismet/GameplayStatics.h" // Tracer
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
+#include "../Damageable.h"
 
 // Sets default values
 AProjectileBase::AProjectileBase()
@@ -20,7 +21,8 @@ AProjectileBase::AProjectileBase()
 	// Set Collision
 	CollisionBox->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
 	CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
+	
 	CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility,ECollisionResponse::ECR_Block);
 	CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic,ECollisionResponse::ECR_Block);
 	
@@ -58,6 +60,15 @@ void AProjectileBase::BeginPlay()
 
 void AProjectileBase::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	if (OtherActor && OtherActor->GetClass()->ImplementsInterface(UDamageable::StaticClass()))
+	{
+		IDamageable* DamageableActor = Cast<IDamageable>(OtherActor);
+		if (DamageableActor)
+		{
+			DamageableActor->SetHP(50.0f); // 예제 데미지 값
+		}
+	}
+
 	Destroy();
 }
 
