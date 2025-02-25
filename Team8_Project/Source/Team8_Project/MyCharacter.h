@@ -52,19 +52,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "inventory")
 	UInventoryComponent* Inventory;
-
+	void SetPickableItem(class ABaseItem* OverlappedItem);
 protected:
 	float NormalSpeed = 600.f;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	virtual void BeginPlay() override;
-
-	UFUNCTION()
-	void Look(const FInputActionValue& Value);
-	UFUNCTION()
-	void Move(const FInputActionValue& Value);
-	UFUNCTION()
-	void PickUp(const FInputActionValue& Value);
 
 	UFUNCTION()
 	void ToggleInventory(const FInputActionValue& Value);
@@ -82,14 +73,10 @@ protected:
 	UPROPERTY()
 	ABaseItem* OverlappingItem;
 
-	AMyCharacter();
-	void SetPickableItem(class ABaseItem* OverlappedItem);
-
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	
+
 	// 전투 컴포넌트 초기화
 	virtual void PostInitializeComponents() override;
 

@@ -53,7 +53,7 @@ void AMyCharacter::BeginPlay()
 void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-	
+
 	//액션 바인딩
 	if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
@@ -257,14 +257,17 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 					&AMyCharacter::ReleaseAiming
 				);
 			}
+			if (PlayerController->InventoryToggleAction)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->InventoryToggleAction,
+					ETriggerEvent::Started,
+					this,
+					&AMyCharacter::ToggleInventory
+				);
+			}
 		}
 	}
-
-void AMyCharacter::Look(const FInputActionValue& Value)
-{
-	FVector2D LookInput = Value.Get<FVector2D>();
-	AddControllerYawInput(LookInput.X);
-	AddControllerPitchInput(LookInput.Y);
 }
 
 void AMyCharacter::Tick(float DeltaTime)
@@ -466,6 +469,11 @@ void AMyCharacter::StartPickUp(const FInputActionValue& value)
 			{
 				// 주울수있는 아이템이 무기 인경우 && 빈손인 경우
 				CombatComponent->EquipWeapon(WeaponToEquip);
+			}
+			else if (ABaseItem* ItemToPickUp =
+				Cast<ABaseItem>(PickableItem))
+			{
+				OnPickupItem();// 인벤토리용
 			}
 		}
 	}
@@ -678,10 +686,7 @@ void AMyCharacter::SetPickableItem(ABaseItem* OverlappedItem)
 {
 	PickableItem = OverlappedItem;
 }
-//
-// ------------------------------
-// Interface Implementation
-// ------------------------------
+
 void AMyCharacter::SortEquipmentItems(bool bIsAscending)
 {
 	if (Inventory)
