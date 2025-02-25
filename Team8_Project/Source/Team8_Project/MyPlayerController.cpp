@@ -12,7 +12,8 @@ AMyPlayerController::AMyPlayerController()
 	LookAction(nullptr),
 	HUDWidgetClass(nullptr),
 	HUDWidgetInstance(nullptr),
-	AimingAction(nullptr)
+	AimingAction(nullptr),
+	ShopOpenAction(nullptr)
 {
 }
 

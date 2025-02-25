@@ -8,16 +8,18 @@ class UBoxComponent;
 class UUserWidget;
 class UShopComponent;
 class ACH8_GameState;
+class UInputMappingContext;
+class UInputAction;
 
-UCLASS()
+UCLASS(Blueprintable, BlueprintType)
 class TEAM8_PROJECT_API AShopTrigger : public AActor
 {
 	GENERATED_BODY()
 
 protected:
 	virtual void BeginPlay() override;
-	
-public:	
+
+public:
 	AShopTrigger();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ShopTrigger")
@@ -37,19 +39,19 @@ public:
 
 	UFUNCTION()
 	void OnOverlapBegin(
-		UPrimitiveComponent* OverlappedComp, 
+		UPrimitiveComponent* OverlappedComp,
 		AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, 
-		int32 OtherBodyIndex, 
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
 		bool bFromSweep,
 		const FHitResult& SweepResult
 	);
 
 	UFUNCTION()
 	void OnOverlapEnd(
-		UPrimitiveComponent* OverlappedComp, 
+		UPrimitiveComponent* OverlappedComp,
 		AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, 
+		UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex
 	);
 

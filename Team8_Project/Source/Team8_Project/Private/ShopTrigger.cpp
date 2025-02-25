@@ -5,8 +5,12 @@
 #include "Team8_Project/MyCharacter.h"
 #include "Team8_Project/Public/ShopComponent.h"
 #include "Team8_Project/Public/CH8_GameState.h"
+#include "Team8_Project/MyPlayerController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
+#include "GameFramework/PlayerController.h"
 
 AShopTrigger::AShopTrigger()
 {
@@ -30,16 +34,15 @@ void AShopTrigger::BeginPlay()
 	Super::BeginPlay();
 
 	GameStateRef = Cast<ACH8_GameState>(GetWorld()->GetGameState());
-
 	SetupInputComponent();
 }
 
 void AShopTrigger::OnOverlapBegin(
-	UPrimitiveComponent* OverlappedComp, 
-	AActor* OtherActor, 
-	UPrimitiveComponent* OtherComp, 
-	int32 OtherBodyIndex, 
-	bool bFromSweep, 
+	UPrimitiveComponent* OverlappedComp,
+	AActor* OtherActor,
+	UPrimitiveComponent* OtherComp,
+	int32 OtherBodyIndex,
+	bool bFromSweep,
 	const FHitResult& SweepResult)
 {
 	if (OtherActor && OtherActor != this)
@@ -52,9 +55,9 @@ void AShopTrigger::OnOverlapBegin(
 }
 
 void AShopTrigger::OnOverlapEnd(
-	UPrimitiveComponent* OverlappedComp, 
-	AActor* OtherActor, 
-	UPrimitiveComponent* OtherComp, 
+	UPrimitiveComponent* OverlappedComp,
+	AActor* OtherActor,
+	UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex)
 {
 	if (OtherActor && OtherActor != this)
@@ -68,31 +71,40 @@ void AShopTrigger::OnOverlapEnd(
 
 void AShopTrigger::SetupInputComponent()
 {
-	if (APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0))
+	// 플레이어 컨트롤러 가져오기
+	if (AMyPlayerController* PlayerController = Cast<AMyPlayerController>(GetWorld()->GetFirstPlayerController()))
 	{
-		InputComponent = NewObject<UInputComponent>(this);
-		InputComponent->RegisterComponent();
-
-		if (InputComponent)
+		// Enhanced Input Subsystem 가져오기
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
-			InputComponent->BindAction("OpenShop", IE_Pressed, this, &AShopTrigger::OpenShop);
-			PlayerController->PushInputComponent(InputComponent);
+			// Input Mapping Context 추가
+			if (PlayerController->InputMappingContext)
+			{
+				Subsystem->AddMappingContext(PlayerController->InputMappingContext, 0);
+			}
+		}
+
+		// Input Component 설정
+		if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerController->InputComponent))
+		{
+			if (PlayerController->ShopOpenAction)
+			{
+				EnhancedInputComponent->BindAction(
+					PlayerController->ShopOpenAction,
+					ETriggerEvent::Triggered,
+					this,
+					&AShopTrigger::OpenShop
+				);
+			}
 		}
 	}
 }
 
 void AShopTrigger::OpenShop()
 {
-	AMyCharacter* Player = Cast<AMyCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	if (Player && Player->GetCharacterMovement())
-	{
-		//Player->GetCharacterMovement()->StopMovementImmediately();
-		//Player->GetCharacterMovement()->SetMovementMode(MOVE_None);
-	}
-
 	if (bIsPlayerInRange && ShopWidgetClass)
 	{
-		
+
 		if (ShopWidgetClass)
 		{
 			APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
@@ -108,6 +120,13 @@ void AShopTrigger::OpenShop()
 				FInputModeUIOnly InputMode;
 				InputMode.SetWidgetToFocus(ShopWidgetInstance->TakeWidget());
 				PlayerController->SetInputMode(InputMode);
+			}
+
+			AMyCharacter* Player = Cast<AMyCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+			if (Player && Player->GetCharacterMovement())
+			{
+				Player->GetCharacterMovement()->StopMovementImmediately();
+				Player->GetCharacterMovement()->SetMovementMode(MOVE_None);
 			}
 		}
 	}
