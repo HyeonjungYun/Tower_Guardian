@@ -14,7 +14,7 @@ UCLASS()
 class TEAM8_PROJECT_API ACH8_GameState : public AGameState
 {
 	GENERATED_BODY()
-	
+
 public:
 	ACH8_GameState();
 
@@ -74,6 +74,7 @@ public:
 	int32 GetGold();
 
 private:
+
 
 	// 헬퍼 함수
 	ASpawnVolume* GetSpawnVolume() const;

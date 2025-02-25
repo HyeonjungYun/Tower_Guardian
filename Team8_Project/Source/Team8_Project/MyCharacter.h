@@ -100,24 +100,31 @@ protected:
 	float WalkSpeed = 400.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSpeed")
+	float SlowWalkSpeedMultiplier = 0.5f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSpeed")
+	float SlowWalkSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSpeed")
 	float SprintSpeedMultiplier = 1.5f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSpeed")
 	float SprintSpeed;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSpeed")
-	float SlowWalk = 200.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSetting")
 	float MouseSensitivity = 1.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
 	bool bIsCrouching = false;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
 	bool bIsSlowWalking = false;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
+	bool bHasWeapon = false;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
+	bool bIsAiming = false;
 
 	ABaseItem* PickableItem;
 
@@ -140,40 +147,41 @@ protected:
 	void StopSprint(const FInputActionValue& value);
 
 	UFUNCTION() //줍기 F
-	void StartPickUp(const FInputActionValue& value);
+		void StartPickUp(const FInputActionValue& value);
 
 	UFUNCTION()
 	void StopPickUp(const FInputActionValue& value);
 
 	UFUNCTION() //엎드리기 Z
-	void StartProne(const FInputActionValue& value);
+		void StartProne(const FInputActionValue& value);
 
 	UFUNCTION()
 	void StopProne(const FInputActionValue& value);
 
 	UFUNCTION() //앉기 X
-	void StartCrouch(const FInputActionValue& value);
+		void StartCrouch(const FInputActionValue& value);
 
 	UFUNCTION()
 	void StopCrouch(const FInputActionValue& value);
 
 	UFUNCTION() //천천히 걷기 LCtrl
-	void StartSlowWalking(const FInputActionValue& value);
+		void StartSlowWalking(const FInputActionValue& value);
 
 	UFUNCTION()
 	void StopSlowWalking(const FInputActionValue& value);
 
 	UFUNCTION() //장전
-	void StartReload(const FInputActionValue& value);
+		void StartReload(const FInputActionValue& value);
 
 	UFUNCTION()
 	void StopReload(const FInputActionValue& value);
 
 	UFUNCTION() //발사
-	void StartFire(const FInputActionValue& value);
+		void StartFire(const FInputActionValue& value);
 
 	UFUNCTION()
 	void StopFire(const FInputActionValue& value);
+
 
 	UFUNCTION()
 	void OnAiming();
@@ -188,11 +196,23 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	class UPlayerCombatComponent* CombatComponent;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Combat")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	class UAnimMontage* FireRifleAnimMontage;
 
-	public:
-	UFUNCTION()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	class UAnimMontage* AimHipAnimMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	FName AimSectionName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	float PitchInput;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	float YawInput;
+
+public:
+	UFUNCTION(BlueprintCallable)
 	void PlayFireMontage(bool bAiming);
 
 	UFUNCTION(BlueprintImplementableEvent)
