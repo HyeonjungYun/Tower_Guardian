@@ -42,8 +42,12 @@ protected:
 	class AMyCharacter* PlayerCharacter;
 	class AMyPlayerController* PlayerController;
 	class AWeaponCrosshairHUD* PlayerCrosshairHUD;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
 	AWeaponBase* EquippedWeapon;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bIsAiming = false;
+
 	bool bFireButtonPressed = false;
 	
 	FVector HitTargetPos;
