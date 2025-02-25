@@ -1,24 +1,52 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
 
 #include "MyPlayerController.h"
+#include "Team8_Project/Public/CH8_GameState.h"
 #include "EnhancedInputSubsystems.h"
+#include "Blueprint/UserWidget.h"
 
 AMyPlayerController::AMyPlayerController()
+	:InputMappingContext(nullptr),
+	MoveAction(nullptr),
+	JumpAction(nullptr),
+	SprintAction(nullptr),
+	LookAction(nullptr),
+	HUDWidgetClass(nullptr),
+	HUDWidgetInstance(nullptr),
+	AimingAction(nullptr)
 {
 }
+
 void AMyPlayerController::BeginPlay()
 {
+	Super::BeginPlay();
+
 	if (ULocalPlayer* LocalPlayer = GetLocalPlayer())
 	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
-			LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
+		if (UEnhancedInputLocalPlayerSubsystem* LocalPlayerSubsystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
 		{
 			if (InputMappingContext)
 			{
-				Subsystem->AddMappingContext(InputMappingContext, 0);
+				LocalPlayerSubsystem->AddMappingContext(InputMappingContext,0);
 			}
 		}
 	}
-	
+
+	if (HUDWidgetClass)
+	{
+		HUDWidgetInstance = CreateWidget<UUserWidget>(this, HUDWidgetClass);
+		if (HUDWidgetInstance)
+		{
+			HUDWidgetInstance->AddToViewport();
+		}
+	}
+
+	if (ACH8_GameState* CH8GameState = GetWorld() ? GetWorld()->GetGameState<ACH8_GameState>() : nullptr)
+	{
+		CH8GameState->UpdateHUD();
+	}
+}
+
+UUserWidget* AMyPlayerController::GetHUDWidget() const
+{
+	return HUDWidgetInstance;
 }

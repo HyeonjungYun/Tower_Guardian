@@ -1,5 +1,3 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -10,29 +8,64 @@ class UInputMappingContext;
 class UInputAction;
 class UUserWidget;
 
+
 UCLASS()
 class TEAM8_PROJECT_API AMyPlayerController : public APlayerController
 {
 	GENERATED_BODY()
+
+
+	
 public:
 	AMyPlayerController();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
-	UInputMappingContext* InputMappingContext = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<UUserWidget> HUDWidgetClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
-	UInputAction* MoveAction = nullptr;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HUD")
+	UUserWidget* HUDWidgetInstance;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
-	UInputAction* LookAction = nullptr;
+	virtual void BeginPlay() override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
-	UInputAction* PickUpAction = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inputs")
+	UInputMappingContext* InputMappingContext;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inputs")
+	UInputAction* MoveAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inputs")
+	UInputAction* JumpAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inputs")
+	UInputAction* SprintAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inputs")
+	UInputAction* LookAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inputs")
+	UInputAction* PickUpAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inputs")
+	UInputAction* ProneAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inputs")
+	UInputAction* CrouchAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inputs")
+	UInputAction* SlowWalkingAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inputs")
+	UInputAction* ReloadAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inputs")
+	UInputAction* FireAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inputs")
+	UInputAction* AimingAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	UInputAction* InventoryToggleAction = nullptr;
 
-protected:
-	virtual void BeginPlay() override;
-
+	UFUNCTION(BlueprintPure, Category = "HUD")
+	UUserWidget* GetHUDWidget() const;
 };

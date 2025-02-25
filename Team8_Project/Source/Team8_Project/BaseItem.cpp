@@ -2,7 +2,8 @@
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
-
+#include "../MyCharacter.h"
+// Sets default values
 ABaseItem::ABaseItem()
 {
     PrimaryActorTick.bCanEverTick = false;
@@ -11,6 +12,7 @@ ABaseItem::ABaseItem()
     Collision = CreateDefaultSubobject<USphereComponent>(TEXT("Collision"));
     Collision->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
     Collision->SetupAttachment(Scene);
+
     Collision->OnComponentBeginOverlap.AddDynamic(this, &ABaseItem::OnItemOverlap);
     Collision->OnComponentEndOverlap.AddDynamic(this, &ABaseItem::OnItemEndOverlap);
 }
@@ -20,12 +22,30 @@ void ABaseItem::OnItemOverlap(UPrimitiveComponent* OverlappedComp, AActor* Other
 {
     if (OtherActor && OtherActor->ActorHasTag("Player"))
     {
-        ActivateItem(OtherActor);
+        // ActivateItem(OtherActor);
+        // 아이템 사용 (획득) 로직 호출
+        AMyCharacter* PlayerCharacter = Cast<AMyCharacter>(OtherActor);
+        if (PlayerCharacter)
+        {
+            PlayerCharacter->SetPickableItem(this);
+        }
     }
 }
 
 void ABaseItem::OnItemEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+
+    if (OtherActor && OtherActor->ActorHasTag("Player"))
+    {
+       
+        AMyCharacter* PlayerCharacter = Cast<AMyCharacter>(OtherActor);
+        if (PlayerCharacter)
+        {// 범위에서 벗어난 경우 nullptr 초기화
+            PlayerCharacter->SetPickableItem(nullptr);
+        }
+    }
+}
+
 
 }
 void ABaseItem::ActivateItem(AActor* Activator)
