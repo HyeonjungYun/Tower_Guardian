@@ -1,5 +1,7 @@
 #include "SpawnVolume.h"
 #include "Components/BoxComponent.h"
+#include "Team8_Project/Enemy/BaseEnemy.h"
+#include "Team8_Project/Enemy/EnemyAIController.h"
 
 ASpawnVolume::ASpawnVolume()
 {
@@ -17,8 +19,10 @@ FVector ASpawnVolume::GetSpawnPosition()
 	FVector BoxExtent = SpawningBox->GetScaledBoxExtent();
 	FVector BoxOrigin = SpawningBox->GetComponentLocation();
 
-	FVector SpawnPosition = FVector(BoxOrigin.X, BoxOrigin.Y - BoxExtent.Y, BoxOrigin.Z);
-	
+
+	FVector SpawnPosition = FVector(BoxOrigin.X + FMath::RandRange(-BoxExtent.X, BoxExtent.X),
+	                                BoxOrigin.Y + FMath::RandRange(-BoxExtent.Y, BoxExtent.Y),
+	                                BoxOrigin.Z - BoxExtent.Z);
 	return SpawnPosition;
 }
 
@@ -37,6 +41,13 @@ AActor* ASpawnVolume::SpawnEnemy(TSubclassOf<AActor> EnemyClass)
 		FRotator::ZeroRotator
 	);
 
+	if (ABaseEnemy* Enemy = Cast<ABaseEnemy>(SpawnedActor))
+	{
+		Enemy->SetPatrolPath(PatrolPath);
+		
+		if (AEnemyAIController* Controller = Cast<AEnemyAIController>(Enemy->GetController()))
+			Controller->RunBehaviorTree(BehaviorTree);
+	}
+	
 	return SpawnedActor;
 }
-
