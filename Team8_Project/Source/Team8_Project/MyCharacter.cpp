@@ -275,6 +275,7 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 void AMyCharacter::Tick(float DeltaTime)
 {
 	OnPickupItem();
+	HideCameraIfCharacterClose();
 }
 
 void AMyCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
@@ -664,6 +665,28 @@ void AMyCharacter::ReleaseAiming()
 	{
 		CombatComponent->SetAiming(false);
 
+	}
+}
+
+void AMyCharacter::HideCameraIfCharacterClose()
+{
+	if ((Camera->GetComponentLocation()-GetActorLocation()).Size()<CameraThreshold)
+	{
+		GetMesh()->SetVisibility(false);
+		if (CombatComponent && CombatComponent->EquippedWeapon && CombatComponent->EquippedWeapon->GetWeaponMesh())
+		{
+			// 소유자=>유저1번 만 안보이게 
+			CombatComponent->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = true;
+		}
+	}
+	else
+	{
+		GetMesh()->SetVisibility(true);
+		if (CombatComponent && CombatComponent->EquippedWeapon && CombatComponent->EquippedWeapon->GetWeaponMesh())
+		{
+			// 소유자=>유저1번 만 안보이게 
+			CombatComponent->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = false;
+		}
 	}
 }
 

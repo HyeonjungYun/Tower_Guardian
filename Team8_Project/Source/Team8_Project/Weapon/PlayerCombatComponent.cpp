@@ -51,6 +51,14 @@ void UPlayerCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 	{// 뷰포트 정중앙에서 World의 한지점까지 deproject한 것이 성공했나
 		FVector Start = CrosshairWorldPosition;
 
+		// 카메라랑 플레이어 사이에 있는 무언가를 조준 카메라가 무시하기 위한 코드
+		if (PlayerCharacter)
+		{
+			float DistanceToCharcater = (PlayerCharacter->GetActorLocation() - Start).Size();
+			Start += CrosshairWorldDirection * (DistanceToCharcater + 100.f);
+			
+		}
+
 		FVector End = Start + CrosshairWorldDirection * TRACE_LENGTH_FOR_CROSSHAIR; // 시작점 + 방향*거리
 
 		// 캐릭터나 서브클래스를 무시하기 위해 Query Params 설정

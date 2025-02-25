@@ -211,6 +211,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	float YawInput;
 
+	// 카메라가 벽에 겹쳐졌을 때 플레이어 모델링이 가리는 문제 해결하기
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
+	float CameraThreshold = 200.f;
+	void HideCameraIfCharacterClose();
 public:
 	UFUNCTION(BlueprintCallable)
 	void PlayFireMontage(bool bAiming);
