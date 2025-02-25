@@ -4,7 +4,10 @@
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
-
+#include "Blueprint/UserWidget.h"
+#include "Components/TextBlock.h"
+#include "Components/EditableTextBox.h"
+#include "Components/Button.h"
 void USlotWidget::InitializeSlot()
 {
 	UpdateSlot();
@@ -18,7 +21,6 @@ void USlotWidget::UpdateSlot()
 	InventoryInterface = TScriptInterface<IInventoryInterface>(OwningActor);
 	if (!InventoryInterface)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("im in slot No Owning Actor"));
 		return;
 	}
 	switch (SlotType)
@@ -47,17 +49,14 @@ void USlotWidget::UpdateConsumableSlot()
 	const TArray<FInventoryConsumable>& ConsumableItems = InventoryInterface->GetConsumableItems();
 	if (ConsumableItems.IsValidIndex(SlotIndex))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("im in Slot Start Consumable Update"));
 		const FInventoryConsumable& Item = ConsumableItems[SlotIndex];
 		if (!Item.ItemName.IsEmpty() && Item.Quantity > 0)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("im in Slot Start Image And Quantity Start"));
 			Image->SetBrushFromTexture(Item.ItemImage);
 			Quantity->SetText(FText::FromString(FString::Printf(TEXT("%d"),Item.Quantity)));
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("im in Slot No Image And Quantity Start"));
 			Image->SetBrushFromTexture(DefaultTexture);
 			Quantity->SetText(FText::FromString(TEXT("")));
 		}
@@ -163,7 +162,7 @@ void USlotWidget::NativeOnDragDetected(const FGeometry& InGeometry, const FPoint
 		}
 	}
 }
-
+//드래그된 아이템이 현재 슬롯 위에 떨어졌을 때 호출되는 함수
 bool USlotWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
 	Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
@@ -182,4 +181,26 @@ bool USlotWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent
 		}
 	}
 	return false;
+}
+void USlotWidget::NativeOnDragCancelled(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
+{
+	Super::NativeOnDragCancelled(InDragDropEvent, InOperation);
+	OnSlotDragCancelled.Broadcast(SlotIndex, SlotType);
+	QuantityInputHUD();
+	//
+}
+
+
+void USlotWidget::QuantityInputHUD()
+{
+	/*ensure(!QuantityInputWidgetClass);
+	*/
+	QuantityInputWidget = CreateWidget<UUserWidget>(GetWorld(),QuantityInputWidgetClass);
+
+	/*check(!QuantityInputWidget)*/;
+	if (QuantityInputWidget) 
+	{
+		QuantityInputWidget->AddToViewport();
+		UE_LOG(LogTemp, Log, TEXT("InputQuantityHUD displayed."));
+	}
 }

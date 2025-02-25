@@ -3,6 +3,7 @@
 
 UInventorySubsystem::UInventorySubsystem()
 {
+	ensure(MaxInventoryNum > 0);
 	CurrentGold = 0;
 	EquipmentItems.Init(FInventoryEquipment(), MaxInventoryNum);
 	ConsumableItems.Init(FInventoryConsumable(), MaxInventoryNum);
@@ -47,6 +48,8 @@ int32 UInventorySubsystem::FindOthersIndex(const FName& ItemKey) const
 
 bool UInventorySubsystem::AddItem(const FName& ItemKey, int32 Quantity, UDataTable* ItemDataTable)
 {
+	ensure(ItemDataTable != nullptr);
+	ensure(Quantity > 0);
 	if (!ItemDataTable || Quantity <= 0)
 	{
 		return false;
@@ -97,8 +100,9 @@ bool UInventorySubsystem::AddItem(const FName& ItemKey, int32 Quantity, UDataTab
 				NewEquipment.ItemImage = Row->ItemImage;
 				EquipmentItems[EmptyIndex] = NewEquipment;
 			}
-			else
+			else if(EmptyIndex == INDEX_NONE)
 			{
+				UE_LOG(LogTemp, Warning, TEXT("Inventory Is Full"));
 				return false;
 			}
 		}
@@ -132,8 +136,9 @@ bool UInventorySubsystem::AddItem(const FName& ItemKey, int32 Quantity, UDataTab
 				NewConsumable.ItemImage = Row->ItemImage;
 				ConsumableItems[EmptyIndex] = NewConsumable;
 			}
-			else
+			else if (EmptyIndex == INDEX_NONE)
 			{
+				UE_LOG(LogTemp, Warning, TEXT("Inventory Is Full"));
 				return false;
 			}
 		}
@@ -180,9 +185,9 @@ bool UInventorySubsystem::AddItem(const FName& ItemKey, int32 Quantity, UDataTab
 				NewOthers.ItemImage = Row->ItemImage;
 				OthersItems[EmptyIndex] = NewOthers;
 			}
-			else
+			else if (EmptyIndex == INDEX_NONE)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Others inventory is full."));
+				UE_LOG(LogTemp, Warning, TEXT("Inventory Is Full"));
 				return false;
 			}
 		}
@@ -220,7 +225,7 @@ bool UInventorySubsystem::RemoveItem(const FName& ItemKey, int32 Quantity)
 		{
 			OthersItems[Index].Quantity -= Quantity;
 		}
-		else
+		else 
 		{
 			RemoveItemAt(Index, EItemType::Others);
 		}

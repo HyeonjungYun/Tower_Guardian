@@ -199,6 +199,7 @@ void AMyCharacter::ToggleInventory(const FInputActionValue& Value)
 		Inventory->InventoryWidget->SetVisibility(ESlateVisibility::Visible);
 		
 		Inventory->InventoryWidget->UpdateInventoryUI();
+		//입력이 ui에 전달되고 그다음 게임쪽으로 전달된다
 		FInputModeGameAndUI  InputMode;
 		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 		/*InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::LockInFullscreen);*/
@@ -209,7 +210,7 @@ void AMyCharacter::ToggleInventory(const FInputActionValue& Value)
 	}
 
 }
-
+//
 // ------------------------------
 // Interface Implementation
 // ------------------------------

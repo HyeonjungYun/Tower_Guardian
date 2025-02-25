@@ -63,10 +63,12 @@ bool UInventoryComponent::RemoveItem(const FName& ItemKey, int32 Quantity)
 		bool bResult = InventorySubsystem->RemoveItem(ItemKey, Quantity);
 		if (bResult)
 		{
+			UE_LOG(LogTemp, Warning, TEXT("im in Component Take a Key"));
 			UpdateInventoryUI();
 		}
 		return bResult;
 	}
+	UE_LOG(LogTemp, Warning, TEXT("Im in Component , Fail to Remove"));
 	return false;
 }
 

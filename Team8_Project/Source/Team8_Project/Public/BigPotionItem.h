@@ -4,19 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "ConsumableItem.h"
-#include "PotionItem.generated.h"
+#include "BigPotionItem.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class TEAM8_PROJECT_API APotionItem : public AConsumableItem
+class TEAM8_PROJECT_API ABigPotionItem : public AConsumableItem
 {
 	GENERATED_BODY()
-	
 public:
-	APotionItem();
+	ABigPotionItem();
 protected:
 	virtual void ActivateItem(AActor* Activator) override;
-	//int32 HealAmount;
+	
 };

@@ -11,9 +11,10 @@ class UTextBlock;
 class IInventoryInterface;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSlotDoubleClicked, int32, SlotIndex, EItemType, ItemType);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSlotDragCancelled, int32, SlotIndex, EItemType, ItemType);
 
 
-UCLASS()
+UCLASS(Blueprintable)
 class TEAM8_PROJECT_API USlotWidget : public UCustomWidget
 {
 	GENERATED_BODY()
@@ -25,18 +26,28 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Slot")
 	FOnSlotDoubleClicked OnSlotDoubleClicked;
 
+	UPROPERTY(BlueprintAssignable, Category = "Slot")
+	FOnSlotDragCancelled OnSlotDragCancelled;
+
 	UPROPERTY(VisibleAnywhere, Category = "Slot", meta = (BindWidget))
 	TObjectPtr<UImage> Image;
 
 	UPROPERTY(VisibleAnywhere, Category = "Slot", meta = (BindWidget))
 	TObjectPtr<UTextBlock> Quantity;
 
-	UPROPERTY(EditAnywhere, Category = "Slot")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot")
 	int32 SlotIndex;
 
-	UPROPERTY(VisibleAnywhere, Category = "Slot")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Slot")
 	EItemType SlotType;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot")
+	TSubclassOf<UUserWidget> QuantityInputWidgetClass;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Slot")
+	UUserWidget* QuantityInputWidget;
+
+	void QuantityInputHUD();
 
 protected:
 
@@ -44,6 +55,7 @@ protected:
 	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual void NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation)override;
 	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)override;
+	virtual void NativeOnDragCancelled(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 
 	void UpdateEquipmentSlot();
 	void UpdateConsumableSlot();

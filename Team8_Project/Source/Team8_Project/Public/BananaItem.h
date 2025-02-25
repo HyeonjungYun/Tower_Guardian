@@ -3,20 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ConsumableItem.h"
-#include "PotionItem.generated.h"
+#include "OtherItem.h"
+#include "BananaItem.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class TEAM8_PROJECT_API APotionItem : public AConsumableItem
+class TEAM8_PROJECT_API ABananaItem : public AOtherItem
 {
 	GENERATED_BODY()
-	
 public:
-	APotionItem();
+	ABananaItem();
 protected:
 	virtual void ActivateItem(AActor* Activator) override;
-	//int32 HealAmount;
 };
