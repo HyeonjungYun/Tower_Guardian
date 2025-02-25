@@ -9,16 +9,17 @@
 #include "Weapon/WeaponBase.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Components/WidgetComponent.h"
 #include "Components/TextBlock.h"
 #include "BaseItem.h"
 #include "Inventory/InventoryWidget.h"
 #include "Inventory/InventoryComponent.h"
 #include "Inventory/InventorySubsystem.h"
-  
+
 AMyCharacter::AMyCharacter()
 {
- 	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = true;
 
 	Capsule = GetCapsuleComponent(); //기본 캡슐 컴포넌트만 반환
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraArm"));
@@ -49,6 +50,7 @@ void AMyCharacter::BeginPlay()
 	Super::BeginPlay();
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	SprintSpeed = WalkSpeed * SprintSpeedMultiplier;
+	SlowWalkSpeed = WalkSpeed * SlowWalkSpeedMultiplier;
 }
 void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -375,25 +377,23 @@ void AMyCharacter::PostInitializeComponents()
 
 void AMyCharacter::Move(const FInputActionValue& value)
 {
-	if (!Controller) return;
+	if (!Controller)
+		return;
 
 	const FVector2D MoveInput = value.Get<FVector2D>();
-	const FRotator ControlRotation = Controller->GetControlRotation(); // 카메라 회전 값 가져오기
-
-	//// 카메라 방향에 맞춰 이동 벡터를 수정
-	//FVector ForwardDirection = FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::X); // 전방 방향
-	//FVector RightDirection = FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::Y); // 우측 방향
+	const FRotator Rotation = Controller->GetControlRotation();
+	const FRotator YawRatotion = FRotator(0, Rotation.Yaw, 0);
+	const FVector ForwardDir = FRotationMatrix(YawRatotion).GetUnitAxis(EAxis::X);
+	const FVector RightDir = FRotationMatrix(YawRatotion).GetUnitAxis(EAxis::Y);
 
 	if (!FMath::IsNearlyZero(MoveInput.X))
 	{
-		AddMovementInput(GetActorForwardVector(), MoveInput.X);
-		//AddMovementInput(ForwardDirection, MoveInput.X);
+		AddMovementInput(ForwardDir, MoveInput.X * MouseSensitivity);
 	}
 
 	if (!FMath::IsNearlyZero(MoveInput.Y))
 	{
-		AddMovementInput(GetActorRightVector(), MoveInput.Y);
-		//AddMovementInput(RightDirection, MoveInput.Y);
+		AddMovementInput(RightDir, MoveInput.Y * MouseSensitivity);
 	}
 
 
@@ -463,12 +463,15 @@ void AMyCharacter::StartPickUp(const FInputActionValue& value)
 		{
 			AWeaponBase* WeaponToEquip =
 				Cast<AWeaponBase>(PickableItem);
-			
+
 
 			if (WeaponToEquip && CombatComponent->EquippedWeapon == nullptr)
 			{
 				// 주울수있는 아이템이 무기 인경우 && 빈손인 경우
 				CombatComponent->EquipWeapon(WeaponToEquip);
+
+				//임시 추가:전지현
+				bHasWeapon = true;
 			}
 			else if (ABaseItem* ItemToPickUp =
 				Cast<ABaseItem>(PickableItem))
@@ -534,10 +537,10 @@ void AMyCharacter::StartCrouch(const FInputActionValue& value)
 				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StartCrouch!"));
 			}
 		}
-		GetCharacterMovement()->MaxWalkSpeed = SlowWalk;
+		GetCharacterMovement()->MaxWalkSpeed = SlowWalkSpeed;
 		Crouch(bIsCrouching);
 	}
-	
+
 }
 
 void AMyCharacter::StopCrouch(const FInputActionValue& value)
@@ -571,7 +574,7 @@ void AMyCharacter::StartSlowWalking(const FInputActionValue& value)
 				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StartSlowWalking!"));
 			}
 		}
-		GetCharacterMovement()->MaxWalkSpeed = SlowWalk;
+		GetCharacterMovement()->MaxWalkSpeed = SlowWalkSpeed;
 	}
 }
 
@@ -635,7 +638,6 @@ void AMyCharacter::StopFire(const FInputActionValue& value)
 		CombatComponent->FireButtonPressed(false);
 	}
 }
-
 void AMyCharacter::OnAiming()
 {
 	if (CombatComponent == nullptr)
@@ -681,6 +683,7 @@ void AMyCharacter::PlayFireMontage(bool bAiming)
 		AnimInstance->Montage_JumpToSection(SectionName);
 	}
 }
+
 
 void AMyCharacter::SetPickableItem(ABaseItem* OverlappedItem)
 {

@@ -19,10 +19,10 @@ FVector ASpawnVolume::GetSpawnPosition()
 	FVector BoxExtent = SpawningBox->GetScaledBoxExtent();
 	FVector BoxOrigin = SpawningBox->GetComponentLocation();
 
+
 	FVector SpawnPosition = FVector(BoxOrigin.X + FMath::RandRange(-BoxExtent.X, BoxExtent.X),
 	                                BoxOrigin.Y + FMath::RandRange(-BoxExtent.Y, BoxExtent.Y),
 	                                BoxOrigin.Z - BoxExtent.Z);
-
 	return SpawnPosition;
 }
 

@@ -32,18 +32,18 @@ public:
 	ABaseEnemy();
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator,
-	                         AActor* DamageCauser) override;
+		AActor* DamageCauser) override;
 
 	UFUNCTION(BlueprintCallable)
 	bool CanAttack();
-	
+
 	UFUNCTION(BlueprintCallable)
 	bool CanAttackToType(TSubclassOf<AActor> AttackType);
 	bool CanAttackToType(TSubclassOf<AActor> AttackType, TArray<FOverlapResult>& OutOverlapResults);
 	
 	UFUNCTION(BlueprintCallable)
 	void Attack();
-	
+
 	UFUNCTION(BlueprintCallable)
 	bool IsAttacking();
 	
