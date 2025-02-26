@@ -5,8 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Inventory/ItemInterface.h"
+#include "Inventory/InventoryType.h"
 #include "BaseItem.generated.h"
-
 
 class USphereComponent;
 
@@ -37,10 +37,14 @@ protected:
 
 	FName FItemType;
 
+	EItemType SlotType;
+
 public:	
 	ABaseItem();
 
 	virtual FName GetItemType() const override;
+
+	EItemType GetSlotType() const;
 
 protected:
 	virtual void OnItemOverlap(

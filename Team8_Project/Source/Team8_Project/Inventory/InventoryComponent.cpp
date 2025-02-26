@@ -33,27 +33,20 @@ void UInventoryComponent::BeginPlay()
 	}
 }
 
-bool UInventoryComponent::AddItem(const FName& ItemKey, int32 Quantity)
+bool UInventoryComponent::AddItem(const FName& ItemKey, int32 Quantity,EItemType ItemType)
 {
-	if (!ItemDataTable || Quantity <= 0)
+	if (!ConsumableItemDataTable|| !AmmoItemDataTable || Quantity <= 0)
 	{
 		return false;
 	}
 	//Add Something?
 
-	if (InventorySubsystem)
-	{
-		//DataTable Reference?
-		bool bResult = InventorySubsystem->AddItem(ItemKey, Quantity, ItemDataTable);
-		if (bResult)
-		{
-			UpdateInventoryUI();
-		}
-		return bResult;
-	}
-	return false;
+	check(InventorySubsystem);
+	bool bIsResult = SelectDataTableAdd(ItemKey, Quantity, ItemType);
+	UpdateInventoryUI();
 
-	
+	return bIsResult;
+
 }
 
 bool UInventoryComponent::RemoveItem(const FName& ItemKey, int32 Quantity)
@@ -123,7 +116,14 @@ void UInventoryComponent::SortOthersItems(bool bIsAscending)
 		//UpdateInventoryUI();
 	}
 }
-
+void UInventoryComponent::SortAmmoItems(bool bIsAscending)
+{
+	if (InventorySubsystem)
+	{
+		InventorySubsystem->SortAmmoItems(bIsAscending);
+		//UpdateInventoryUI();
+	}
+}
 bool UInventoryComponent::UseItem(int32 SlotIndex, EItemType ItemType)
 {
 	//character has InventoryComponent
@@ -152,5 +152,52 @@ void UInventoryComponent::SwapItem(int32 PrevIndex, int32 CurrentIndex, EItemTyp
 		check(InventorySubsystem);
 		InventorySubsystem->SwapItem(PrevIndex, CurrentIndex, PrevSlotType, CurrentSlotType);
 		UpdateInventoryUI();
+	}
+}
+bool UInventoryComponent::SelectDataTableAdd(const FName& ItemKey, int32 Quantity,const EItemType ItemType) const
+{
+	switch (ItemType)
+	{
+	case EItemType::Equipment:
+	{
+
+		//SelectedDataTable = 
+		return false;
+		break;
+	}
+	case EItemType::Consumable:
+	{
+		if (!ConsumableItemDataTable)
+		{
+			return false;
+		}
+		UDataTable* SelectedConsumableDataTable = ConsumableItemDataTable;
+		bool bResult = InventorySubsystem->AddConsumableItem(ItemKey, Quantity, SelectedConsumableDataTable);
+		
+		return bResult;
+		break;
+	}
+	case EItemType::Others:
+	{
+
+		//SelectedDataTable = OtherItemDataTable;
+		return false;
+		break;
+	}
+	case EItemType::Ammo:
+	{
+		if (!AmmoItemDataTable)
+		{
+			return false;
+		}
+		UDataTable* SelectedAmmoDataTable = AmmoItemDataTable;
+		bool bResult = InventorySubsystem->AddAmmoItem(ItemKey, Quantity, SelectedAmmoDataTable);
+
+		return bResult;
+		break;
+	}
+	default:
+		return false;
+		break;
 	}
 }

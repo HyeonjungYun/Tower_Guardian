@@ -28,9 +28,10 @@ public:
 	virtual const TArray<FInventoryConsumable>& GetConsumableItems() const = 0;
 	virtual const TArray<FInventoryEquipment>& GetEquipmentItems() const = 0;
 	virtual const TArray<FInventoryOthers>& GetOthersItems() const = 0;
+	virtual const TArray<FInventoryAmmo>& GetAmmoItems() const = 0;
 
 	// Set Method
-	virtual bool AddItem(const FName& ItemKey, int32 Quantity) = 0;
+	virtual bool AddItem(const FName& ItemKey, int32 Quantity, EItemType ItemType) = 0;
 	virtual bool RemoveItem(const FName& ItemKey, int32 Quantity) = 0;
 	virtual bool UseItem(int32 SlotIndex, EItemType ItemType) = 0;
 	virtual void SetGold(int32 NewGold) = 0;
@@ -40,5 +41,9 @@ public:
 	virtual void SortEquipmentItems(bool bIsAscending) = 0;
 	virtual void SortConsumableItems(bool bIsAscending) = 0;
 	virtual void SortOthersItems(bool bIsAscending) = 0;
+	virtual void SortAmmoItems(bool bIsAscending) = 0;
 
+	//Search Method
+	virtual int32 SearchItemByNameAndType(const FName& ItemKey, const EItemType& ItemType) const = 0;
+	virtual	int32 SearchItemByName(const FName& ItemKey) const = 0;
 };

@@ -34,6 +34,9 @@ void USlotWidget::UpdateSlot()
 	case EItemType::Others:
 		UpdateOthersSlot();
 		break;
+	case EItemType::Ammo:
+		UpdateAmmoSlot();
+		break;
 	default:
 		break;
 	}
@@ -104,7 +107,7 @@ FReply USlotWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const F
 			
 			switch (SlotType)
 			{
-				
+
 			case EItemType::Equipment:
 				if (InventoryInterface->GetEquipmentItems().IsValidIndex(SlotIndex))
 				{
@@ -123,6 +126,13 @@ FReply USlotWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const F
 					bIsSuccess = true;
 				}
 				break;
+			case EItemType::Ammo:
+				if (InventoryInterface->GetAmmoItems().IsValidIndex(SlotIndex))
+				{
+					bIsSuccess = true;
+				}
+				break;
+			
 			}
 
 			if (bIsSuccess)
@@ -185,8 +195,59 @@ bool USlotWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent
 void USlotWidget::NativeOnDragCancelled(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation)
 {
 	Super::NativeOnDragCancelled(InDragDropEvent, InOperation);
-	OnSlotDragCancelled.Broadcast(SlotIndex, SlotType);
-	QuantityInputHUD();
+	// SlotIndex와 SlotType을 기반으로 아이템 이름을 가져오는 코드
+	FName ItemName;
+	switch (SlotType)
+	{
+	case EItemType::Consumable:
+	{
+		const TArray<FInventoryConsumable>& Items = InventoryInterface->GetConsumableItems();
+		if (Items.IsValidIndex(SlotIndex))
+		{
+			ItemName = Items[SlotIndex].ItemID;
+		}
+		break;
+	}
+	case EItemType::Equipment:
+	{
+		const TArray<FInventoryEquipment>& Items = InventoryInterface->GetEquipmentItems();
+		if (Items.IsValidIndex(SlotIndex))
+		{
+			ItemName = Items[SlotIndex].ItemID;
+		}
+		break;
+	}
+	case EItemType::Others:
+	{
+		const TArray<FInventoryOthers>& Items = InventoryInterface->GetOthersItems();
+		if (Items.IsValidIndex(SlotIndex))
+		{
+			ItemName = Items[SlotIndex].ItemID;
+		}
+		break;
+	}
+	case EItemType::Ammo:
+	{
+		const TArray<FInventoryAmmo>& Items = InventoryInterface->GetAmmoItems();
+		if (Items.IsValidIndex(SlotIndex))
+		{
+			ItemName = Items[SlotIndex].ItemID;
+		}
+		break;
+	}
+	default:
+		break;
+	}
+
+	//if (!ItemName.IsNone())
+	//{
+	//	return;
+	//}
+
+	InventoryInterface->RemoveItem(ItemName, 1);
+	
+	/*OnSlotDragCancelled.Broadcast(SlotIndex, SlotType);
+	QuantityInputHUD();*/
 	//
 }
 
@@ -202,5 +263,24 @@ void USlotWidget::QuantityInputHUD()
 	{
 		QuantityInputWidget->AddToViewport();
 		UE_LOG(LogTemp, Log, TEXT("InputQuantityHUD displayed."));
+	}
+}
+
+void USlotWidget::UpdateAmmoSlot()
+{
+	const TArray<FInventoryAmmo>& AmmoItems = InventoryInterface->GetAmmoItems();
+	if (AmmoItems.IsValidIndex(SlotIndex))
+	{
+		const FInventoryAmmo& Item = AmmoItems[SlotIndex];
+		if (!Item.ItemName.IsEmpty() && Item.Quantity > 0)
+		{
+			Image->SetBrushFromTexture(Item.ItemImage);
+			Quantity->SetText(FText::FromString(FString::Printf(TEXT("%d"), Item.Quantity)));
+		}
+		else
+		{
+			Image->SetBrushFromTexture(DefaultTexture);
+			Quantity->SetText(FText::FromString(TEXT("")));
+		}
 	}
 }

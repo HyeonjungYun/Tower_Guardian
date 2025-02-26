@@ -27,18 +27,25 @@ public:
 	virtual void SortEquipmentItems(bool bIsAscending) override;
 	virtual void SortConsumableItems(bool bIsAscending) override;
 	virtual void SortOthersItems(bool bIsAscending) override;
+	virtual void SortAmmoItems(bool bIsAscending) override;
 	// Get Method
 	virtual int32 GetGold() const override;
 	virtual const TArray<FInventoryConsumable>& GetConsumableItems() const override;
 	virtual const TArray<FInventoryEquipment>& GetEquipmentItems() const override;
 	virtual const TArray<FInventoryOthers>& GetOthersItems() const override;
+	virtual const TArray<FInventoryAmmo>& GetAmmoItems() const override;
+
 	// Set Method
-	virtual bool AddItem(const FName& ItemKey, int32 Quantity) override;
+	virtual bool AddItem(const FName& ItemKey, int32 Quantity, EItemType ItemType) override;
 	virtual bool RemoveItem(const FName& ItemKey, int32 Quantity) override;
 	virtual bool UseItem(int32 SlotIndex, EItemType ItemType) override;
 	virtual void SetGold(int32 NewGold) override;
 	virtual void SwapItem(int32 PrevIndex, int32 CurrentIndex, EItemType PrevSlotType, EItemType CurrentSlotType)override;
+	
 
+	//Search Method
+	virtual int32 SearchItemByNameAndType(const FName& ItemKey, const EItemType& ItemType) const override;
+	virtual	int32 SearchItemByName(const FName& ItemKey) const override;
 public:
 	AMyCharacter();
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
@@ -125,6 +132,10 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
 	bool bIsAiming = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
+	bool bIsInventoryVisible = false;
+
 
 	ABaseItem* PickableItem;
 
