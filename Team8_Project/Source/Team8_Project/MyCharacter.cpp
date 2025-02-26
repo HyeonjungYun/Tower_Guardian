@@ -43,6 +43,14 @@ AMyCharacter::AMyCharacter()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+
+	// PlayerController 받아오기
+	PlayerController = Cast<AMyPlayerController>(Controller);
+	if (PlayerController)
+	{
+		// 초기화를 위한 현재 정보를 HUD로 넘기려면 여기서
+		// PC->HUD->HUD의 각종 UI 오버레이등을 사용
+	}
 }
 
 void AMyCharacter::BeginPlay()

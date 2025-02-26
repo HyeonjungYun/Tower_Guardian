@@ -20,7 +20,6 @@ enum class EWeaponType : uint8
     EWT_Shotgun UMETA(DisplayName = "Shotgun"),
     EWT_RocketLauncher UMETA(DisplayName = "Rocket Launcher"),
     EWT_Sniper UMETA(DisplayName = "BoltAction")
-
 };
 
 /*

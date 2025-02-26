@@ -225,4 +225,11 @@ public:
 
 
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return Camera; };
+	/*
+	// HUD 접근을 위한
+	// 멤버 변수 및 함수
+	*/
+
+	class AMyPlayerController* PlayerController;
+	 
 };
