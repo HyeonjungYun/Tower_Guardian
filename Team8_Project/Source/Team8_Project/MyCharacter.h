@@ -52,13 +52,15 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "inventory")
 	UInventoryComponent* Inventory;
-	void SetPickableItem(class ABaseItem* OverlappedItem);
-protected:
-	float NormalSpeed = 600.f;
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION()
 	void ToggleInventory(const FInputActionValue& Value);
+
+	void SetPickableItem(class ABaseItem* OverlappedItem);
+protected:
+	float NormalSpeed = 600.f;
+
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
 	UFUNCTION()
 	void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,

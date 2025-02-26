@@ -104,10 +104,14 @@ void AShopTrigger::OpenShop()
 {
 	if (bIsPlayerInRange && ShopWidgetClass)
 	{
-
 		if (ShopWidgetClass)
 		{
 			APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+
+			if (AMyCharacter* Player = Cast<AMyCharacter>(PlayerController->GetPawn()))
+			{
+				Player->ToggleInventory(NULL);
+			}
 
 			ShopWidgetInstance = CreateWidget<UUserWidget>(PlayerController, ShopWidgetClass);
 			if (ShopWidgetInstance)
