@@ -27,9 +27,20 @@ void ASampleDamagableActor::SetHP(float Value)
 	}
 }
 
-void ASampleDamagableActor::Damage(float _dmg)
+float ASampleDamagableActor::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+	// 상위 클래스에서 다른 데미지 처리 공식이 있다면
+	// float Dmg = Super::TakeDamage 호출
+
+	Health -= DamageAmount;
+
+	if (Health <= 0)
+	{
+		OnDeath();
+	}
+	return DamageAmount;
 }
+
 
 void ASampleDamagableActor::OnDeath()
 {

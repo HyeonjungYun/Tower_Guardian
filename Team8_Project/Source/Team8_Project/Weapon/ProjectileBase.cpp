@@ -8,6 +8,7 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
 #include "../Damageable.h"
+#include "SampleDamagableActor.h"
 
 // Sets default values
 AProjectileBase::AProjectileBase()
@@ -62,10 +63,17 @@ void AProjectileBase::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UP
 {
 	if (OtherActor && OtherActor->GetClass()->ImplementsInterface(UDamageable::StaticClass()))
 	{
-		IDamageable* DamageableActor = Cast<IDamageable>(OtherActor);
-		if (DamageableActor)
+
+		if (ASampleDamagableActor* SDA = Cast<ASampleDamagableActor>(OtherActor))
 		{
-			DamageableActor->SetHP(50.0f); // 예제 데미지 값
+			AController* InstigatorController = nullptr;
+			AActor* OwnerActor = GetOwner();
+			if (APawn* OwnerPawn = Cast<APawn>(OwnerActor))
+			{
+				InstigatorController = OwnerPawn->GetController();
+				UGameplayStatics::ApplyDamage(SDA, 50.f, InstigatorController, this, UDamageType::StaticClass());
+			}
+
 		}
 	}
 

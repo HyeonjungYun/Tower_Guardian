@@ -21,8 +21,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void SetHP(float Value);
 	
-	UFUNCTION(BlueprintCallable)
-	virtual void Damage(float _dmg);
+	UFUNCTION()
+	virtual float TakeDamage
+	(
+		float DamageAmount,
+		struct FDamageEvent const& DamageEvent,
+		class AController* EventInstigator,
+		AActor* DamageCauser
+	) override;
 
 	UFUNCTION(BlueprintCallable)
 	virtual void OnDeath();

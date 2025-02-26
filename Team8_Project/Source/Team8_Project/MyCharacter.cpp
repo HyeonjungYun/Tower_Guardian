@@ -1,5 +1,4 @@
 ﻿#include "MyCharacter.h"
-
 #include "Components/CapsuleComponent.h"
 #include "EnhancedInputComponent.h"
 #include "MyPlayerController.h"
@@ -45,8 +44,8 @@ AMyCharacter::AMyCharacter()
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 
 	// PlayerController 받아오기
-	PlayerController = Cast<AMyPlayerController>(Controller);
-	if (PlayerController)
+	MyPlayerController = Cast<AMyPlayerController>(Controller);
+	if (MyPlayerController)
 	{
 		// 초기화를 위한 현재 정보를 HUD로 넘기려면 여기서
 		// PC->HUD->HUD의 각종 UI 오버레이등을 사용

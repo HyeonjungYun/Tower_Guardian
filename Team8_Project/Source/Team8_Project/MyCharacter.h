@@ -230,6 +230,6 @@ public:
 	// 멤버 변수 및 함수
 	*/
 
-	class AMyPlayerController* PlayerController;
+	class AMyPlayerController* MyPlayerController;
 	 
 };
