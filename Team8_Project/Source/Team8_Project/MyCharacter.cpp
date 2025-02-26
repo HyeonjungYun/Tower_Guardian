@@ -332,7 +332,7 @@ void AMyCharacter::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Oth
 		OverlappingItem = nullptr;
 	}
 }
-void AMyCharacter::ToggleInventory(const FInputActionValue& Value)
+void AMyCharacter::ToggleInventory(const FInputActionValue& Value = FInputActionValue())
 {
 	APlayerController* PC = Cast<APlayerController>(GetController());
 	if (!PC || !Inventory || !Inventory->InventoryWidget)

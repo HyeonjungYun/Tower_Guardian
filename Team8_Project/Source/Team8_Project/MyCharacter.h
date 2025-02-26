@@ -53,7 +53,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "inventory")
 	UInventoryComponent* Inventory;
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Category = "inventory")
 	void ToggleInventory(const FInputActionValue& Value);
 
 	void SetPickableItem(class ABaseItem* OverlappedItem);
