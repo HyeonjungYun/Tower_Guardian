@@ -4,7 +4,7 @@
 ABananaItem::ABananaItem()
 {
     FItemType = "Banana";
-    SlotType = EItemType::Ammo;
+    SlotType = EItemType::Others;
 }
 
 void ABananaItem::ActivateItem(AActor* Activator)

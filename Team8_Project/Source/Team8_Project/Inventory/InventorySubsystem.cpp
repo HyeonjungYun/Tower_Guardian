@@ -570,3 +570,64 @@ int32 UInventorySubsystem::SearchItemByNameAndType(const FName& ItemKey, const E
 		break;
 	}
 }
+bool UInventorySubsystem::AddOthersItem(const FName& ItemKey, int32 Quantity, UDataTable* SelectedDataTable)
+{
+
+	ensure(Quantity > 0);
+	if (Quantity <= 0 || !SelectedDataTable)
+	{
+		return false;
+	}
+
+	const FOtherItemRow* Row = SelectedDataTable->FindRow<FOtherItemRow>(ItemKey, TEXT("LookupOtherItemData"), true);
+
+	if (Row->ItemType != EItemType::Others || !Row)
+	{
+		UE_LOG(LogTemp, Display, TEXT("im in SubSystem , Type Error"));
+		return false;
+	}
+
+	int32 Index = FindOthersIndex(ItemKey);
+	if (Index != INDEX_NONE)
+	{
+		OthersItems[Index].Quantity += Quantity;
+	}
+	else
+	{
+		int32 EmptyIndex = INDEX_NONE;
+		for (int32 i = 0; i < OthersItems.Num(); ++i)
+		{
+			if (OthersItems[i].ItemID.IsNone())
+			{
+				EmptyIndex = i;
+				break;
+			}
+		}
+		if (EmptyIndex != INDEX_NONE)
+		{
+			FInventoryOthers NewItem;
+			NewItem.ItemID = ItemKey;
+			NewItem.ItemName = Row->ItemName;
+			NewItem.Quantity = Quantity;
+			NewItem.ItemImage = Row->ItemImage;
+			OthersItems[EmptyIndex] = NewItem;
+		}
+		else if (EmptyIndex == INDEX_NONE)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Inventory Is Full"));
+			return false;
+		}
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("=== Debug Print Other Items ==="));
+	for (int32 i = 0; i < OthersItems.Num(); ++i)
+	{
+		const FInventoryOthers& Item = OthersItems[i];
+		UE_LOG(LogTemp, Log, TEXT("Index %d: ItemID: %s, ItemName: %s, Quantity: %d"),
+			i,
+			*Item.ItemID.ToString(),
+			*Item.ItemName,
+			Item.Quantity);
+	}
+	return true;
+}

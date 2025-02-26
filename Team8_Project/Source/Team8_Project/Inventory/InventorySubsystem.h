@@ -8,6 +8,7 @@
 #include "InventoryType.h"
 #include "ConsumableItemRow.h"  
 #include "WeaponAmmunitionRow.h"
+#include "OtherItemRow.h"
 #include "InventorySubsystem.generated.h"
 
 UCLASS()
@@ -21,10 +22,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	bool AddConsumableItem(const FName& ItemKey, int32 Quantity, UDataTable* SelectedDataTable);
-
-	/*UFUNCTION(BlueprintCallable, Category = "Inventory")
-	bool AddOthersItem(const FName& ItemKey, int32 Quantity, const FConsumableItemRow* Row);
-
+	
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	bool AddOthersItem(const FName& ItemKey, int32 Quantity, UDataTable* SelectedDataTable);
+	/*
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	bool AddEquipmentItem(const FName& ItemKey, int32 Quantity, const FConsumableItemRow* Row);*/
 

@@ -179,9 +179,15 @@ bool UInventoryComponent::SelectDataTableAdd(const FName& ItemKey, int32 Quantit
 	}
 	case EItemType::Others:
 	{
+		if (!OtherItemDataTable)
+		{
+			return false;
+		}
+		UDataTable* SelectedConsumableDataTable = OtherItemDataTable;
+		bool bResult = InventorySubsystem->AddOthersItem(ItemKey, Quantity, SelectedConsumableDataTable);
 
-		//SelectedDataTable = OtherItemDataTable;
-		return false;
+		return bResult;
+		
 		break;
 	}
 	case EItemType::Ammo:

@@ -274,7 +274,7 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void AMyCharacter::Tick(float DeltaTime)
 {
-	OnPickupItem();
+	//OnPickupItem();
 }
 
 void AMyCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
@@ -476,7 +476,7 @@ void AMyCharacter::StartPickUp(const FInputActionValue& value)
 				//임시 추가:전지현
 				bHasWeapon = true;
 			}
-			else if (ABaseItem* ItemToPickUp =
+			if (ABaseItem* ItemToPickUp =
 				Cast<ABaseItem>(PickableItem))
 			{
 				OnPickupItem();// 인벤토리용
