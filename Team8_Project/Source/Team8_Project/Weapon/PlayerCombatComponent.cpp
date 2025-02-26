@@ -128,11 +128,10 @@ void UPlayerCombatComponent::SetHUDCrosshairs(float DeltaTime)
 			Velocity.Z = 0.f;
 			CrosshairVelocityFactor =
 				FMath::GetMappedRangeValueClamped(WalkSpeedRange, VelocityMultiplierRange, Velocity.Size());
+			
 			// 현재 속도에 따른 0~1 사이의 범위가 정해져 이것이
 			// HUD에 넘어갈구조체의 조준선 퍼짐 값으로 결정됨
-
-
-
+			
 			if (PlayerCharacter->GetCharacterMovement()->IsFalling())
 			{
 				CrosshairinAirFactor
@@ -198,7 +197,11 @@ void UPlayerCombatComponent::EquipWeapon(AWeaponBase* WeaponToEquip)
 		return;
 	}
 	// 소켓에 장비 장착
-	
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->Dropped();
+	}
+
 	EquippedWeapon = WeaponToEquip;
 	EquippedWeapon->SetWeaponState(EWeaponState::EWT_Equipped);
 

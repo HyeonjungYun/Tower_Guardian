@@ -53,6 +53,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "inventory")
 	UInventoryComponent* Inventory;
 	void SetPickableItem(class ABaseItem* OverlappedItem);
+
+	void SetPickableWeapon(class AWeaponBase* OverlappedWeapon);
+
+	AWeaponBase* PickableWeapon = nullptr;
 protected:
 	float NormalSpeed = 600.f;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

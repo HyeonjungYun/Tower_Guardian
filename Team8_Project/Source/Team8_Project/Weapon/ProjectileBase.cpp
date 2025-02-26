@@ -64,16 +64,12 @@ void AProjectileBase::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UP
 	if (OtherActor && OtherActor->GetClass()->ImplementsInterface(UDamageable::StaticClass()))
 	{
 
-		if (ASampleDamagableActor* SDA = Cast<ASampleDamagableActor>(OtherActor))
+		AController* InstigatorController = nullptr;
+		AActor* OwnerActor = GetOwner();
+		if (APawn* OwnerPawn = Cast<APawn>(OwnerActor))
 		{
-			AController* InstigatorController = nullptr;
-			AActor* OwnerActor = GetOwner();
-			if (APawn* OwnerPawn = Cast<APawn>(OwnerActor))
-			{
-				InstigatorController = OwnerPawn->GetController();
-				UGameplayStatics::ApplyDamage(SDA, 50.f, InstigatorController, this, UDamageType::StaticClass());
-			}
-
+			InstigatorController = OwnerPawn->GetController();
+			UGameplayStatics::ApplyDamage(OtherActor, 50.f, InstigatorController, this, UDamageType::StaticClass());
 		}
 	}
 

@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "../BaseItem.h"
+#include "../Inventory/ItemInterface.h"
 #include "WeaponBase.generated.h"
 
 
-
+class USphereComponent;
 /*
 *	무기의 종류를 결정할 무기 종류 열거형 클래스
 */
@@ -43,10 +43,33 @@ enum class EWeaponState : uint8
  * 재정의 해도록 구현될 것입니다.
  */
 UCLASS()
-class TEAM8_PROJECT_API AWeaponBase : public ABaseItem
+class TEAM8_PROJECT_API AWeaponBase : public AActor, public IItemInterface
 {
 	GENERATED_BODY()
-	
+
+    /*
+    
+            IItemInterface    
+    */
+public:
+    UFUNCTION()
+    virtual void OnItemOverlap(
+        UPrimitiveComponent* OverlappedComp,
+        AActor* OtherActor,
+        UPrimitiveComponent* OtherComp,
+        int32 OtherBodyIndex,
+        bool bFromSweep,
+        const FHitResult& SweepResult);
+
+    UFUNCTION()
+    virtual void OnItemEndOverlap(
+        UPrimitiveComponent* OverlappedComp,
+        AActor* OtherActor,
+        UPrimitiveComponent* OtherComp,
+        int32 OtherBodyIndex);
+
+    virtual FName GetItemType() const;
+
 public:
 
     // CombatComponent와 HUD에서 사용할 텍스처들
@@ -84,13 +107,23 @@ protected:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties")
     class UAnimationAsset* FireAnimation;
+   
+    //UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item|Component")
+    //USceneComponent* Scene;
     
+    // 충돌 컴포넌트 (플레이어 진입 범위 감지용)
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|Component")
-    class USphereComponent* AreaSphere;
+    USphereComponent* AreaSphere;
+
 
     UPROPERTY(EditAnywhere)
     TSubclassOf<class ABulletCaseBase> BulletCaseClass;
 
+    UPROPERTY()
+    class AMyCharacter* PlayerCharacter;
+
+    UPROPERTY()
+    class AMyPlayerController* PlayerController;
 
     // 조준
     UPROPERTY(EditAnywhere)
@@ -109,7 +142,7 @@ public:
     
     float GetWeaponZoomInterpSpeed() const;
 
-    virtual FName GetItemType() const override;
+    //virtual FName GetItemType() const override;
 
     EWeaponType GetWeaponType() const;
 
@@ -128,7 +161,23 @@ protected:
     virtual void ActivateItem(AActor* Activator) override;
 
 
+    /*
+        탄약
+    */
+public:
+    UFUNCTION()
+    void SpendRound();
+protected:
+    UPROPERTY(EditAnywhere)
+    int32 CurrentAmmo = 0;
+    UPROPERTY(EditAnywhere)
+    int32 MaxAmmo = 30;
 
+    /*
+    무기 버리기
+    */
 
-    
+public:
+    UFUNCTION()
+    void Dropped();
 };
