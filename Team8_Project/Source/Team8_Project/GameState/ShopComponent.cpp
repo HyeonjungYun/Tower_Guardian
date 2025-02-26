@@ -1,6 +1,6 @@
 #include "ShopComponent.h"
 #include "ShopTrigger.h"
-#include "Team8_Project/Public/CH8_GameState.h"
+#include "Team8_Project/GameState/CH8_GameState.h"
 
 UShopComponent::UShopComponent() 
 {

@@ -1,6 +1,5 @@
-
 #include "MyPlayerController.h"
-#include "Team8_Project/Public/CH8_GameState.h"
+#include "Team8_Project/GameState/CH8_GameState.h"
 #include "EnhancedInputSubsystems.h"
 #include "Blueprint/UserWidget.h"
 
