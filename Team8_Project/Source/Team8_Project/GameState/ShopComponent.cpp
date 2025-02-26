@@ -14,7 +14,7 @@ void UShopComponent::BeginPlay()
 	GameStateRef = Cast<ACH8_GameState>(GetWorld()->GetGameState());
 }
 
-void UShopComponent::AttemptItemPurchase()
+bool UShopComponent::AttemptItemPurchase()
 {
 	int ItemCost = 100;
 
@@ -26,8 +26,12 @@ void UShopComponent::AttemptItemPurchase()
 			{
 				GameStateRef->OnGameSetGold.Broadcast(-ItemCost);
 				Cast<AShopTrigger>(GetOwner())->UpdateShopUI();
+
+				return true;
 			}
 		}
 	}
+
+	return false;
 }
 
