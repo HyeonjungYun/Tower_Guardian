@@ -39,8 +39,6 @@ bool UInventoryComponent::AddItem(const FName& ItemKey, int32 Quantity,EItemType
 	{
 		return false;
 	}
-	//Add Something?
-
 	check(InventorySubsystem);
 	bool bIsResult = SelectDataTableAdd(ItemKey, Quantity, ItemType);
 	UpdateInventoryUI();
@@ -56,12 +54,10 @@ bool UInventoryComponent::RemoveItem(const FName& ItemKey, int32 Quantity)
 		bool bResult = InventorySubsystem->RemoveItem(ItemKey, Quantity);
 		if (bResult)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("im in Component Take a Key"));
 			UpdateInventoryUI();
 		}
 		return bResult;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Im in Component , Fail to Remove"));
 	return false;
 }
 
@@ -95,7 +91,6 @@ void UInventoryComponent::SortEquipmentItems(bool bIsAscending)
 	if (InventorySubsystem)
 	{
 		InventorySubsystem->SortEquipmentItems(bIsAscending);
-		//UpdateInventoryUI();
 	}
 }
 
@@ -104,7 +99,6 @@ void UInventoryComponent::SortConsumableItems(bool bIsAscending)
 	if (InventorySubsystem)
 	{
 		InventorySubsystem->SortConsumableItems(bIsAscending);
-		//UpdateInventoryUI();
 	}
 }
 
@@ -113,7 +107,6 @@ void UInventoryComponent::SortOthersItems(bool bIsAscending)
 	if (InventorySubsystem)
 	{
 		InventorySubsystem->SortOthersItems(bIsAscending);
-		//UpdateInventoryUI();
 	}
 }
 void UInventoryComponent::SortAmmoItems(bool bIsAscending)
@@ -121,19 +114,14 @@ void UInventoryComponent::SortAmmoItems(bool bIsAscending)
 	if (InventorySubsystem)
 	{
 		InventorySubsystem->SortAmmoItems(bIsAscending);
-		//UpdateInventoryUI();
 	}
 }
 bool UInventoryComponent::UseItem(int32 SlotIndex, EItemType ItemType)
 {
-	//character has InventoryComponent
 	if (InventorySubsystem)
 	{
 		bool bResult = InventorySubsystem->UseItem(SlotIndex, ItemType);
-		if (bResult)
-		{
-			//UpdateInventoryUI();
-		}
+	
 		return bResult;
 	}
 	return false;
