@@ -1,12 +1,13 @@
 ﻿#include "BaseEnemy.h"
 
 #include "EnemyAIController.h"
-#include "PatrolPath.h"
+#include "SpawnVolume.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Engine/OverlapResult.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
 
@@ -42,6 +43,18 @@ void ABaseEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 
+	HP = MaxHP;
+
+	if (AEnemyAIController* EnemyController = Cast<AEnemyAIController>(GetController()))
+	{
+		if (BehaviorTree)
+			EnemyController->RunBehaviorTree(BehaviorTree);
+		else
+			UE_LOG(LogTemp, Warning, TEXT("BehaviorTree가 없습니다"));
+	}
+	else
+		UE_LOG(LogTemp, Warning, TEXT("Controller를 변환하지 못했습니다."));
+
 	AI_Perception->OnTargetPerceptionUpdated.AddDynamic(this, &ABaseEnemy::OnTargetPerceptionUpdated);
 }
 
@@ -55,7 +68,7 @@ void ABaseEnemy::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 
 	UBlackboardComponent* BlackBoard = AIController->GetBlackboardComponent();
 	if (!BlackBoard) return;
-	
+
 	if (Stimulus.WasSuccessfullySensed())
 	{
 		BlackBoard->SetValueAsBool("DetectedPlayer", true);
@@ -69,70 +82,100 @@ void ABaseEnemy::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 }
 
 float ABaseEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator,
-	AActor* DamageCauser)
+                             AActor* DamageCauser)
 {
 	float RealDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	SetHP(HP - RealDamage);
 
+	if (HP > 0)
+		if (USkeletalMeshComponent* Mesh = GetComponentByClass<USkeletalMeshComponent>())
+			if (UAnimInstance* AnimInstance = Mesh->GetAnimInstance())
+				AnimInstance->Montage_Play(DamagedMontage);
+
 	return RealDamage;
+}
+
+void ABaseEnemy::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if (USkeletalMeshComponent* Mesh = GetComponentByClass<USkeletalMeshComponent>())
+		if (UAnimInstance* AnimInstance = Mesh->GetAnimInstance())
+			if (!AnimInstance->IsAnyMontagePlaying() && PawnMovement->Velocity.SquaredLength() > 0.f)
+			{
+				FRotator TargetRot = PawnMovement->Velocity.Rotation();
+				TargetRot.Roll = 0;
+				TargetRot.Pitch = 0;
+				
+				FRotator ViewRot = UKismetMathLibrary::RLerp(GetActorRotation(), TargetRot,
+				                                             DeltaSeconds * RotationMul, true);
+
+				SetActorRotation(ViewRot);
+			}
 }
 
 bool ABaseEnemy::CanAttack()
 {
-	return CanAttackToType(nullptr);
+	return CanAttackWithType(nullptr);
 }
 
-bool ABaseEnemy::CanAttackToType(TSubclassOf<AActor> AttackType)
+bool ABaseEnemy::CanAttackWithType(TSubclassOf<AActor> AttackType)
 {
 	TArray<FOverlapResult> Array;
-	return CanAttackToType(AttackType, Array);
+	return CanAttackWithType(AttackType, Array);
 }
 
-bool ABaseEnemy::CanAttackToType(TSubclassOf<AActor> AttackType, TArray<FOverlapResult>& OutOverlapResults)
+bool ABaseEnemy::CanAttackWithType(TSubclassOf<AActor> AttackType, TArray<FOverlapResult>& OutOverlapResults)
 {
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+
 	//공격 중 제일 사정거리가 긴 공격
 	float MaxAttackRange = GetMaxAttackRange();
 	bool bOverlap = GetWorld()->OverlapMultiByObjectType(OutOverlapResults,
 	                                                     GetActorLocation(), GetActorQuat(),
 	                                                     FCollisionObjectQueryParams::DefaultObjectQueryParam,
-	                                                     FCollisionShape::MakeSphere(MaxAttackRange));
+	                                                     FCollisionShape::MakeSphere(MaxAttackRange),
+	                                                     Params);
 
-	DrawDebugSphere(GetWorld(), GetActorLocation(), MaxAttackRange, 30, FColor::Red);
+	// DrawDebugSphere(GetWorld(), GetActorLocation(), MaxAttackRange, 30, FColor::Red);
+	
 	if (bOverlap)
-	{			
-		for (auto& Element : OutOverlapResults)
-		{
-			if (Element.GetActor() != this && Element.GetActor()->Implements<UDamageable>() &&
-				(AttackType == nullptr || Element.GetActor()->IsA(AttackType.Get())))
-				return true;
-		}
+	{
+		RemoveUnattackableActor(OutOverlapResults, AttackType);
+		return OutOverlapResults.Num() > 0;
 	}
+
 	return false;
 }
 
 void ABaseEnemy::Attack()
 {
 	TArray<FOverlapResult> OverlapResults;
-	if (!CanAttackToType(nullptr, OverlapResults))
+	if (!CanAttackWithType(nullptr, OverlapResults))
 		return;
 
-	//가장 먼 공격 가능한 오브젝트와의 거리
+	AActor* NearActor = nullptr;
+	//가장 가까운 공격 가능한 오브젝트와의 거리
 	float NearRange = MAX_FLT;
 	for (auto& Element : OverlapResults)
 	{
 		FVector ClosetLocation;
 		Element.GetComponent()->GetClosestPointOnCollision(GetActorLocation(), ClosetLocation);
 
-		// GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, Element.GetComponent()->GetName());
-		// DrawDebugSphere(GetWorld(), ClosetLocation, 30, 20, FColor::Green);
+		// GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, Element.GetActor()->GetName());
+		DrawDebugSphere(GetWorld(), ClosetLocation, 30, 20, FColor::Green, false, 1);
 
 		float Distance = FVector::Distance(ClosetLocation, GetActorLocation());
 		if (Distance < NearRange)
+		{
 			NearRange = Distance;
+			NearActor = Element.GetActor();
+		}
 	}
 
 	//뭔가 잘못되서 OverlapResults안에서 Distance 체크를 제대로 못함
-	if (NearRange == MAX_FLT)
+	if (NearRange == MAX_FLT || NearActor == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("공격할 수 없습니다."));
 		return;
@@ -145,11 +188,22 @@ void ABaseEnemy::Attack()
 		return;
 	}
 
+	//공격 대상으로 회전
+	FVector ViewVec = NearActor->GetActorLocation() - GetActorLocation();
+	FRotator ViewRot = ViewVec.Rotation();
+	ViewRot.Roll = 0;
+	ViewRot.Pitch = 0;
+
+	SetActorRotation(ViewRot);
+
 	TArray<FAttackPattern> Patterns = AttackPatterns.FilterByPredicate([NearRange](const FAttackPattern& Pattern)
 	{
 		// - 10.f는 근삿값, 살짝 거리 있다고 실행 안되는걸 방지하기 위함
 		return NearRange - 10.f <= Pattern.AttackRange;
 	});
+
+	// for (auto& Pattern : Patterns)
+	// 	GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Blue, Pattern.Anim->GetName());
 
 	// GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, FString::Printf(TEXT("NearRange: %f"), NearRange));
 	// GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, FString::Printf(TEXT("MaxAttackRange: %f"), MaxAttackRange));
@@ -157,13 +211,13 @@ void ABaseEnemy::Attack()
 	if (USkeletalMeshComponent* Mesh = GetComponentByClass<USkeletalMeshComponent>())
 		if (UAnimInstance* AnimInstance = Mesh->GetAnimInstance())
 		{
-			//Skeletal Mesh 같은거에 Collider가 또 있는데, Overlap 처리되면 애니메이션이 검출되지 않을 수 있음.
-			//만약 아무런 Pattern이 검출되지 않았다면 제일 짧은걸 사용하도록 함
 			FAttackPattern* PlayPattern = nullptr;
 			if (Patterns.Num() != 0)
 			{
+				// FMath::FRand();	//보류,가까운 공격마다 확률이 더 높게 만들기
+				
 				int PatternIndex = FMath::RandRange(0, Patterns.Num() - 1);
-				PlayPattern = &AttackPatterns[PatternIndex];
+				PlayPattern = &Patterns[PatternIndex];
 			}
 			else
 			{
@@ -187,34 +241,36 @@ bool ABaseEnemy::IsAttacking()
 	return false;
 }
 
-void ABaseEnemy::SetPatrolPath(APatrolPath* Value)
+void ABaseEnemy::SetSpawnVolume(ASpawnVolume* Value)
 {
-	PatrolPath = Value;
+	SpawnVolume = Value;
 }
 
-FVector ABaseEnemy::GetPatrolLocation() const
+FVector ABaseEnemy::GetWaypointLocation() const
 {
-	if (PatrolPath)
-		return PatrolPath->GetWaypoint(PatrolIndex);
+	if (SpawnVolume)
+		return SpawnVolume->GetWaypoint(WaypointIndex);
 
 	//없다면 본인 위치
 	UE_LOG(LogTemp, Warning, TEXT("PatrolPath Not Setting!"));
 	return GetActorLocation();
 }
 
-void ABaseEnemy::SetPatrolLocationToNext()
+void ABaseEnemy::SetWaypointLocationToNext()
 {
-	check(PatrolPath);
-	
-	if (PatrolIndex < PatrolPath->Num() - 1)
-		PatrolIndex++;
+	check(SpawnVolume);
+
+	if (WaypointIndex < SpawnVolume->WaypointCount() - 1)
+		WaypointIndex++;
 }
 
-void ABaseEnemy::OnDeath()
+void ABaseEnemy::Death()
 {
 	if (USkeletalMeshComponent* Mesh = GetComponentByClass<USkeletalMeshComponent>())
 		if (UAnimInstance* AnimInstance = Mesh->GetAnimInstance())
 			AnimInstance->Montage_Play(DeathMontage);
+
+	OnDeath.Broadcast(this);
 }
 
 float ABaseEnemy::GetMaxAttackRange() const
@@ -225,6 +281,23 @@ float ABaseEnemy::GetMaxAttackRange() const
 			result = Pattern.AttackRange;
 
 	return result;
+}
+
+void ABaseEnemy::RemoveUnattackableActor(TArray<FOverlapResult>& OutOverlapResults, TSubclassOf<AActor> AttackType)
+{
+	for (int i = 0; i < OutOverlapResults.Num(); i++)
+	{
+		FOverlapResult& Element = OutOverlapResults[i];
+
+		if ((Element.GetActor() != this && Element.GetActor()->Implements<UDamageable>() &&
+				(AttackType == nullptr || Element.GetActor()->IsA(AttackType.Get())) &&
+				!Element.GetActor()->IsA<ABaseEnemy>())
+			== false)
+		{
+			OutOverlapResults.RemoveAt(i);
+			i--;
+		}
+	}
 }
 
 float ABaseEnemy::GetHP() const
@@ -239,6 +312,6 @@ void ABaseEnemy::SetHP(float Value)
 	if (HP <= 0)
 	{
 		HP = 0;
-		OnDeath();
+		Death();
 	}
 }
