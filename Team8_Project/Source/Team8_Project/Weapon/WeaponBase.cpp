@@ -13,8 +13,8 @@
 
 AWeaponBase::AWeaponBase() :
 	WeaponState(EWeaponState::EWT_Dropped),
-	PlayerCharacter(nullptr),
-	PlayerController(nullptr)
+	OwnerPlayerCharacter(nullptr),
+	OwnerPlayerController(nullptr)
 {
 	WeaponType = EWeaponType::EWT_None;// 무기 없음초기화
 
@@ -77,19 +77,19 @@ void AWeaponBase::SetWeaponState(EWeaponState CurWeaponState)
 
 void AWeaponBase::OnItemOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	PlayerCharacter = Cast<AMyCharacter>(OtherActor);
-	if (PlayerCharacter)
+	OwnerPlayerCharacter = Cast<AMyCharacter>(OtherActor);
+	if (OwnerPlayerCharacter)
 	{
-		PlayerCharacter->SetPickableWeapon(this);
+		OwnerPlayerCharacter->SetPickableWeapon(this);
 	}
 }
 
 void AWeaponBase::OnItemEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	PlayerCharacter = Cast<AMyCharacter>(OtherActor);
-	if (PlayerCharacter)
+	OwnerPlayerCharacter = Cast<AMyCharacter>(OtherActor);
+	if (OwnerPlayerCharacter)
 	{
-		PlayerCharacter->SetPickableWeapon(nullptr);
+		OwnerPlayerCharacter->SetPickableWeapon(nullptr);
 	}
 }
 
@@ -106,7 +106,18 @@ void AWeaponBase::ActivateItem(AActor* Activator)
 
 void AWeaponBase::SpendRound()
 {
-	--CurrentAmmo;
+	--CurrentWeaponAmmo;
+	OwnerPlayerCharacter = OwnerPlayerCharacter == nullptr ? Cast<AMyCharacter>(GetOwner()) : OwnerPlayerCharacter;
+
+	if (OwnerPlayerCharacter)
+	{
+		OwnerPlayerController =
+			OwnerPlayerController == nullptr ? Cast<AMyPlayerController>(OwnerPlayerCharacter->Controller) : OwnerPlayerController;
+		if (OwnerPlayerController)
+		{
+			OwnerPlayerController->SetHUDWeaponAmmo(CurrentWeaponAmmo);
+		}
+	}
 }
 
 void AWeaponBase::Dropped()
@@ -115,8 +126,8 @@ void AWeaponBase::Dropped()
 	FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
 	WeaponSkeletalMesh->DetachFromComponent(DetachRules);
 	SetOwner(nullptr);
-	PlayerCharacter = nullptr	;
-	PlayerController = nullptr;
+	OwnerPlayerCharacter = nullptr	;
+	OwnerPlayerController = nullptr;
 }
 
 FName AWeaponBase::GetItemType() const
@@ -134,8 +145,19 @@ int32 AWeaponBase::GetCurrrentWeaponAmmo() const
 	return CurrentWeaponAmmo;
 }
 
-void AWeaponBase::SetCurrentWeaponAmmo(int32 _ammo)
+void AWeaponBase::SetCurrentWeaponAmmo(int32 _Ammo)
 {
+	CurrentWeaponAmmo = _Ammo;
+}
+
+int32 AWeaponBase::GetMaxWeaponAmmo() const
+{
+	return MaxWeaponAmmo;
+}
+
+void AWeaponBase::SetMaxWeaponAmmo(int32 _Ammo)
+{
+	MaxWeaponAmmo = _Ammo;
 }
 
 void AWeaponBase::Fire(const FVector& HitTarget)

@@ -208,10 +208,6 @@ void UPlayerCombatComponent::SetHUDHealth(float CurrentHealth, float MaxHealth)
 	}
 }
 
-void UPlayerCombatComponent::SetHUDWeaponAmmo(int32 CurrentAmmo, int32 maxAmmo)
-{
-}
-
 void UPlayerCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -257,6 +253,14 @@ void UPlayerCombatComponent::EquipWeapon(AWeaponBase* WeaponToEquip)
 	}
 	EquippedWeapon->SetOwner(PlayerCharacter);
 	
+	// 새로운 무기에 대한 HUD 출력
+
+	if (PlayerController->GetWeaponCrosshairHUD())
+	{
+		PlayerController->InitHUDWeaponAmmo(EquippedWeapon->GetCurrrentWeaponAmmo(),
+			EquippedWeapon->GetMaxWeaponAmmo());
+	}
+
 }
 
 void UPlayerCombatComponent::FireButtonPressed(bool bPressed)

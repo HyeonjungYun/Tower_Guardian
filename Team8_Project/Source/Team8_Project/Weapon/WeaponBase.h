@@ -95,15 +95,11 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties")
     EWeaponState WeaponState;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Ammo")
-    int32 CurrentWeaponAmmo;
-
     // 총기용 USkeletalMeshComponent 추가
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|Component")
     USkeletalMeshComponent* WeaponSkeletalMesh;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Ammo")
-    int32 MaxWeaponAmmo;
+
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties")
     class UAnimationAsset* FireAnimation;
@@ -120,10 +116,10 @@ protected:
     TSubclassOf<class ABulletCaseBase> BulletCaseClass;
 
     UPROPERTY()
-    class AMyCharacter* PlayerCharacter;
+    class AMyCharacter* OwnerPlayerCharacter;
 
     UPROPERTY()
-    class AMyPlayerController* PlayerController;
+    class AMyPlayerController* OwnerPlayerController;
 
     // 조준
     UPROPERTY(EditAnywhere)
@@ -146,9 +142,7 @@ public:
 
     EWeaponType GetWeaponType() const;
 
-    int32 GetCurrrentWeaponAmmo() const;
 
-    void SetCurrentWeaponAmmo(int32 _ammo);
 
     USphereComponent* GetAreaSphere() const { return AreaSphere; }
     USkeletalMeshComponent* GetWeaponMesh() const { return WeaponSkeletalMesh; }
@@ -167,16 +161,29 @@ protected:
 public:
     UFUNCTION()
     void SpendRound();
+
+    UFUNCTION(BlueprintCallable)
+    int32 GetCurrrentWeaponAmmo() const;
+
+    UFUNCTION(BlueprintCallable)
+    void SetCurrentWeaponAmmo(int32 _Ammo);
+
+    UFUNCTION(BlueprintCallable)
+    int32 GetMaxWeaponAmmo() const;
+
+    UFUNCTION(BlueprintCallable)
+    void SetMaxWeaponAmmo(int32 _Ammo);
 protected:
-    UPROPERTY(EditAnywhere)
-    int32 CurrentAmmo = 0;
-    UPROPERTY(EditAnywhere)
-    int32 MaxAmmo = 30;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Ammo")
+    int32 CurrentWeaponAmmo;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Ammo")
+    int32 MaxWeaponAmmo;
 
     /*
-    무기 버리기
+        무기 버리기
     */
-
 public:
     UFUNCTION()
     void Dropped();

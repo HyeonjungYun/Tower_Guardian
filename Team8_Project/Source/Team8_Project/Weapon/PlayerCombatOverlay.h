@@ -32,9 +32,23 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	class UHorizontalBox* HB_HealthMain;
 
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	class UBorder*AmmoBorder;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	class UHorizontalBox* HB_Ammo_Main;
+
 	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
 	void CreateHPSeg(float Max_);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
 	void UpdateHPSeg(float PlayerCurrentHealth,float PlayerMaxHealth);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
+	void CreateAmmoSeg(int32 MaxAmmo);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
+	void UpdateAmmoSeg(int32 PlayerCurrentAmmo);
+
 };

@@ -27,8 +27,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UpdateHealth();
 	void SetHUDHealth(float CurrentHealth, float MaxHealth);
-	
-	void SetHUDWeaponAmmo(int32 CurrentAmmo, int32 maxAmmo);
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;

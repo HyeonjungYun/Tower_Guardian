@@ -4,7 +4,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "Blueprint/UserWidget.h"
 #include "Weapon/WeaponCrosshairHUD.h"
-
+#include "Weapon/PlayerCombatOverlay.h"
 
 AMyPlayerController::AMyPlayerController()
 	:InputMappingContext(nullptr),
@@ -16,7 +16,7 @@ AMyPlayerController::AMyPlayerController()
 	HUDWidgetInstance(nullptr),
 	AimingAction(nullptr)
 {
-	WeaponCrosshairHUD = Cast<AWeaponCrosshairHUD>(GetHUD());
+	//WeaponCrosshairHUD = Cast<AWeaponCrosshairHUD>(GetHUD());
 }
 
 void AMyPlayerController::BeginPlay()
@@ -47,9 +47,40 @@ void AMyPlayerController::BeginPlay()
 	{
 		CH8GameState->UpdateHUD();
 	}
+
+	WeaponCrosshairHUD = Cast<AWeaponCrosshairHUD>(GetHUD());
 }
 
 UUserWidget* AMyPlayerController::GetHUDWidget() const
 {
 	return HUDWidgetInstance;
 }
+
+void AMyPlayerController::SetHUDWeaponAmmo(int32 Ammo)
+{
+	WeaponCrosshairHUD = WeaponCrosshairHUD == nullptr ? Cast<AWeaponCrosshairHUD>(GetHUD()) : WeaponCrosshairHUD;
+	bool bHUDValid = WeaponCrosshairHUD &&
+		WeaponCrosshairHUD->CombatOverlay;
+	if (bHUDValid)
+	{
+		WeaponCrosshairHUD->CombatOverlay->UpdateAmmoSeg(Ammo);
+	}
+}
+
+void AMyPlayerController::InitHUDWeaponAmmo(int32 CurrentAmmo, int32 MaxAmmo)
+{
+	WeaponCrosshairHUD = WeaponCrosshairHUD == nullptr ? Cast<AWeaponCrosshairHUD>(GetHUD()) : WeaponCrosshairHUD;
+	bool bHUDValid = WeaponCrosshairHUD &&
+		WeaponCrosshairHUD->CombatOverlay;
+	if (bHUDValid)
+	{
+		WeaponCrosshairHUD->CombatOverlay->CreateAmmoSeg(MaxAmmo);
+		WeaponCrosshairHUD->CombatOverlay->UpdateAmmoSeg(CurrentAmmo);
+	}
+}
+
+AWeaponCrosshairHUD* AMyPlayerController::GetWeaponCrosshairHUD()
+{
+	return WeaponCrosshairHUD;
+}
+
