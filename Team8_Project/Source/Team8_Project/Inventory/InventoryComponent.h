@@ -18,15 +18,6 @@ class TEAM8_PROJECT_API UInventoryComponent : public UActorComponent
 public:
 	UInventoryComponent();
 
-	/*UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
-	TArray<FInventoryEquipment> EquipmentItems;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
-	TArray<FInventoryConsumable> ConsumableItems;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
-	TArray<FInventoryOthers> OthersItems;*/
-
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	int32 GetGold() const;
 
@@ -34,7 +25,7 @@ public:
 	void SetGold(int32 NewGold);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	bool AddItem(const FName& ItemKey, int32 Quantity);
+	bool AddItem(const FName& ItemKey, int32 Quantity, EItemType ItemType);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	bool RemoveItem(const FName& ItemKey, int32 Quantity);
@@ -58,7 +49,14 @@ public:
 	void SwapItem(int32 PrevIndex, int32 CurrentIndex, EItemType PrevSlotType, EItemType CurrentSlotType);
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory")
-	UDataTable* ItemDataTable = nullptr;
+	UDataTable* ConsumableItemDataTable = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory")
+	UDataTable* AmmoItemDataTable = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory")
+	UDataTable* OtherItemDataTable = nullptr;
+
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
 	UInventorySubsystem* InventorySubsystem = nullptr;
@@ -72,9 +70,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory|UI")
 	void UpdateInventoryUI();
 
+	bool SelectDataTableAdd(const FName& ItemKey, int32 Quantity,const EItemType ItemType) const;
+	
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void SortAmmoItems(bool bIsAscending);
 
 protected:
 	virtual void BeginPlay() override;
-
 
 };

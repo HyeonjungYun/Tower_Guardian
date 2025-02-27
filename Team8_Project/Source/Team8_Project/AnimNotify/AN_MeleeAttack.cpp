@@ -26,6 +26,8 @@ void UAN_MeleeAttack::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase
 				Collision = Temp;
 		}
 
+	
+	
 	if (!Collision)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("공격할 충돌체를 찾지 못했습니다."))

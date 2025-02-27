@@ -281,7 +281,6 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void AMyCharacter::Tick(float DeltaTime)
 {
-	OnPickupItem();
 	HideCameraIfCharacterClose();
 }
 
@@ -307,11 +306,12 @@ void AMyCharacter::OnPickupItem()
 	if (OverlappingItem)
 	{
 		FName ItemKey = OverlappingItem->GetItemType();
+		EItemType SlotType = OverlappingItem->GetSlotType();
 		int32 Quantity = 1; 
 
 		if (Inventory)
 		{
-			bool bAdded = Inventory->AddItem(ItemKey, Quantity);
+			bool bAdded = AddItem(ItemKey, Quantity, SlotType);
 			if (bAdded)
 			{
 				UE_LOG(LogTemp, Log, TEXT("Character to Inventory %s added to inventory."), *ItemKey.ToString());
@@ -351,16 +351,18 @@ void AMyCharacter::ToggleInventory(const FInputActionValue& Value)
 
 	if (Inventory->InventoryWidget->IsVisible())
 	{
+		bIsInventoryVisible = true;
+		//상태 추가 
 		Inventory->InventoryWidget->SetVisibility(ESlateVisibility::Collapsed);
 		FInputModeGameOnly InputMode;
 		PC->SetInputMode(InputMode);
 		PC->bShowMouseCursor = false;
+		
 	
 	}
 	else
 	{
 		Inventory->InventoryWidget->SetVisibility(ESlateVisibility::Visible);
-		
 		Inventory->InventoryWidget->UpdateInventoryUI();
 		//입력이 ui에 전달되고 그다음 게임쪽으로 전달된다
 		FInputModeGameAndUI  InputMode;
@@ -481,7 +483,7 @@ void AMyCharacter::StartPickUp(const FInputActionValue& value)
 				//임시 추가:전지현
 				bHasWeapon = true;
 			}
-			else if (ABaseItem* ItemToPickUp =
+			if (ABaseItem* ItemToPickUp =
 				Cast<ABaseItem>(PickableItem))
 			{
 				OnPickupItem();// 인벤토리용
@@ -785,11 +787,11 @@ const TArray<FInventoryOthers>& AMyCharacter::GetOthersItems() const
 	static TArray<FInventoryOthers> EmptyOthers;
 	return EmptyOthers;
 }
-bool AMyCharacter::AddItem(const FName& ItemKey, int32 Quantity)
+bool AMyCharacter::AddItem(const FName& ItemKey, int32 Quantity,EItemType ItemType)
 {
 	if (Inventory)
 	{
-		return Inventory->AddItem(ItemKey, Quantity);
+		return Inventory->AddItem(ItemKey, Quantity, ItemType);
 	}
 	return false;
 }
@@ -821,4 +823,31 @@ void AMyCharacter::SwapItem(int32 PrevIndex, int32 CurrentIndex, EItemType PrevS
 	check(Inventory);
 	Inventory->SwapItem(PrevIndex, CurrentIndex, PrevSlotType, CurrentSlotType);
 }
-
+const TArray<FInventoryAmmo>& AMyCharacter::GetAmmoItems() const
+{
+	if (Inventory && Inventory->InventorySubsystem)
+	{
+		return Inventory->InventorySubsystem->GetAmmoItems();
+	}
+	static TArray<FInventoryAmmo> EmptyAmmos;
+	return EmptyAmmos;
+}
+int32 AMyCharacter::SearchItemByNameAndType(const FName& ItemKey, const EItemType& ItemType) const
+{
+	check(Inventory);
+	int32 Result = Inventory->InventorySubsystem->SearchItemByNameAndType(ItemKey, ItemType);
+	return Result;
+}
+int32 AMyCharacter::SearchItemByName(const FName& ItemKey) const
+{
+	check(Inventory);
+	int32 Result = Inventory->InventorySubsystem->SearchItemByName(ItemKey);
+	return Result;
+}
+void AMyCharacter::SortAmmoItems(bool bIsAscending)
+{
+	if (Inventory)
+	{
+		Inventory->SortAmmoItems(bIsAscending);
+	}
+}
