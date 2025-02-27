@@ -3,8 +3,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Inventory/InventoryInterface.h"
+#include "Damageable.h"
 #include "MyCharacter.generated.h"
-
 
 class USpringArmComponent;
 class UCameraComponent;
@@ -15,7 +15,7 @@ class UInventoryComponent;
 class ABaseItem;
 
 UCLASS()
-class TEAM8_PROJECT_API AMyCharacter : public ACharacter ,public IInventoryInterface
+class TEAM8_PROJECT_API AMyCharacter : public ACharacter ,public IInventoryInterface, public IDamageable
 {
 	GENERATED_BODY()
 
@@ -32,12 +32,15 @@ public:
 	virtual const TArray<FInventoryConsumable>& GetConsumableItems() const override;
 	virtual const TArray<FInventoryEquipment>& GetEquipmentItems() const override;
 	virtual const TArray<FInventoryOthers>& GetOthersItems() const override;
+	virtual float GetHP() const override;
+	
 	// Set Method
 	virtual bool AddItem(const FName& ItemKey, int32 Quantity) override;
 	virtual bool RemoveItem(const FName& ItemKey, int32 Quantity) override;
 	virtual bool UseItem(int32 SlotIndex, EItemType ItemType) override;
 	virtual void SetGold(int32 NewGold) override;
 	virtual void SwapItem(int32 PrevIndex, int32 CurrentIndex, EItemType PrevSlotType, EItemType CurrentSlotType)override;
+	virtual void SetHP(float Value) override;
 
 public:
 	AMyCharacter();
@@ -95,6 +98,8 @@ protected:
 
 
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player")
+	float HP = 100.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSpeed")
 	float WalkSpeed = 400.0f;
@@ -125,6 +130,12 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
 	bool bIsAiming = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSetting")
+	float RotationSpeed = 5.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSetting")
+	FRotator NewRotation;
 
 	ABaseItem* PickableItem;
 
@@ -175,6 +186,9 @@ protected:
 
 	UFUNCTION()
 	void StopFire(const FInputActionValue& value);
+
+	UFUNCTION() //이동 시 캐릭터 보간 회전, turn in place 를 위한 
+	void CalculateRotation(float DeltaTime);
 
 
 	UFUNCTION()

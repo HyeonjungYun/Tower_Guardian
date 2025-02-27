@@ -52,6 +52,7 @@ void AMyCharacter::BeginPlay()
 	SprintSpeed = WalkSpeed * SprintSpeedMultiplier;
 	SlowWalkSpeed = WalkSpeed * SlowWalkSpeedMultiplier;
 }
+
 void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -255,6 +256,7 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void AMyCharacter::Tick(float DeltaTime)
 {
+	CalculateRotation(DeltaTime);
 	OnPickupItem();
 }
 
@@ -299,7 +301,7 @@ void AMyCharacter::OnPickupItem()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No overlapping item to pick up."));
+		//UE_LOG(LogTemp, Warning, TEXT("No overlapping item to pick up."));
 	}
 
 
@@ -361,11 +363,13 @@ void AMyCharacter::Move(const FInputActionValue& value)
 	if (!Controller)
 		return;
 
+	//카메라 바라보는 방향 = 캐릭터 바라보는 방향
 	const FVector2D MoveInput = value.Get<FVector2D>();
 	const FRotator Rotation = Controller->GetControlRotation();
-	const FRotator YawRatotion = FRotator(0, Rotation.Yaw, 0);
-	const FVector ForwardDir = FRotationMatrix(YawRatotion).GetUnitAxis(EAxis::X);
-	const FVector RightDir = FRotationMatrix(YawRatotion).GetUnitAxis(EAxis::Y);
+	const FRotator YawRotation = FRotator(0, Rotation.Yaw, 0);
+	const FVector ForwardDir = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+	const FVector RightDir = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+	SetActorRotation(NewRotation);
 
 	if (!FMath::IsNearlyZero(MoveInput.X))
 	{
@@ -376,8 +380,6 @@ void AMyCharacter::Move(const FInputActionValue& value)
 	{
 		AddMovementInput(RightDir, MoveInput.Y * MouseSensitivity);
 	}
-
-
 }
 
 void AMyCharacter::StartJump(const FInputActionValue& value)
@@ -410,6 +412,8 @@ void AMyCharacter::Look(const FInputActionValue& value)
 	{
 		AddControllerPitchInput(LookInput.Y * MouseSensitivity);
 	}
+
+
 }
 
 void AMyCharacter::StartSprint(const FInputActionValue& value)
@@ -571,6 +575,17 @@ void AMyCharacter::StopFire(const FInputActionValue& value)
 		CombatComponent->FireButtonPressed(false);
 	}
 }
+
+void AMyCharacter::CalculateRotation(float DeltaTime)
+{
+	const FRotator Rotation = Controller->GetControlRotation();
+	FRotator ActorRot = GetActorRotation();
+	FRotator InterpRotation = FMath::RInterpTo(ActorRot, Rotation, DeltaTime, RotationSpeed);
+	InterpRotation.Pitch = 0.f;
+	InterpRotation.Roll = 0.f;
+	NewRotation = InterpRotation;
+}
+
 void AMyCharacter::OnAiming()
 {
 	if (CombatComponent == nullptr)
@@ -679,6 +694,10 @@ const TArray<FInventoryOthers>& AMyCharacter::GetOthersItems() const
 	static TArray<FInventoryOthers> EmptyOthers;
 	return EmptyOthers;
 }
+float AMyCharacter::GetHP() const
+{
+	return HP;
+}
 bool AMyCharacter::AddItem(const FName& ItemKey, int32 Quantity)
 {
 	if (Inventory)
@@ -716,3 +735,22 @@ void AMyCharacter::SwapItem(int32 PrevIndex, int32 CurrentIndex, EItemType PrevS
 	Inventory->SwapItem(PrevIndex, CurrentIndex, PrevSlotType, CurrentSlotType);
 }
 
+void AMyCharacter::SetHP(float Value)
+{
+	HP = FMath::Clamp(0, 100, HP + Value);
+}
+
+
+/*
+평상시 상태에서 에임오프셋 적용
+
+무기 없는 상태
+무기 있는상태 - > Hip 자세 - > 무기 & 우클릭안했을때
+
+무기 있는상태 - > 조준 상태  → 우클릭 누르고
+
+
+무빙
+
+카메라 포워드 & 캐릭터 포워드는 항상 일치,  회전은 마우스 움직임, 키보드 입력은 이동만,  
+*/
