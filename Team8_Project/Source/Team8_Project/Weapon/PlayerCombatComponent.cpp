@@ -12,12 +12,15 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
 
+#include "PlayerCombatOverlay.h"
+
 UPlayerCombatComponent::UPlayerCombatComponent()
 {
 
 	PrimaryComponentTick.bCanEverTick = true; //디버그 틱
 	PlayerCharacter = nullptr;
 	EquippedWeapon = nullptr;
+
 }
 
 void UPlayerCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
@@ -170,6 +173,45 @@ void UPlayerCombatComponent::SetHUDCrosshairs(float DeltaTime)
 
 }
 
+void UPlayerCombatComponent::UpdateHealth()
+{
+	PlayerCrosshairHUD->CombatOverlay->HUDCurrentHealth = PlayerCurrentHealth;
+	PlayerCrosshairHUD->CombatOverlay->HUDMaxHealth = PlayerMaxHealth;
+
+	PlayerCrosshairHUD->CombatOverlay->UpdateHPSeg(PlayerCurrentHealth, PlayerMaxHealth);
+
+}
+
+void UPlayerCombatComponent::SetHUDHealth(float CurrentHealth, float MaxHealth)
+{
+
+	if (PlayerController)
+	{
+		PlayerCrosshairHUD = PlayerCrosshairHUD == nullptr ?
+			Cast<AWeaponCrosshairHUD>(PlayerController->GetHUD()) : PlayerCrosshairHUD;
+		bool bHUDValid = PlayerCrosshairHUD &&
+			PlayerCrosshairHUD->CombatOverlay;
+
+		if (bHUDValid)
+		{
+			PlayerCrosshairHUD->CombatOverlay->HUDCurrentHealth = PlayerCurrentHealth;
+			PlayerCrosshairHUD->CombatOverlay->HUDMaxHealth = PlayerMaxHealth;
+			PlayerCrosshairHUD->InitHUDMaxHealth = PlayerMaxHealth;
+			if (!bInitHpSeg)
+			{
+				PlayerCrosshairHUD->CombatOverlay->CreateHPSeg(PlayerMaxHealth);
+				bInitHpSeg = true;
+			}
+
+		}
+		
+	}
+}
+
+void UPlayerCombatComponent::SetHUDWeaponAmmo(int32 CurrentAmmo, int32 maxAmmo)
+{
+}
+
 void UPlayerCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -289,6 +331,7 @@ void UPlayerCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	SetHUDCrosshairs(DeltaTime);
+	SetHUDHealth(PlayerCurrentHealth, PlayerMaxHealth);
 	InterpFOV(DeltaTime);
 }
 

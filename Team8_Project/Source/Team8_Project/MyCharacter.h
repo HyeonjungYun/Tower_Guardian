@@ -233,7 +233,7 @@ public:
 	// HUD 접근을 위한
 	// 멤버 변수 및 함수
 	*/
-
+public:
 	class AMyPlayerController* MyPlayerController;
 	 
 };
