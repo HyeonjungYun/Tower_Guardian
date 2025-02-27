@@ -60,6 +60,7 @@ protected:
 	void UpdateEquipmentSlot();
 	void UpdateConsumableSlot();
 	void UpdateOthersSlot();
+	void UpdateAmmoSlot();
 
 	UPROPERTY(EditAnywhere, Category = "Slot")
 	TObjectPtr<class UTexture2D> DefaultTexture;

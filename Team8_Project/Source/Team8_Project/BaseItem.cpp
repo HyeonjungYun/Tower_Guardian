@@ -89,3 +89,8 @@ void ABaseItem::DestroyItem()
     Destroy();
 }
 
+EItemType ABaseItem::GetSlotType() const
+{
+    return SlotType;
+}
+
