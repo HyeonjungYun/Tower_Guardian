@@ -68,4 +68,7 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "HUD")
 	UUserWidget* GetHUDWidget() const;
+
+protected:
+	class AWeaponCrosshairHUD* WeaponCrosshairHUD;
 };

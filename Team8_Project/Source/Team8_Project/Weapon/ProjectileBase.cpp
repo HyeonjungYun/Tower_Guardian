@@ -7,6 +7,8 @@
 #include "Kismet/GameplayStatics.h" // Tracer
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
+#include "../Damageable.h"
+#include "SampleDamagableActor.h"
 
 // Sets default values
 AProjectileBase::AProjectileBase()
@@ -20,7 +22,8 @@ AProjectileBase::AProjectileBase()
 	// Set Collision
 	CollisionBox->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
 	CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
+	
 	CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility,ECollisionResponse::ECR_Block);
 	CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic,ECollisionResponse::ECR_Block);
 	
@@ -58,6 +61,18 @@ void AProjectileBase::BeginPlay()
 
 void AProjectileBase::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	if (OtherActor && OtherActor->GetClass()->ImplementsInterface(UDamageable::StaticClass()))
+	{
+
+		AController* InstigatorController = nullptr;
+		AActor* OwnerActor = GetOwner();
+		if (APawn* OwnerPawn = Cast<APawn>(OwnerActor))
+		{
+			InstigatorController = OwnerPawn->GetController();
+			UGameplayStatics::ApplyDamage(OtherActor, 50.f, InstigatorController, this, UDamageType::StaticClass());
+		}
+	}
+
 	Destroy();
 }
 

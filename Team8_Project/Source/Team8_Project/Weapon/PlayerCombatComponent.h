@@ -24,7 +24,11 @@ public:
 	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
 
 	void SetHUDCrosshairs(float DeltaTime); // 총 타입마다 달라질 크로스헤어조절
-
+	UFUNCTION(BlueprintCallable)
+	void UpdateHealth();
+	void SetHUDHealth(float CurrentHealth, float MaxHealth);
+	
+	void SetHUDWeaponAmmo(int32 CurrentAmmo, int32 maxAmmo);
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -78,4 +82,18 @@ protected:
 	
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	float ZoomInterpSpeed = 20.f;
+
+
+	// Status
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	float PlayerCurrentHealth = 80.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float PlayerMaxHealth = 100.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 CurWeaponAmmo;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 MaxWeaponAmmo;
+	bool bInitHpSeg = false;
 };

@@ -27,12 +27,33 @@ UCLASS()
 class TEAM8_PROJECT_API AWeaponCrosshairHUD : public AHUD
 {
 	GENERATED_BODY()
-	
+
 public:
 	virtual void DrawHUD() override;
 	void SetHUDPackage(const FHUDPackage& Package);
-	void DrawCrosshair(UTexture2D* Texture, FVector2D ViewportCenter,FVector2D Spread);
+	void DrawCrosshair(UTexture2D* Texture, FVector2D ViewportCenter, FVector2D Spread);
+
+	virtual void BeginPlay() override;
+	void AddCombatOverlay();
+	//void AddHealthOverlay();
+	void CallCreateHPSeg(float _InitHP);
+
 protected:
 	FHUDPackage HUDPackage;
 	float CrosshairSpreadMax = 16.f;
+
+
+public:
+	UPROPERTY(EditAnywhere, Category = "CombatOverlay")
+	TSubclassOf<class UUserWidget> CombatOverlayclass;
+
+	class UPlayerCombatOverlay* CombatOverlay;
+
+	UPROPERTY(EditAnywhere, Category = "CombatOverlay")
+	TSubclassOf<class UUserWidget> HealthWidgetclass;
+
+	class UHealthImageWidget* HealthWidget;
+
+	UPROPERTY(EditAnywhere)
+	float InitHUDMaxHealth;
 };
