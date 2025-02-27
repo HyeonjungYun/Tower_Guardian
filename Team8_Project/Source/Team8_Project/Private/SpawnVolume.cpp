@@ -42,7 +42,21 @@ AActor* ASpawnVolume::SpawnEnemy(TSubclassOf<AActor> EnemyClass)
 	);
 
 	if (ABaseEnemy* Enemy = Cast<ABaseEnemy>(SpawnedActor))
-		Enemy->SetPatrolPath(PatrolPath);
+		Enemy->SetSpawnVolume(this);
 	
 	return SpawnedActor;
+}
+
+FVector ASpawnVolume::GetWaypoint(int32 Index) const
+{
+	if (Waypoints.IsValidIndex(Index))
+		return GetActorLocation() + Waypoints[Index] * GetActorScale();
+
+	UE_LOG(LogTemp, Warning, TEXT("Waypoint 반환 실패"));
+	return FVector::Zero();
+}
+
+int32 ASpawnVolume::WaypointCount() const
+{
+	return Waypoints.Num();
 }

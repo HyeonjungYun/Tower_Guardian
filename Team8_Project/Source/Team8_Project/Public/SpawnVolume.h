@@ -17,17 +17,23 @@ public:
 	ASpawnVolume();
 
 public:
+	UFUNCTION(BlueprintCallable, Category = "Spawning")
+	AActor* SpawnEnemy(TSubclassOf<AActor> EnemyClass);
+
+	FVector GetWaypoint(int32 Index) const;
+	int32 WaypointCount() const;
+	
+private:
+	FVector GetSpawnPosition();
+	
+public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spawning")
 	USceneComponent* Scene;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spawning")
 	UBoxComponent* SpawningBox;
 
-	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Spawning")
-	APatrolPath* PatrolPath;
-
-	FVector GetSpawnPosition();
-
-	UFUNCTION(BlueprintCallable, Category = "Spawning")
-	AActor* SpawnEnemy(TSubclassOf<AActor> EnemyClass);
+protected:
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Waypoint", meta=(MakeEditWidget))
+	TArray<FVector> Waypoints;
 };

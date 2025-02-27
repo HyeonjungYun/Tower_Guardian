@@ -5,6 +5,8 @@
 #include "Team8_Project/Damageable.h"
 #include "BaseEnemy.generated.h"
 
+class ASpawnVolume;
+struct FAIStimulus;
 class UBehaviorTree;
 class UAISenseConfig_Sight;
 class UAIPerceptionComponent;
@@ -37,13 +39,14 @@ public:
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator,
 		AActor* DamageCauser) override;
+	virtual void Tick(float DeltaSeconds) override;
 
 	UFUNCTION(BlueprintCallable)
 	bool CanAttack();
 
 	UFUNCTION(BlueprintCallable)
-	bool CanAttackToType(TSubclassOf<AActor> AttackType);
-	bool CanAttackToType(TSubclassOf<AActor> AttackType, TArray<FOverlapResult>& OutOverlapResults);
+	bool CanAttackWithType(TSubclassOf<AActor> AttackType);
+	bool CanAttackWithType(TSubclassOf<AActor> AttackType, TArray<FOverlapResult>& OutOverlapResults);
 	
 	UFUNCTION(BlueprintCallable)
 	void Attack();
@@ -52,12 +55,12 @@ public:
 	bool IsAttacking();
 	
 	UFUNCTION(BlueprintCallable)
-	void SetPatrolLocationToNext();
+	void SetWaypointLocationToNext();
 
 	UFUNCTION(BlueprintCallable)
-	FVector GetPatrolLocation() const;
+	FVector GetWaypointLocation() const;
 
-	void SetPatrolPath(APatrolPath* Value);
+	void SetSpawnVolume(ASpawnVolume* Value);
 	
 	virtual float GetHP() const override;
 	virtual void SetHP(float Value) override;
@@ -65,13 +68,15 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	
+	virtual void Death();
+	
 	UFUNCTION()
 	virtual void OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
 	
-	virtual void Death();
 
 private:
 	float GetMaxAttackRange() const;
+	void RemoveUnattackableActor(TArray<FOverlapResult>& OutOverlapResults, TSubclassOf<AActor> AttackType);
 	
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -100,12 +105,14 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float MaxHP = 100;
-	
-	TObjectPtr<APatrolPath> PatrolPath;
-	int32 PatrolIndex;
-	
-	
-private:
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	float HP;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float RotationMul = 10.f;
+	
+	TObjectPtr<ASpawnVolume> SpawnVolume;
+	int32 WaypointIndex;
 };
 
