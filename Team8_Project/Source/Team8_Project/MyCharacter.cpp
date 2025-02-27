@@ -1,5 +1,4 @@
 ﻿#include "MyCharacter.h"
-
 #include "Components/CapsuleComponent.h"
 #include "EnhancedInputComponent.h"
 #include "MyPlayerController.h"
@@ -43,6 +42,14 @@ AMyCharacter::AMyCharacter()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+
+	// PlayerController 받아오기
+	MyPlayerController = Cast<AMyPlayerController>(Controller);
+	if (MyPlayerController)
+	{
+		// 초기화를 위한 현재 정보를 HUD로 넘기려면 여기서
+		// PC->HUD->HUD의 각종 UI 오버레이등을 사용
+	}
 }
 
 void AMyCharacter::BeginPlay()
@@ -274,7 +281,7 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void AMyCharacter::Tick(float DeltaTime)
 {
-	//OnPickupItem();
+	HideCameraIfCharacterClose();
 }
 
 void AMyCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
@@ -295,6 +302,7 @@ void AMyCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 
 void AMyCharacter::OnPickupItem()
 {
+
 	if (OverlappingItem)
 	{
 		FName ItemKey = OverlappingItem->GetItemType();
@@ -465,10 +473,9 @@ void AMyCharacter::StartPickUp(const FInputActionValue& value)
 		if (CombatComponent)
 		{
 			AWeaponBase* WeaponToEquip =
-				Cast<AWeaponBase>(PickableItem);
+				Cast<AWeaponBase>(PickableWeapon);
 
-
-			if (WeaponToEquip && CombatComponent->EquippedWeapon == nullptr)
+			if (WeaponToEquip)
 			{
 				// 주울수있는 아이템이 무기 인경우 && 빈손인 경우
 				CombatComponent->EquipWeapon(WeaponToEquip);
@@ -670,6 +677,28 @@ void AMyCharacter::ReleaseAiming()
 	}
 }
 
+void AMyCharacter::HideCameraIfCharacterClose()
+{
+	if ((Camera->GetComponentLocation()-GetActorLocation()).Size()<CameraThreshold)
+	{
+		GetMesh()->SetVisibility(false);
+		if (CombatComponent && CombatComponent->EquippedWeapon && CombatComponent->EquippedWeapon->GetWeaponMesh())
+		{
+			// 소유자=>유저1번 만 안보이게 
+			CombatComponent->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = true;
+		}
+	}
+	else
+	{
+		GetMesh()->SetVisibility(true);
+		if (CombatComponent && CombatComponent->EquippedWeapon && CombatComponent->EquippedWeapon->GetWeaponMesh())
+		{
+			// 소유자=>유저1번 만 안보이게 
+			CombatComponent->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = false;
+		}
+	}
+}
+
 void AMyCharacter::PlayFireMontage(bool bAiming)
 {
 	if (CombatComponent == nullptr ||
@@ -691,6 +720,15 @@ void AMyCharacter::PlayFireMontage(bool bAiming)
 void AMyCharacter::SetPickableItem(ABaseItem* OverlappedItem)
 {
 	PickableItem = OverlappedItem;
+}
+
+void AMyCharacter::SetPickableWeapon(AWeaponBase* OverlappedWeapon)
+{
+	if (OverlappedWeapon)
+	{
+		PickableWeapon = OverlappedWeapon;
+	}
+
 }
 
 void AMyCharacter::SortEquipmentItems(bool bIsAscending)

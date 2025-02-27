@@ -3,6 +3,8 @@
 #include "Team8_Project/Public/CH8_GameState.h"
 #include "EnhancedInputSubsystems.h"
 #include "Blueprint/UserWidget.h"
+#include "Weapon/WeaponCrosshairHUD.h"
+
 
 AMyPlayerController::AMyPlayerController()
 	:InputMappingContext(nullptr),
@@ -14,6 +16,7 @@ AMyPlayerController::AMyPlayerController()
 	HUDWidgetInstance(nullptr),
 	AimingAction(nullptr)
 {
+	WeaponCrosshairHUD = Cast<AWeaponCrosshairHUD>(GetHUD());
 }
 
 void AMyPlayerController::BeginPlay()
