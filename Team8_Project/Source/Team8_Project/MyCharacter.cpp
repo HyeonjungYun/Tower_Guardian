@@ -307,7 +307,7 @@ void AMyCharacter::OnPickupItem()
 	{
 		FName ItemKey = OverlappingItem->GetItemType();
 		EItemType SlotType = OverlappingItem->GetSlotType();
-		int32 Quantity = 1; 
+		int32 Quantity = OverlappingItem->GetQuantity();
 
 		if (Inventory)
 		{

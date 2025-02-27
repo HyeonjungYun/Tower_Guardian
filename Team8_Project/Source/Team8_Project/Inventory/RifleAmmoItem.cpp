@@ -9,4 +9,5 @@ ARifleAmmoItem::ARifleAmmoItem()
 	StaticMesh->SetupAttachment(GetRootComponent());
 	SlotType = EItemType::Ammo;
 	FItemType = "RifleAmmo";
+	Quantity = 100;
 }
