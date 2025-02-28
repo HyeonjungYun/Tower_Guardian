@@ -33,11 +33,20 @@ public:
 	class UHorizontalBox* HB_HealthMain;
 
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	class UBorder*AmmoBorder;
+	//UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	//class UBorder*AmmoBorder;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	class UHorizontalBox* HB_Ammo_Main;
+
+	UPROPERTY(VisibleAnywhere, meta =(BindWidget))
+	class UTextBlock* WeaponAmmoAmount;
+
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	class UTextBlock* InventoryAmmoAmount;
+	
+
+public:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
 	void CreateHPSeg(float Max_);

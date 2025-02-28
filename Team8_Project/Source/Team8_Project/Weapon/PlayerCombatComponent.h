@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "WeaponCrosshairHUD.h"
+#include "WeaponType.h"
 #include "PlayerCombatComponent.generated.h"
 
 class AWeaponBase;
@@ -97,7 +98,10 @@ protected:
 	int32 MaxWeaponAmmo;
 	bool bInitHpSeg = false;
 
-
+	// 테스트용 더미 코드 인벤토리
+	TMap<EWeaponType, int32> CarriedAmmoMap;
+	// 현재 들고있는 무기에 맞는 탄이 더미 인벤토리에 몇개있는지 Map에서 빼올 변수
+	int32 CurWeaponInvenAmmo;
 	/*
 		발사, 발사 속도 조절
 	*/

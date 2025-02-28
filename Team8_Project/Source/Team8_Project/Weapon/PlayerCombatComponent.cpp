@@ -23,6 +23,9 @@ UPlayerCombatComponent::UPlayerCombatComponent()
 	PlayerCharacter = nullptr;
 	EquippedWeapon = nullptr;
 
+
+	CarriedAmmoMap.Add(EWeaponType::EWT_Sniper,30);
+	CarriedAmmoMap.Add(EWeaponType::EWT_Rifle, 100);
 }
 
 void UPlayerCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
@@ -261,8 +264,19 @@ void UPlayerCombatComponent::EquipWeapon(AWeaponBase* WeaponToEquip)
 	{
 		PlayerController->InitHUDWeaponAmmo(EquippedWeapon->GetCurrrentWeaponAmmo(),
 			EquippedWeapon->GetMaxWeaponAmmo());
+		PlayerController->SetHUDWeaponAmmo(EquippedWeapon->GetCurrrentWeaponAmmo());
 	}
 
+	// 새로운 무기에 맞는 탄종 UI 출력
+	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
+	{
+		CurWeaponInvenAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
+	}
+
+	if (PlayerController->GetWeaponCrosshairHUD())
+	{
+		PlayerController->SetHUDCarriedAmmo(CurWeaponInvenAmmo);
+	}
 }
 
 void UPlayerCombatComponent::FireButtonPressed(bool bPressed)
@@ -282,7 +296,7 @@ void UPlayerCombatComponent::FireButtonPressed(bool bPressed)
 
 void UPlayerCombatComponent::ComponentFire()
 {
-	if (bIsCanFireinRate)
+	if (WeaponCanFire())
 	{
 		bIsCanFireinRate = false;
 		PlayerCharacter->PlayFireMontage(bIsAiming);
@@ -344,7 +358,7 @@ bool UPlayerCombatComponent::WeaponCanFire()
 {
 	if (EquippedWeapon == nullptr) return false;
 
-	return !EquippedWeapon->IsWeaponMagEmpty()&& !bIsCanFireinRate;
+	return !EquippedWeapon->IsWeaponMagEmpty() && bIsCanFireinRate;
 }
 
 void UPlayerCombatComponent::StartFireTimer()

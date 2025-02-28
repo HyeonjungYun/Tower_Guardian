@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "../Inventory/ItemInterface.h"
+#include "WeaponType.h"
 #include "WeaponBase.generated.h"
 
 
@@ -11,16 +12,6 @@ class USphereComponent;
 /*
 *	무기의 종류를 결정할 무기 종류 열거형 클래스
 */
-UENUM(BlueprintType)
-enum class EWeaponType : uint8
-{
-    EWT_None UMETA(DisplayName="None"),
-    EWT_Pistol UMETA(DisplayName = "Pistol"),
-    EWT_Rifle UMETA(DisplayName = "Rifle"),
-    EWT_Shotgun UMETA(DisplayName = "Shotgun"),
-    EWT_RocketLauncher UMETA(DisplayName = "Rocket Launcher"),
-    EWT_Sniper UMETA(DisplayName = "BoltAction")
-};
 
 /*
     무기의 상태
@@ -94,6 +85,9 @@ protected:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties")
     EWeaponState WeaponState;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+    FName AmmoItemKey;
 
     // 총기용 USkeletalMeshComponent 추가
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|Component")

@@ -5,6 +5,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Weapon/WeaponCrosshairHUD.h"
 #include "Weapon/PlayerCombatOverlay.h"
+#include "Components/TextBlock.h"
 
 AMyPlayerController::AMyPlayerController()
 	:InputMappingContext(nullptr),
@@ -64,6 +65,21 @@ void AMyPlayerController::SetHUDWeaponAmmo(int32 Ammo)
 	if (bHUDValid)
 	{
 		WeaponCrosshairHUD->CombatOverlay->UpdateAmmoSeg(Ammo);
+
+		FString WeaponAmmoText = FString::Printf(TEXT("%d"), Ammo);
+		WeaponCrosshairHUD->CombatOverlay->WeaponAmmoAmount->SetText(FText::FromString(WeaponAmmoText));
+	}
+}
+
+void AMyPlayerController::SetHUDCarriedAmmo(int32 Ammo)
+{
+	WeaponCrosshairHUD = WeaponCrosshairHUD == nullptr ? Cast<AWeaponCrosshairHUD>(GetHUD()) : WeaponCrosshairHUD;
+	bool bHUDValid = WeaponCrosshairHUD &&
+		WeaponCrosshairHUD->CombatOverlay;
+	if (bHUDValid)
+	{
+		FString InventoryAmmoText = FString::Printf(TEXT("%d"), Ammo);
+		WeaponCrosshairHUD->CombatOverlay->InventoryAmmoAmount->SetText(FText::FromString(InventoryAmmoText));
 	}
 }
 
