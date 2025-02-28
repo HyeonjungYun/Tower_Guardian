@@ -18,6 +18,8 @@ ACH8_GameState::ACH8_GameState()
 	, ElapsedSeconds(0)
 	, SpawnedEnemy(0)
 	, KilledEnemy(0)
+	, RemainingHeistTime(0)
+	, RemainingInfinityAmmoTime(0)
 {
 	OnGameSetGold.AddUObject(this, &ACH8_GameState::SetGold);
 	OnGameKillEnemy.BindUObject(this, &ACH8_GameState::UpdatedKilledEnemy);
@@ -51,6 +53,37 @@ void ACH8_GameState::UpdateHUD()
 				if (UTextBlock* TempEnemyText = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("TempEnemyText"))))
 				{
 					TempEnemyText->SetText(FText::FromString(FString::Printf(TEXT("KilledEnemy / SpawnedEnemy :\n%d\t\t\t/ %d"), KilledEnemy, SpawnedEnemy)));
+				}
+
+				if (GetWorldTimerManager().IsTimerActive(HeistTimerHandle))
+				{
+					if (UTextBlock* HeistTime = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("HeistTime"))))
+					{
+						if (RemainingHeistTime <= 0)
+						{
+							RemainingHeistTime = 0;
+							HeistTime->SetText(FText::FromString(FString::Printf(TEXT(""))));
+							GetWorldTimerManager().ClearTimer(HeistTimerHandle);
+							return;
+						}
+						HeistTime->SetText(FText::FromString(FString::Printf(TEXT("Heist : %ds"), RemainingHeistTime)));
+					}
+
+				}
+
+				if (GetWorldTimerManager().IsTimerActive(InfinityAmmoTimerHandle))
+				{
+					if (UTextBlock* InfinityAmmoTime = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("InfinityAmmoTime"))))
+					{
+						if (RemainingInfinityAmmoTime <= 0)
+						{
+							RemainingInfinityAmmoTime = 0;
+							InfinityAmmoTime->SetText(FText::FromString(FString::Printf(TEXT(""))));
+							GetWorldTimerManager().ClearTimer(InfinityAmmoTimerHandle);
+							return;
+						}
+						InfinityAmmoTime->SetText(FText::FromString(FString::Printf(TEXT("Infinity Ammo : %ds"), RemainingInfinityAmmoTime)));
+					}
 				}
 			}
 		}
@@ -90,8 +123,7 @@ void ACH8_GameState::StartGame()
 		this, 
 		&ACH8_GameState::UpdateGameTimer,
 		1.0f,
-		true,
-		0.0f
+		true
 	);
 
 	GetWorldTimerManager().SetTimer(
@@ -144,6 +176,22 @@ void ACH8_GameState::UpdatedKilledEnemy()
 	KilledEnemy++;
 }
 
+void ACH8_GameState::UpdatedHeistDuration()
+{
+	if (GetWorldTimerManager().IsTimerActive(HeistTimerHandle))
+	{
+		RemainingHeistTime--;
+	}
+}
+
+void ACH8_GameState::UpdatedInfinityAmmoDuration()
+{
+	if (GetWorldTimerManager().IsTimerActive(InfinityAmmoTimerHandle))
+	{
+		RemainingInfinityAmmoTime--;
+	}
+}
+
 int32 ACH8_GameState::GetGold()
 {
 	return Gold;
@@ -156,3 +204,37 @@ ASpawnVolume* ACH8_GameState::GetSpawnVolume() const
 	return (FoundVolumes.Num() > 0) ? Cast<ASpawnVolume>(FoundVolumes[0]) : nullptr;
 }
 
+
+void ACH8_GameState::UseHeistItem()
+{
+	if (GetWorldTimerManager().IsTimerActive(HeistTimerHandle))
+	{
+		GetWorldTimerManager().ClearTimer(HeistTimerHandle);
+	}
+
+	RemainingHeistTime = 90;
+	GetWorldTimerManager().SetTimer(
+		HeistTimerHandle,
+		this,
+		&ACH8_GameState::UpdatedHeistDuration,
+		1.0f,
+		true
+	);
+}
+
+void ACH8_GameState::UseInfinityAmmoItem()
+{
+	if (GetWorldTimerManager().IsTimerActive(InfinityAmmoTimerHandle))
+	{
+		GetWorldTimerManager().ClearTimer(InfinityAmmoTimerHandle);
+	}
+	
+	RemainingInfinityAmmoTime = 5;
+	GetWorldTimerManager().SetTimer(
+		InfinityAmmoTimerHandle,
+		this,
+		&ACH8_GameState::UpdatedInfinityAmmoDuration,
+		1.0f,
+		true
+	);
+}

@@ -45,6 +45,12 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Gold")
 	int32 Gold;
 
+	UPROPERTY()
+	int32 RemainingHeistTime;
+
+	UPROPERTY()
+	int32 RemainingInfinityAmmoTime;
+
 	
 	int32 SpawnedEnemy;
 	int32 KilledEnemy;
@@ -52,11 +58,18 @@ public:
 	FOnGameGetGold OnGameSetGold;
 	FOnGameKillEnemy OnGameKillEnemy;
 
+	FTimerHandle HeistTimerHandle;
+	FTimerHandle InfinityAmmoTimerHandle;
 	FTimerHandle GameTimerHandle;
 	FTimerHandle SpawnTimerHandle;
 	FTimerHandle SpawnDurationTimerHandle;
 	FTimerHandle HUDUpdateTimerHandle;
 
+	UFUNCTION(BlueprintCallable, Category = "Heist")
+	void UseHeistItem();
+
+	UFUNCTION(BlueprintCallable, Category = "InfinityAmmo")
+	void UseInfinityAmmoItem();
 	
 	
 	void UpdateHUD();
@@ -71,6 +84,8 @@ public:
 	void SpawnEnemyPerTime();
 	void UpdatedSpawnedEnemy();
 	void UpdatedKilledEnemy();
+	void UpdatedHeistDuration();
+	void UpdatedInfinityAmmoDuration();
 	int32 GetGold();
 
 private:
