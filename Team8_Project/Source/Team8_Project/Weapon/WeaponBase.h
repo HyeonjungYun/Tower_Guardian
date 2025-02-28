@@ -168,8 +168,13 @@ public:
     void SetMaxWeaponAmmo(int32 _Ammo);
 
     bool IsWeaponMagEmpty();
+
+    float GetWeaponDamage();
+    void SetWeaponDamage(float NewDamage);
 protected:
-    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Ammo")
+    float WeaponDamage = 50.f;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Ammo")
     int32 CurrentWeaponAmmo;
 

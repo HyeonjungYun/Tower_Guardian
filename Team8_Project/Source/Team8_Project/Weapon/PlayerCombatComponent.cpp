@@ -384,6 +384,11 @@ void UPlayerCombatComponent::InterpFOV(float DeltaTime)
 	}
 }
 
+AWeaponBase* UPlayerCombatComponent::GetEquippedWeapon()
+{
+	return EquippedWeapon != nullptr ? EquippedWeapon:nullptr;
+}
+
 bool UPlayerCombatComponent::WeaponCanFire()
 {
 	if (EquippedWeapon == nullptr) return false;

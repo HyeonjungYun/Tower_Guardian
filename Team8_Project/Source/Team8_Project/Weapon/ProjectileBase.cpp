@@ -12,6 +12,9 @@
 #include "../MyPlayerController.h"
 #include "WeaponCrosshairHUD.h"
 #include "PlayerCombatOverlay.h"
+#include "../MyCharacter.h"
+#include "PlayerCombatComponent.h"
+#include "WeaponBase.h"
 
 // Sets default values
 AProjectileBase::AProjectileBase()
@@ -42,6 +45,15 @@ void AProjectileBase::BeginPlay()
 {
 	Super::BeginPlay();
 	
+
+	AMyCharacter* OwnerPlayer = Cast<AMyCharacter>(GetOwner());
+
+	if (OwnerPlayer)
+	{
+		ProjectileDamage =
+		OwnerPlayer->GetCombatComponent()->GetEquippedWeapon()->GetWeaponDamage();
+	}
+
 	// 총알 발사 후 총알 표현
 	if (Tracer)
 	{
@@ -72,8 +84,8 @@ void AProjectileBase::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UP
 		if (APawn* OwnerPawn = Cast<APawn>(OwnerActor))
 		{
 			InstigatorController = OwnerPawn->GetController();
-			UGameplayStatics::ApplyDamage(OtherActor, 50.f, InstigatorController, this, UDamageType::StaticClass());
-			
+			UGameplayStatics::ApplyDamage(OtherActor, ProjectileDamage, InstigatorController, this, UDamageType::StaticClass());
+
 			AMyPlayerController* PC = Cast<AMyPlayerController>(InstigatorController);
 			if (PC)
 			{
@@ -86,7 +98,6 @@ void AProjectileBase::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UP
 					}
 				}
 			}
-			
 		}
 	}
 

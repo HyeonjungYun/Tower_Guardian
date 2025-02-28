@@ -28,7 +28,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UpdateHealth();
 	void SetHUDHealth(float CurrentHealth, float MaxHealth);
-
+	AWeaponBase* GetEquippedWeapon();
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -43,6 +43,8 @@ protected:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction);
 
 	void InterpFOV(float DeltaTime);
+
+
 protected:
 	class AMyCharacter* PlayerCharacter;
 	class AMyPlayerController* PlayerController;

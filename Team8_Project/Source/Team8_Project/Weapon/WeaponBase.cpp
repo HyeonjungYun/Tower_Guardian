@@ -126,6 +126,16 @@ bool AWeaponBase::IsWeaponMagEmpty()
 	return CurrentWeaponAmmo <= 0;
 }
 
+float AWeaponBase::GetWeaponDamage()
+{
+	return WeaponDamage;
+}
+
+void AWeaponBase::SetWeaponDamage(float NewDamage)
+{
+	WeaponDamage = NewDamage;
+}
+
 void AWeaponBase::Dropped()
 {
 	SetWeaponState(EWeaponState::EWT_Dropped);
