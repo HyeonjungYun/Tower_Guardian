@@ -631,3 +631,31 @@ bool UInventorySubsystem::AddOthersItem(const FName& ItemKey, int32 Quantity, UD
 	}
 	return true;
 }
+bool UInventorySubsystem::AddItem(const FName& ItemKey, int32 Quantity, EItemType ItemType, UDataTable* SelectedDataTable)
+{
+	switch (ItemType)
+	{
+	case EItemType::Consumable:
+	{
+		return AddConsumableItem(ItemKey, Quantity, SelectedDataTable);
+	}
+	case EItemType::Others:
+	{
+		return AddOthersItem(ItemKey, Quantity, SelectedDataTable);
+	}
+	case EItemType::Ammo:
+	{
+		return AddAmmoItem(ItemKey, Quantity, SelectedDataTable);
+	}
+	case EItemType::Equipment:
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Equipment item addition is not supported yet."));
+		return false;
+	}
+	default:
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Unknown item type!"));
+		return false;
+	}
+	}
+}

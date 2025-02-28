@@ -49,9 +49,3 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
     float ItemPurchasePrice;
 };
-// Component에 Selected Table 변수하나 만들기 
-// ADD를 테이블별로 나누기 작업을 하자  , 
-// 서브시스템ㅇ만 ADD를 나누고 컴포넌트에서 호출하는걸로
-// 외부나 인터페이스에서 수정할건 없다 add호출해도 Component에서 걸러주면되니깐
-// 그리고 서브시스템에 Get을 가져와서 외부에서 검색보다는 Search로 열어주자
-// ItemType과 Name을 넣어줘야겠다 
