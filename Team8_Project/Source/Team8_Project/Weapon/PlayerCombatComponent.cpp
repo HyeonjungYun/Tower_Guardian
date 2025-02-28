@@ -14,6 +14,8 @@
 
 #include "PlayerCombatOverlay.h"
 
+#include "TimerManager.h"
+
 UPlayerCombatComponent::UPlayerCombatComponent()
 {
 
@@ -271,18 +273,26 @@ void UPlayerCombatComponent::FireButtonPressed(bool bPressed)
 	// 애니메이션 재생
 	if (PlayerCharacter&& bFireButtonPressed)
 	{
-
-		FHitResult HitResult;
-		TraceUnderCrosshairs(HitResult);
-
-		PlayerCharacter->PlayFireMontage(bIsAiming);
-		EquippedWeapon->Fire(HitTargetPos);
-	
-		// 총을 쐈을 떄 벌어질 조준선에 크기에 더해질 값
-		CrosshairShootingFactor = 0.75f;
+		ComponentFire();
 	}
 
 
+
+}
+
+void UPlayerCombatComponent::ComponentFire()
+{
+	if (bIsCanFireinRate)
+	{
+		bIsCanFireinRate = false;
+		PlayerCharacter->PlayFireMontage(bIsAiming);
+		EquippedWeapon->Fire(HitTargetPos);
+
+		// 총을 쐈을 떄 벌어질 조준선에 크기에 더해질 값
+		CrosshairShootingFactor = 0.75f;
+
+		StartFireTimer();
+	}
 
 }
 
@@ -330,10 +340,42 @@ void UPlayerCombatComponent::InterpFOV(float DeltaTime)
 	}
 }
 
+bool UPlayerCombatComponent::WeaponCanFire()
+{
+	if (EquippedWeapon == nullptr) return false;
+
+	return !EquippedWeapon->IsWeaponMagEmpty()&& !bIsCanFireinRate;
+}
+
+void UPlayerCombatComponent::StartFireTimer()
+{
+	if (EquippedWeapon == nullptr || PlayerCharacter == nullptr)
+	{
+		return;
+	}
+	PlayerCharacter->GetWorldTimerManager().SetTimer(
+	FireTimer,
+		this,
+		&UPlayerCombatComponent::FireTimerFinished,
+		EquippedWeapon->WeaponFireRate);
+}
+
+void UPlayerCombatComponent::FireTimerFinished()
+{
+	bIsCanFireinRate = true;
+	if (bFireButtonPressed&&EquippedWeapon&&EquippedWeapon->bIsWeaponAutomatic)
+	{
+		ComponentFire();
+	}
+
+}
+
 void UPlayerCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
+	FHitResult HitResult;
+	TraceUnderCrosshairs(HitResult);
+	
 	SetHUDCrosshairs(DeltaTime);
 	SetHUDHealth(PlayerCurrentHealth, PlayerMaxHealth);
 	InterpFOV(DeltaTime);

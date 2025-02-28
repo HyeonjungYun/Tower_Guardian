@@ -36,6 +36,7 @@ protected:
 
 	void FireButtonPressed(bool bPressed);
 
+
 	void SetAiming(bool _bIsAiming);
 	
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction);
@@ -95,4 +96,22 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 MaxWeaponAmmo;
 	bool bInitHpSeg = false;
+
+
+	/*
+		발사, 발사 속도 조절
+	*/
+public:
+	
+	bool bIsCanFireinRate = true;// 무기 발사속도에따라 
+	void StartFireTimer();
+	void FireTimerFinished();
+	bool WeaponCanFire();
+	void ComponentFire();
+
+protected:
+	FTimerHandle FireTimer;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	float FireDelay;
 };

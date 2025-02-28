@@ -106,7 +106,7 @@ void AWeaponBase::ActivateItem(AActor* Activator)
 
 void AWeaponBase::SpendRound()
 {
-	--CurrentWeaponAmmo;
+	CurrentWeaponAmmo = FMath::Clamp(CurrentWeaponAmmo - 1, 0, MaxWeaponAmmo);
 	OwnerPlayerCharacter = OwnerPlayerCharacter == nullptr ? Cast<AMyCharacter>(GetOwner()) : OwnerPlayerCharacter;
 
 	if (OwnerPlayerCharacter)
@@ -118,6 +118,11 @@ void AWeaponBase::SpendRound()
 			OwnerPlayerController->SetHUDWeaponAmmo(CurrentWeaponAmmo);
 		}
 	}
+}
+
+bool AWeaponBase::IsWeaponMagEmpty()
+{
+	return CurrentWeaponAmmo <= 0;
 }
 
 void AWeaponBase::Dropped()

@@ -173,6 +173,8 @@ public:
 
     UFUNCTION(BlueprintCallable)
     void SetMaxWeaponAmmo(int32 _Ammo);
+
+    bool IsWeaponMagEmpty();
 protected:
     
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Ammo")
@@ -181,6 +183,12 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Ammo")
     int32 MaxWeaponAmmo;
 
+public:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Fire")
+    bool bIsWeaponAutomatic = true;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Fire")
+    float WeaponFireRate = .15f;
     /*
         무기 버리기
     */
