@@ -609,13 +609,7 @@ void AMyCharacter::StartReload(const FInputActionValue& value)
 {
 	if (value.Get<bool>())
 	{
-		if (GetCharacterMovement())
-		{
-			if (GEngine) //for debug
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StartReload!"));
-			}
-		}
+		CombatComponent->StartWeaponReload();
 	}
 }
 
@@ -714,6 +708,11 @@ void AMyCharacter::PlayFireMontage(bool bAiming)
 		SectionName = bAiming ? FName("RifleAim") : FName("RifleHip");
 		AnimInstance->Montage_JumpToSection(SectionName);
 	}
+}
+
+UPlayerCombatComponent* AMyCharacter::GetCombatComponent()
+{
+	return CombatComponent;
 }
 
 

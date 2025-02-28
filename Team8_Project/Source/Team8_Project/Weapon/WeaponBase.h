@@ -141,8 +141,7 @@ public:
     USphereComponent* GetAreaSphere() const { return AreaSphere; }
     USkeletalMeshComponent* GetWeaponMesh() const { return WeaponSkeletalMesh; }
 
-    UFUNCTION(BlueprintCallable)
-    virtual void Reload();
+
 protected:
     virtual void BeginPlay() override;
 
@@ -186,7 +185,23 @@ public:
     /*
         무기 버리기
     */
+
 public:
     UFUNCTION()
     void Dropped();
+
+    /***
+        재장전
+    ***/
+public:
+    UFUNCTION(BlueprintCallable)
+    virtual void Reload();
+    UFUNCTION()
+    float GetTimeToFinishReload();
+    UFUNCTION()
+    void SetTimeToFinishReload(float NewReloadTime);
+protected:
+
+    UPROPERTY(EditAnywhere,BlueprintReadWrite)
+    float TimeToFinishReload = 2.f;
 };

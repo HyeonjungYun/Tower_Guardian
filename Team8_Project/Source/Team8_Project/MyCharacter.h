@@ -237,7 +237,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void ShowSniperScopeWidget(bool bShowScope);
 	// 블루프린트에서 재생
-
+	UPlayerCombatComponent* GetCombatComponent();
 
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return Camera; };
 	/*

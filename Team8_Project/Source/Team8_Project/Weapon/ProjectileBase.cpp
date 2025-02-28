@@ -9,6 +9,9 @@
 #include "Sound/SoundCue.h"
 #include "../Damageable.h"
 #include "SampleDamagableActor.h"
+#include "../MyPlayerController.h"
+#include "WeaponCrosshairHUD.h"
+#include "PlayerCombatOverlay.h"
 
 // Sets default values
 AProjectileBase::AProjectileBase()
@@ -70,6 +73,20 @@ void AProjectileBase::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UP
 		{
 			InstigatorController = OwnerPawn->GetController();
 			UGameplayStatics::ApplyDamage(OtherActor, 50.f, InstigatorController, this, UDamageType::StaticClass());
+			
+			AMyPlayerController* PC = Cast<AMyPlayerController>(InstigatorController);
+			if (PC)
+			{
+				AWeaponCrosshairHUD* WCHUD = Cast<AWeaponCrosshairHUD>(PC->GetHUD());
+				if (WCHUD)
+				{
+					if (WCHUD->CombatOverlay)
+					{
+						WCHUD->CombatOverlay->PlayHitMarker();
+					}
+				}
+			}
+			
 		}
 	}
 

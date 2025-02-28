@@ -98,6 +98,8 @@ protected:
 	int32 MaxWeaponAmmo;
 	bool bInitHpSeg = false;
 
+
+public:
 	// 테스트용 더미 코드 인벤토리
 	TMap<EWeaponType, int32> CarriedAmmoMap;
 	// 현재 들고있는 무기에 맞는 탄이 더미 인벤토리에 몇개있는지 Map에서 빼올 변수
@@ -118,4 +120,20 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	float FireDelay;
+
+
+	/***
+			재 장 전
+	***/
+
+public:
+
+
+	void StartWeaponReload();
+	
+	void OnFinishWeaponReload();
+protected:
+	bool bIsReloading = false;
+	
+	FTimerHandle FReloadTimerHandle;
 };

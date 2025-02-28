@@ -45,6 +45,7 @@ public:
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	class UTextBlock* InventoryAmmoAmount;
 	
+	class UUserWidget* HitMarker;
 
 public:
 
@@ -60,4 +61,6 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "UI")
 	void UpdateAmmoSeg(int32 PlayerCurrentAmmo);
 
+	UFUNCTION(BlueprintCallable)
+	void PlayHitMarker();
 };

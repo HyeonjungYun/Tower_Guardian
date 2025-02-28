@@ -310,6 +310,36 @@ void UPlayerCombatComponent::ComponentFire()
 
 }
 
+void UPlayerCombatComponent::StartWeaponReload()
+{
+	if (EquippedWeapon)
+	{
+		bIsReloading = true;
+	
+		if (PlayerCharacter)
+		{
+			PlayerCharacter->GetWorldTimerManager().SetTimer(
+				FReloadTimerHandle,
+				this,
+				&UPlayerCombatComponent::OnFinishWeaponReload,
+				EquippedWeapon->GetTimeToFinishReload());
+		}
+
+	
+	}
+	
+}
+
+
+void UPlayerCombatComponent::OnFinishWeaponReload()
+{
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->Reload();
+		bIsReloading = false;
+	}
+}
+
 void UPlayerCombatComponent::SetAiming(bool _bIsAiming)
 {
 	if (PlayerCharacter == nullptr || EquippedWeapon == nullptr)
@@ -358,7 +388,7 @@ bool UPlayerCombatComponent::WeaponCanFire()
 {
 	if (EquippedWeapon == nullptr) return false;
 
-	return !EquippedWeapon->IsWeaponMagEmpty() && bIsCanFireinRate;
+	return !EquippedWeapon->IsWeaponMagEmpty() && bIsCanFireinRate && !bIsReloading;
 }
 
 void UPlayerCombatComponent::StartFireTimer()
