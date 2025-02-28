@@ -9,6 +9,7 @@
 #include "ConsumableItemRow.h"  
 #include "WeaponAmmunitionRow.h"
 #include "OtherItemRow.h"
+#include "../Weapon/WeaponBase.h"
 #include "InventorySubsystem.generated.h"
 
 UCLASS()
@@ -83,7 +84,11 @@ public:
 	int32 SearchItemByNameAndType(const FName& ItemKey, const EItemType& ItemType) const;
 
 	bool AddItem(const FName& ItemKey, int32 Quantity, EItemType ItemType, UDataTable* SelectedDataTable);
-	 
+
+	//int32 ReturnAmmo(int32 RequiredAmmo,EWeaponType WeaponType);
+	//FName ReturnAmmoName(EWeaponType WeaponType);
+	//SearchItemByNameAndType(FName findedName , EItemType :: Ammo)
+	//
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
 	TArray<FInventoryConsumable> ConsumableItems;
