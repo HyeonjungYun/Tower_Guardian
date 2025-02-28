@@ -123,13 +123,22 @@ bool UInventoryComponent::UseItem(int32 SlotIndex, EItemType ItemType)
 		bool bResult = InventorySubsystem->UseItem(SlotIndex, ItemType);
 		if (bResult)
 		{
-			
+			AActor* OwnerActor = GetOwner();
+			if (OwnerActor)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("%s"),*OwnerActor->GetName());
+				return bResult;
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("No Actor"));
+
+			}
+			return bResult;
 		}
 	
 		return bResult;
 	}
-
-	//여기 어차피 타입이 들어오네 
 	return false;
 }
 void UInventoryComponent::UpdateInventoryUI()
@@ -153,56 +162,6 @@ bool UInventoryComponent::SelectDataTableAdd(const FName& ItemKey, int32 Quantit
 	UDataTable* SelectedDataTable = SelectDataTable(ItemKey,Quantity,ItemType);
 	bool bResult = InventorySubsystem->AddItem(ItemKey, Quantity, ItemType, SelectedDataTable);
 	return bResult;
-	//switch (ItemType)
-	//{
-	//case EItemType::Equipment:
-	//{
-
-	//	//SelectedDataTable = 
-	//	return false;
-	//	break;
-	//}
-	//case EItemType::Consumable:
-	//{
-	//	if (!ConsumableItemDataTable)
-	//	{
-	//		return false;
-	//	}
-	//	UDataTable* SelectedConsumableDataTable = ConsumableItemDataTable;
-	//	bool bResult = InventorySubsystem->AddConsumableItem(ItemKey, Quantity, SelectedConsumableDataTable);
-	//	
-	//	return bResult;
-	//	break;
-	//}
-	//case EItemType::Others:
-	//{
-	//	if (!OtherItemDataTable)
-	//	{
-	//		return false;
-	//	}
-	//	UDataTable* SelectedConsumableDataTable = OtherItemDataTable;
-	//	bool bResult = InventorySubsystem->AddOthersItem(ItemKey, Quantity, SelectedConsumableDataTable);
-
-	//	return bResult;
-	//	
-	//	break;
-	//}
-	//case EItemType::Ammo:
-	//{
-	//	if (!AmmoItemDataTable)
-	//	{
-	//		return false;
-	//	}
-	//	UDataTable* SelectedAmmoDataTable = AmmoItemDataTable;
-	//	bool bResult = InventorySubsystem->AddAmmoItem(ItemKey, Quantity, SelectedAmmoDataTable);
-
-	//	return bResult;
-	//	break;
-	//}
-	//default:
-	//	return false;
-	//	break;
-	//}
 }
 UDataTable* UInventoryComponent::SelectDataTable(const FName& ItemKey, int32 Quantity, const EItemType ItemType) const
 {

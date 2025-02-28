@@ -109,25 +109,30 @@ FReply USlotWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const F
 			{
 
 			case EItemType::Equipment:
-				if (InventoryInterface->GetEquipmentItems().IsValidIndex(SlotIndex))
+				if (InventoryInterface->GetEquipmentItems().IsValidIndex(SlotIndex)&&
+					!InventoryInterface->GetEquipmentItems()[SlotIndex].ItemID.IsNone())
 				{
 					bIsSuccess = true;
 				}
 				break;
 			case EItemType::Consumable:
-				if (InventoryInterface->GetConsumableItems().IsValidIndex(SlotIndex))
+				if (InventoryInterface->GetConsumableItems().IsValidIndex(SlotIndex)&&
+					!InventoryInterface->GetConsumableItems()[SlotIndex].ItemID.IsNone())
+					
 				{
 					bIsSuccess = true;
 				}
 				break;
 			case EItemType::Others:
-				if (InventoryInterface->GetOthersItems().IsValidIndex(SlotIndex))
+				if (InventoryInterface->GetOthersItems().IsValidIndex(SlotIndex)&&
+					!InventoryInterface->GetOthersItems()[SlotIndex].ItemID.IsNone())
 				{
 					bIsSuccess = true;
 				}
 				break;
 			case EItemType::Ammo:
-				if (InventoryInterface->GetAmmoItems().IsValidIndex(SlotIndex))
+				if (InventoryInterface->GetAmmoItems().IsValidIndex(SlotIndex)&&
+					!InventoryInterface->GetAmmoItems()[SlotIndex].ItemID.IsNone())
 				{
 					bIsSuccess = true;
 				}
