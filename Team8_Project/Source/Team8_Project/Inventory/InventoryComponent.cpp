@@ -121,9 +121,15 @@ bool UInventoryComponent::UseItem(int32 SlotIndex, EItemType ItemType)
 	if (InventorySubsystem)
 	{
 		bool bResult = InventorySubsystem->UseItem(SlotIndex, ItemType);
+		if (bResult)
+		{
+			
+		}
 	
 		return bResult;
 	}
+
+	//여기 어차피 타입이 들어오네 
 	return false;
 }
 void UInventoryComponent::UpdateInventoryUI()
@@ -137,61 +143,108 @@ void UInventoryComponent::SwapItem(int32 PrevIndex, int32 CurrentIndex, EItemTyp
 {
 	if (PrevSlotType == CurrentSlotType)
 	{
-		check(InventorySubsystem);
+		ensure(InventorySubsystem);
 		InventorySubsystem->SwapItem(PrevIndex, CurrentIndex, PrevSlotType, CurrentSlotType);
 		UpdateInventoryUI();
 	}
 }
 bool UInventoryComponent::SelectDataTableAdd(const FName& ItemKey, int32 Quantity,const EItemType ItemType) const
 {
+	UDataTable* SelectedDataTable = SelectDataTable(ItemKey,Quantity,ItemType);
+	bool bResult = InventorySubsystem->AddItem(ItemKey, Quantity, ItemType, SelectedDataTable);
+	return bResult;
+	//switch (ItemType)
+	//{
+	//case EItemType::Equipment:
+	//{
+
+	//	//SelectedDataTable = 
+	//	return false;
+	//	break;
+	//}
+	//case EItemType::Consumable:
+	//{
+	//	if (!ConsumableItemDataTable)
+	//	{
+	//		return false;
+	//	}
+	//	UDataTable* SelectedConsumableDataTable = ConsumableItemDataTable;
+	//	bool bResult = InventorySubsystem->AddConsumableItem(ItemKey, Quantity, SelectedConsumableDataTable);
+	//	
+	//	return bResult;
+	//	break;
+	//}
+	//case EItemType::Others:
+	//{
+	//	if (!OtherItemDataTable)
+	//	{
+	//		return false;
+	//	}
+	//	UDataTable* SelectedConsumableDataTable = OtherItemDataTable;
+	//	bool bResult = InventorySubsystem->AddOthersItem(ItemKey, Quantity, SelectedConsumableDataTable);
+
+	//	return bResult;
+	//	
+	//	break;
+	//}
+	//case EItemType::Ammo:
+	//{
+	//	if (!AmmoItemDataTable)
+	//	{
+	//		return false;
+	//	}
+	//	UDataTable* SelectedAmmoDataTable = AmmoItemDataTable;
+	//	bool bResult = InventorySubsystem->AddAmmoItem(ItemKey, Quantity, SelectedAmmoDataTable);
+
+	//	return bResult;
+	//	break;
+	//}
+	//default:
+	//	return false;
+	//	break;
+	//}
+}
+UDataTable* UInventoryComponent::SelectDataTable(const FName& ItemKey, int32 Quantity, const EItemType ItemType) const
+{
+	UDataTable* SelectedDataTable = nullptr;
 	switch (ItemType)
 	{
 	case EItemType::Equipment:
 	{
-
-		//SelectedDataTable = 
-		return false;
-		break;
+		//No Settings
+		return nullptr;
 	}
 	case EItemType::Consumable:
 	{
 		if (!ConsumableItemDataTable)
 		{
-			return false;
+			return nullptr;
 		}
-		UDataTable* SelectedConsumableDataTable = ConsumableItemDataTable;
-		bool bResult = InventorySubsystem->AddConsumableItem(ItemKey, Quantity, SelectedConsumableDataTable);
-		
-		return bResult;
+		SelectedDataTable = ConsumableItemDataTable;
 		break;
 	}
 	case EItemType::Others:
 	{
 		if (!OtherItemDataTable)
 		{
-			return false;
+			return nullptr;
 		}
-		UDataTable* SelectedConsumableDataTable = OtherItemDataTable;
-		bool bResult = InventorySubsystem->AddOthersItem(ItemKey, Quantity, SelectedConsumableDataTable);
-
-		return bResult;
-		
+		SelectedDataTable = OtherItemDataTable;
 		break;
 	}
 	case EItemType::Ammo:
 	{
 		if (!AmmoItemDataTable)
 		{
-			return false;
+			return nullptr;
 		}
-		UDataTable* SelectedAmmoDataTable = AmmoItemDataTable;
-		bool bResult = InventorySubsystem->AddAmmoItem(ItemKey, Quantity, SelectedAmmoDataTable);
-
-		return bResult;
+		SelectedDataTable = AmmoItemDataTable;
 		break;
 	}
 	default:
-		return false;
-		break;
+	{
+		return nullptr;
 	}
+	}
+	return SelectedDataTable;
 }

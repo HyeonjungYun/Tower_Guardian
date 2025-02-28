@@ -82,6 +82,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	int32 SearchItemByNameAndType(const FName& ItemKey, const EItemType& ItemType) const;
 
+	bool AddItem(const FName& ItemKey, int32 Quantity, EItemType ItemType, UDataTable* SelectedDataTable);
 	 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")

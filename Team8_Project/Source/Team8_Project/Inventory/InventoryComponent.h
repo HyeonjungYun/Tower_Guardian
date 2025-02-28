@@ -75,6 +75,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void SortAmmoItems(bool bIsAscending);
 
+	UDataTable* SelectDataTable(const FName& ItemKey, int32 Quantity, const EItemType ItemType) const;
+
 protected:
 	virtual void BeginPlay() override;
 
