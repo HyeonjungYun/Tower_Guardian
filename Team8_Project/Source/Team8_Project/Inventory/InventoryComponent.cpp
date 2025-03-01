@@ -207,3 +207,49 @@ UDataTable* UInventoryComponent::SelectDataTable(const FName& ItemKey, int32 Qua
 	}
 	return SelectedDataTable;
 }
+int32 UInventoryComponent::ReturnAmmo(int32 RequiredAmmo, EWeaponType WeaponType)
+{
+	FName AmmoName = ReturnAmmoName(WeaponType);
+	if (AmmoName.IsNone())
+	{
+		return -1;
+	}
+	int32 RemainAmmo = InventorySubsystem->SearchItemByNameAndType(AmmoName,EItemType::Ammo);
+	if (RemainAmmo == INDEX_NONE)
+	{
+		return -1;
+	}
+	else if (RemainAmmo < RequiredAmmo) 
+	{
+		RemoveItem(AmmoName, RemainAmmo);
+		return RemainAmmo;
+	}
+
+	else 
+	{
+		RemoveItem(AmmoName, RequiredAmmo);
+		return RequiredAmmo;
+	}
+
+
+
+}
+FName UInventoryComponent::ReturnAmmoName(EWeaponType WeaponType)
+{
+	if (!AmmoItemDataTable)
+	{
+		return NAME_None;
+	}
+	TArray<FName> RowNames = AmmoItemDataTable->GetRowNames();
+	for (const FName& RowName : RowNames)
+	{
+		const FWeaponAmmunitionRow* Row = AmmoItemDataTable->FindRow<FWeaponAmmunitionRow>(RowName, TEXT("LookupItemData"), true);
+		if (Row && Row->WeaponType == WeaponType)
+		{
+			UE_LOG(LogTemp, Display, TEXT("Row->ItemKey %s"),*Row->ItemName);
+			return Row->ItemKey;
+		}
+	}
+
+	return NAME_None;
+}

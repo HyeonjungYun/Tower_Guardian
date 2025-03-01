@@ -4,6 +4,7 @@
 #include "InventoryType.h"
 #include "ConsumableItemRow.h"
 #include "Components/ActorComponent.h"
+#include "../Weapon/WeaponBase.h"
 #include "InventoryComponent.generated.h"
 
 
@@ -77,6 +78,11 @@ public:
 
 	UDataTable* SelectDataTable(const FName& ItemKey, int32 Quantity, const EItemType ItemType) const;
 
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	int32 ReturnAmmo(int32 RequiredAmmo,EWeaponType WeaponType);
+
+	FName ReturnAmmoName(EWeaponType WeaponType);
+	
 protected:
 	virtual void BeginPlay() override;
 
