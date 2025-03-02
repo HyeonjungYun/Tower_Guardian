@@ -534,6 +534,8 @@ void AMyCharacter::StopSlowWalking(const FInputActionValue& value)
 
 void AMyCharacter::StartReload(const FInputActionValue& value)
 {
+	PlayerStates = EPlayerStateType::EWT_Reload;
+
 	if (value.Get<bool>())
 	{
 		if (GetCharacterMovement())
@@ -548,6 +550,8 @@ void AMyCharacter::StartReload(const FInputActionValue& value)
 
 void AMyCharacter::StopReload(const FInputActionValue& value)
 {
+	PlayerStates = EPlayerStateType::EWT_Normal;
+
 	if (!value.Get<bool>())
 	{
 		if (GetCharacterMovement())
@@ -562,6 +566,8 @@ void AMyCharacter::StopReload(const FInputActionValue& value)
 
 void AMyCharacter::StartFire(const FInputActionValue& value)
 {
+	PlayerStates = EPlayerStateType::EWT_Fire;
+
 	if (CombatComponent)
 	{
 		CombatComponent->FireButtonPressed(true);
@@ -570,6 +576,8 @@ void AMyCharacter::StartFire(const FInputActionValue& value)
 
 void AMyCharacter::StopFire(const FInputActionValue& value)
 {
+	PlayerStates = EPlayerStateType::EWT_Normal;
+
 	if (CombatComponent)
 	{
 		CombatComponent->FireButtonPressed(false);
@@ -737,7 +745,7 @@ void AMyCharacter::SwapItem(int32 PrevIndex, int32 CurrentIndex, EItemType PrevS
 
 void AMyCharacter::SetHP(float Value)
 {
-	HP = FMath::Clamp(0, 100, HP + Value);
+	HP = FMath::Clamp(0, MaxHP, HP + Value);
 }
 
 

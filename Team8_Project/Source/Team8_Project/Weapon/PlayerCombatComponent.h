@@ -45,9 +45,11 @@ protected:
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
 	AWeaponBase* EquippedWeapon;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bIsAiming = false;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bFireButtonPressed = false;
 	
 	FVector HitTargetPos;

@@ -14,6 +14,18 @@ class UCapsuleComponent;
 class UInventoryComponent;
 class ABaseItem;
 
+UENUM(BlueprintType)
+enum class EPlayerStateType : uint8
+{
+	EWT_Normal UMETA(DisplayName = "Normal"),
+	EWT_Fire UMETA(DisplayName = "Fire"),
+	EWT_Reload UMETA(DisplayName = "Reload"),
+	EWT_ChangeWeapon UMETA(DisplayName = "ChangeWeapon"),
+	EWT_Damaged UMETA(DisplayName = "Damaged"),
+	EWT_Dead UMETA(DisplayName = "Dead")
+
+};
+
 UCLASS()
 class TEAM8_PROJECT_API AMyCharacter : public ACharacter ,public IInventoryInterface, public IDamageable
 {
@@ -100,6 +112,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player")
 	float HP = 100.0f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player")
+	float MaxHP = 100.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSpeed")
 	float WalkSpeed = 400.0f;
@@ -125,14 +140,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
 	bool bIsSlowWalking = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
-	bool bHasWeapon = false;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
-	bool bIsAiming = false;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSetting")
 	float RotationSpeed = 5.f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
+	EPlayerStateType PlayerStates = EPlayerStateType::EWT_Normal;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSetting")
 	FRotator NewRotation;
@@ -206,9 +218,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	class UAnimMontage* FireRifleAnimMontage;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
-	class UAnimMontage* AimHipAnimMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	FName AimSectionName;

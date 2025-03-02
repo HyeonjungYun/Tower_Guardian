@@ -117,8 +117,6 @@ void ACH8_GameState::SpawnWave()
 
 void ACH8_GameState::SpawnEnemyPerTime()
 {
-	//플레이어 테스트를 위한 주석
-	/*
 	if (EnemySpawnConut < 5)	// 웨이브 당 생성될 Enemy 숫자는 별도로 수정 필요
 	{
 		if (ASpawnVolume* SpawnVolume = GetSpawnVolume())
@@ -134,7 +132,6 @@ void ACH8_GameState::SpawnEnemyPerTime()
 		EnemySpawnConut = 0;
 		GetWorldTimerManager().ClearTimer(SpawnDurationTimerHandle);
 	}
-	*/
 }
 
 void ACH8_GameState::UpdatedSpawnedEnemy()
