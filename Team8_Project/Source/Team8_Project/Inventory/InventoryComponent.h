@@ -76,8 +76,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void SortAmmoItems(bool bIsAscending);
 
-	UDataTable* SelectDataTable(const FName& ItemKey, int32 Quantity, const EItemType ItemType) const;
-
+	UDataTable* SelectDataTable(const EItemType ItemType) const;
+	//const FName& ItemKey, int32 Quantity, 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	int32 ReturnAmmo(int32 RequiredAmmo,EWeaponType WeaponType);
 

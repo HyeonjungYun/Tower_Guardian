@@ -384,7 +384,7 @@ void UInventorySubsystem::SortAmmoItems(bool bIsAscending)
 		});
 }
 //return item ?
-bool UInventorySubsystem::UseItem(int32 SlotIndex, EItemType ItemType)
+FName UInventorySubsystem::UseItem(int32 SlotIndex, EItemType ItemType)
 {
 	switch (ItemType)
 	{
@@ -393,7 +393,8 @@ bool UInventorySubsystem::UseItem(int32 SlotIndex, EItemType ItemType)
 		if (ConsumableItems.IsValidIndex(SlotIndex))
 		{
 			FInventoryConsumable& Item = ConsumableItems[SlotIndex];
-			if (Item.Quantity > 0)
+			return Item.ItemID;
+			/*if (Item.Quantity > 0)
 			{
 				Item.Quantity--;
 				if (Item.Quantity <= 0)
@@ -401,7 +402,7 @@ bool UInventorySubsystem::UseItem(int32 SlotIndex, EItemType ItemType)
 					RemoveItemAt(SlotIndex, EItemType::Consumable);
 				}
 				return true;
-			}
+			}*/
 		}
 		break;
 	}
@@ -437,7 +438,7 @@ bool UInventorySubsystem::UseItem(int32 SlotIndex, EItemType ItemType)
 	default:
 		break;
 	}
-	return false;
+	return NAME_None;
 }
 const TArray<FInventoryConsumable>& UInventorySubsystem::GetConsumableItems() const
 {
@@ -659,3 +660,6 @@ bool UInventorySubsystem::AddItem(const FName& ItemKey, int32 Quantity, EItemTyp
 	}
 	}
 }
+//bool UInventorySubsystem::RemoveItemByNameAndType(const FName& ItemKey, int32 Quantity,EItemType ItemType)
+// {}
+

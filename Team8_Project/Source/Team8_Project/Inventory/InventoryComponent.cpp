@@ -121,32 +121,25 @@ bool UInventoryComponent::UseItem(int32 SlotIndex, EItemType ItemType)
 {
 	if (InventorySubsystem)
 	{
-		bool bResult = InventorySubsystem->UseItem(SlotIndex, ItemType);
-		if (bResult)
+		FName NameKey = InventorySubsystem->UseItem(SlotIndex, ItemType);
+		if (!NameKey.IsNone())
 		{
-			if (ItemType == EItemType::Consumable && ConsumableItemDataTable)
+			
+			FConsumableItemRow* Row = ConsumableItemDataTable->FindRow<FConsumableItemRow>(NameKey, TEXT("LookupItemData"), true);
+			if (Row && Row->ItemEffectClass)
 			{
-				const TArray<FInventoryConsumable>& ConsumableItems = InventorySubsystem->GetConsumableItems();
-				if (ConsumableItems.IsValidIndex(SlotIndex))
+				UItemEffectBase* Effect = NewObject<UItemEffectBase>(this, Row->ItemEffectClass);
+				if (Effect)
 				{
-					FName ItemKey = ConsumableItems[SlotIndex].ItemID;
-					FConsumableItemRow* Row = ConsumableItemDataTable->FindRow<FConsumableItemRow>(ItemKey, TEXT("LookupItemData"), true);
-					if (Row && Row->ItemEffectClass)
-					{
-						UItemEffectBase* Effect = NewObject<UItemEffectBase>(this, Row->ItemEffectClass);
-						if (Effect)
-						{
-							Effect->ApplyItemEffect(GetOwner());
-							UE_LOG(LogTemp, Warning, TEXT("Owner Use Potion"));
-						}
-					}
+					Effect->ApplyItemEffect(GetOwner());
+					UE_LOG(LogTemp, Warning, TEXT("Owner Use Potion"));
+					
+					bool bResult = InventorySubsystem->RemoveItem(NameKey, 1);
+					return bResult;
 				}
-
-				
 			}
+
 		}
-	
-		return bResult;
 	}
 	return false;
 }
@@ -168,12 +161,14 @@ void UInventoryComponent::SwapItem(int32 PrevIndex, int32 CurrentIndex, EItemTyp
 }
 bool UInventoryComponent::SelectDataTableAdd(const FName& ItemKey, int32 Quantity,const EItemType ItemType) const
 {
-	UDataTable* SelectedDataTable = SelectDataTable(ItemKey,Quantity,ItemType);
+	UDataTable* SelectedDataTable = SelectDataTable(ItemType);
+	//ItemKey, Quantity,
 	bool bResult = InventorySubsystem->AddItem(ItemKey, Quantity, ItemType, SelectedDataTable);
 	return bResult;
 }
-UDataTable* UInventoryComponent::SelectDataTable(const FName& ItemKey, int32 Quantity, const EItemType ItemType) const
+UDataTable* UInventoryComponent::SelectDataTable(const EItemType ItemType) const
 {
+	//const FName& ItemKey, int32 Quantity,
 	UDataTable* SelectedDataTable = nullptr;
 	switch (ItemType)
 	{
