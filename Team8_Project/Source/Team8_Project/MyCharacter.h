@@ -246,5 +246,9 @@ public:
 	*/
 public:
 	class AMyPlayerController* MyPlayerController;
-	 
+	UFUNCTION(BlueprintCallable)
+	float GetHP();
+	UFUNCTION(BlueprintCallable)
+	void SetHP(float setHp);
+	float GetMaxHP();
 };

@@ -851,3 +851,15 @@ void AMyCharacter::SortAmmoItems(bool bIsAscending)
 		Inventory->SortAmmoItems(bIsAscending);
 	}
 }
+float AMyCharacter::GetHP()
+{
+	return CombatComponent->PlayerCurrentHealth;
+}
+void AMyCharacter::SetHP(float setHP)
+{
+	CombatComponent->PlayerCurrentHealth = setHP;
+}
+float AMyCharacter::GetMaxHP()
+{
+	return CombatComponent->PlayerMaxHealth;
+}

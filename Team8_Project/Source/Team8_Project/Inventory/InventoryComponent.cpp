@@ -1,6 +1,7 @@
 ﻿#include "InventoryComponent.h"
 #include "InventorySubsystem.h"
 #include "InventoryWidget.h"
+#include "ItemObject/ItemEffectBase.h"
 #include "Engine/GameInstance.h"
 #include "Blueprint/UserWidget.h"
 
@@ -123,18 +124,26 @@ bool UInventoryComponent::UseItem(int32 SlotIndex, EItemType ItemType)
 		bool bResult = InventorySubsystem->UseItem(SlotIndex, ItemType);
 		if (bResult)
 		{
-			AActor* OwnerActor = GetOwner();
-			if (OwnerActor)
+			if (ItemType == EItemType::Consumable && ConsumableItemDataTable)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("%s"),*OwnerActor->GetName());
-				return bResult;
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("No Actor"));
+				const TArray<FInventoryConsumable>& ConsumableItems = InventorySubsystem->GetConsumableItems();
+				if (ConsumableItems.IsValidIndex(SlotIndex))
+				{
+					FName ItemKey = ConsumableItems[SlotIndex].ItemID;
+					FConsumableItemRow* Row = ConsumableItemDataTable->FindRow<FConsumableItemRow>(ItemKey, TEXT("LookupItemData"), true);
+					if (Row && Row->ItemEffectClass)
+					{
+						UItemEffectBase* Effect = NewObject<UItemEffectBase>(this, Row->ItemEffectClass);
+						if (Effect)
+						{
+							Effect->ApplyItemEffect(GetOwner());
+							UE_LOG(LogTemp, Warning, TEXT("Owner Use Potion"));
+						}
+					}
+				}
 
+				
 			}
-			return bResult;
 		}
 	
 		return bResult;
