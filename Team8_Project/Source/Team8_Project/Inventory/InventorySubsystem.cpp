@@ -383,7 +383,7 @@ void UInventorySubsystem::SortAmmoItems(bool bIsAscending)
 			return bIsAscending ? (A.ItemName < B.ItemName) : (A.ItemName > B.ItemName);
 		});
 }
-//return item ?
+
 FName UInventorySubsystem::UseItem(int32 SlotIndex, EItemType ItemType)
 {
 	switch (ItemType)

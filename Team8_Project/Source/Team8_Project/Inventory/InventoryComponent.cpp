@@ -137,29 +137,6 @@ bool UInventoryComponent::UseItem(int32 SlotIndex, EItemType ItemType)
 	default:
 		return false;
 	}
-	/*if (InventorySubsystem)
-	{
-		FName NameKey = InventorySubsystem->UseItem(SlotIndex, ItemType);
-		if (!NameKey.IsNone())
-		{
-			
-			FConsumableItemRow* Row = ConsumableItemDataTable->FindRow<FConsumableItemRow>(NameKey, TEXT("LookupItemData"), true);
-			if (Row && Row->ItemEffectClass)
-			{
-				UItemEffectBase* Effect = NewObject<UItemEffectBase>(this, Row->ItemEffectClass);
-				if (Effect)
-				{
-					Effect->ApplyItemEffect(GetOwner());
-					UE_LOG(LogTemp, Warning, TEXT("Owner Use Consumable Item"));
-					
-					bool bResult = InventorySubsystem->RemoveItem(NameKey, 1);
-					return bResult;
-				}
-			}
-
-		}
-	}*/
-	//return false;
 }
 void UInventoryComponent::UpdateInventoryUI()
 {
@@ -238,23 +215,26 @@ int32 UInventoryComponent::ReturnAmmo(int32 RequiredAmmo, EWeaponType WeaponType
 	{
 		return -1;
 	}
-	//ensure(InventorySubsystem);
-	int32 RemainAmmo = InventorySubsystem->SearchItemByNameAndType(AmmoName,EItemType::Ammo);
-	if (RemainAmmo == INDEX_NONE)
+	if (InventorySubsystem) 
 	{
-		return -1;
-	}
-	else if (RemainAmmo < RequiredAmmo) 
-	{
-		RemoveItem(AmmoName, RemainAmmo);
-		return RemainAmmo;
-	}
+		int32 RemainAmmo = InventorySubsystem->SearchItemByNameAndType(AmmoName, EItemType::Ammo);
+		if (RemainAmmo == INDEX_NONE)
+		{
+			return -1;
+		}
+		else if (RemainAmmo < RequiredAmmo)
+		{
+			RemoveItem(AmmoName, RemainAmmo);
+			return RemainAmmo;
+		}
 
-	else 
-	{
-		RemoveItem(AmmoName, RequiredAmmo);
-		return RequiredAmmo;
+		else
+		{
+			RemoveItem(AmmoName, RequiredAmmo);
+			return RequiredAmmo;
+		}
 	}
+	return -1;
 }
 FName UInventoryComponent::ReturnAmmoName(EWeaponType WeaponType)
 {
