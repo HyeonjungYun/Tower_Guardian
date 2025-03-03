@@ -312,20 +312,36 @@ void UPlayerCombatComponent::ComponentFire()
 
 void UPlayerCombatComponent::StartWeaponReload()
 {
-	if (EquippedWeapon)
+	if (EquippedWeapon && !bIsReloading)
 	{
-		bIsReloading = true;
-	
-		if (PlayerCharacter)
+		if (CarriedAmmoMap[EquippedWeapon->GetWeaponType()] <= 0)
+		{// 탄없음
+			UE_LOG(LogTemp, Warning, TEXT("탄없음 재장전 불가"));
+			return;
+		}
+		else
 		{
-			PlayerCharacter->GetWorldTimerManager().SetTimer(
-				FReloadTimerHandle,
-				this,
-				&UPlayerCombatComponent::OnFinishWeaponReload,
-				EquippedWeapon->GetTimeToFinishReload());
+			if (EquippedWeapon->GetCurrrentWeaponAmmo() == EquippedWeapon->GetMaxWeaponAmmo())
+			{
+				UE_LOG(LogTemp, Warning, TEXT("탄 꽉찼음., 재장전 불가"));
+				return;
+			}
+			else
+			{
+				bIsReloading = true;
+
+				if (PlayerCharacter)
+				{
+					PlayerCharacter->GetWorldTimerManager().SetTimer(
+						FReloadTimerHandle,
+						this,
+						&UPlayerCombatComponent::OnFinishWeaponReload,
+						EquippedWeapon->GetTimeToFinishReload());
+				}
+			}
+			
 		}
 
-	
 	}
 	
 }
