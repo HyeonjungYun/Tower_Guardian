@@ -205,6 +205,7 @@ void UPlayerCombatComponent::SetHUDHealth(float CurrentHealth, float MaxHealth)
 			if (!bInitHpSeg)
 			{
 				PlayerCrosshairHUD->CombatOverlay->CreateHPSeg(PlayerMaxHealth);
+				PlayerCrosshairHUD->CombatOverlay->UpdateHPSeg(PlayerCurrentHealth,PlayerMaxHealth);
 				bInitHpSeg = true;
 			}
 
@@ -356,6 +357,13 @@ void UPlayerCombatComponent::OnFinishWeaponReload()
 	}
 }
 
+bool UPlayerCombatComponent::IsPlayerDead()
+{
+	return PlayerCurrentHealth <= 0;
+}
+
+
+
 void UPlayerCombatComponent::SetAiming(bool _bIsAiming)
 {
 	if (PlayerCharacter == nullptr || EquippedWeapon == nullptr)
@@ -403,6 +411,26 @@ void UPlayerCombatComponent::InterpFOV(float DeltaTime)
 AWeaponBase* UPlayerCombatComponent::GetEquippedWeapon()
 {
 	return EquippedWeapon != nullptr ? EquippedWeapon:nullptr;
+}
+
+float UPlayerCombatComponent::GetCurrentPlayerHealth()
+{
+	return PlayerCurrentHealth;
+}
+
+void UPlayerCombatComponent::SetCurrentPlayerHealth(float _HP)
+{
+	PlayerCurrentHealth = _HP;
+}
+
+float UPlayerCombatComponent::GetMaxPlayerHealth()
+{
+	return PlayerMaxHealth;
+}
+
+void UPlayerCombatComponent::SetMaxPlayerHealth(float _HP)
+{
+	PlayerMaxHealth = _HP;
 }
 
 bool UPlayerCombatComponent::WeaponCanFire()

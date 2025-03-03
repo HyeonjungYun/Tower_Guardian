@@ -672,6 +672,34 @@ UPlayerCombatComponent* AMyCharacter::GetCombatComponent()
 	return CombatComponent;
 }
 
+float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	float CurrentHealth =  FMath::Clamp(
+		CombatComponent->GetCurrentPlayerHealth() - DamageAmount
+		,0
+		,CombatComponent->GetMaxPlayerHealth());
+	
+	SetHP(CurrentHealth);
+
+	// HUD 갱신
+	CombatComponent->UpdateHealth();
+
+	// 사망 확인
+	if (CombatComponent->IsPlayerDead())
+	{
+		// 사망 처리 애니메이션 재생, UI 출력, GameState 호출 등등 처리 해주세요
+		OnDeath();
+	}
+	
+	return DamageAmount;
+}
+
+void AMyCharacter::OnDeath()
+{
+	// 사망관련 Character에서 해야할 것 수행
+	UE_LOG(LogTemp, Warning, TEXT("플레이어 사망 확인"));
+}
+
 
 void AMyCharacter::SetPickableItem(ABaseItem* OverlappedItem)
 {
@@ -746,16 +774,21 @@ const TArray<FInventoryOthers>& AMyCharacter::GetOthersItems() const
 
 float AMyCharacter::GetHP() const
 {
-	return HP;
+	if (CombatComponent)
+	{
+		return CombatComponent->GetCurrentPlayerHealth();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("컴뱃 컴포넌트 없음"));
+		return -1;
+	}
+
 }
 void AMyCharacter::SetHP(float Value)
 {
-	HP = FMath::Clamp(0, MaxHP, HP + Value);
+	CombatComponent->SetCurrentPlayerHealth(Value);
 }
-
-bool AMyCharacter::AddItem(const FName& ItemKey, int32 Quantity)
-
-
 
 bool AMyCharacter::AddItem(const FName& ItemKey, int32 Quantity,EItemType ItemType)
 {

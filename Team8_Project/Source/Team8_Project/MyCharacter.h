@@ -261,4 +261,20 @@ public:
 public:
 	class AMyPlayerController* MyPlayerController;
 	 
+
+	/*
+		사망 관련
+	*/
+public:
+		UFUNCTION()
+		virtual float TakeDamage
+		(
+			float DamageAmount,
+			struct FDamageEvent const& DamageEvent,
+			class AController* EventInstigator,
+			AActor* DamageCauser
+		) override;
+
+		UFUNCTION(BlueprintCallable)
+		virtual void OnDeath();
 };

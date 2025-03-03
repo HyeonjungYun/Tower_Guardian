@@ -29,6 +29,13 @@ public:
 	void UpdateHealth();
 	void SetHUDHealth(float CurrentHealth, float MaxHealth);
 	AWeaponBase* GetEquippedWeapon();
+
+	float GetCurrentPlayerHealth();
+	void SetCurrentPlayerHealth(float _HP);
+	float GetMaxPlayerHealth();
+	void SetMaxPlayerHealth(float _HP);
+
+	
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -140,4 +147,7 @@ protected:
 	bool bIsReloading = false;
 	
 	FTimerHandle FReloadTimerHandle;
+
+public:
+	bool IsPlayerDead();
 };
