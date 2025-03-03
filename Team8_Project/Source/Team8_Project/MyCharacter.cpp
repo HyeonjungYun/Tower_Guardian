@@ -58,6 +58,7 @@ void AMyCharacter::BeginPlay()
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	SprintSpeed = WalkSpeed * SprintSpeedMultiplier;
 	SlowWalkSpeed = WalkSpeed * SlowWalkSpeedMultiplier;
+	FunchMontageMaxIndex = PunchMontages.Num();
 }
 
 void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -577,6 +578,12 @@ void AMyCharacter::StartFire(const FInputActionValue& value)
 	{
 		CombatComponent->FireButtonPressed(true);
 	}
+	
+	//펀치 발동 조건
+	if (!CombatComponent->GetEquippedWeapon() && PlayerStates == EPlayerStateType::EWT_Fire)
+	{
+		FunchCombo(FunchMontageIndex);
+	}
 }
 
 void AMyCharacter::StopFire(const FInputActionValue& value)
@@ -853,4 +860,30 @@ void AMyCharacter::SortAmmoItems(bool bIsAscending)
 	{
 		Inventory->SortAmmoItems(bIsAscending);
 	}
+}
+
+void AMyCharacter::FunchCombo(int32 MontageIndex)
+{
+	//플레이 애님몽타주
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && PunchMontages.IsValidIndex(FunchMontageIndex))
+	{
+		AnimInstance->Montage_Play(PunchMontages[FunchMontageIndex]);
+	}
+	//타이머 발동
+	GetWorldTimerManager().ClearTimer(FunchComboTimerHandle);
+	GetWorld()->GetTimerManager().SetTimer(FunchComboTimerHandle, this, &AMyCharacter::ResetFunchCombo, 1.0f, false);
+	
+	//1초 안에 누르면 카운트 증가
+	FunchMontageIndex++;
+	if (FunchMontageIndex >= FunchMontageMaxIndex)
+	{
+		FunchMontageIndex = 0;
+	}
+}
+
+void AMyCharacter::ResetFunchCombo()
+{
+	//1초 후 콤보 카운트 리셋
+	FunchMontageIndex = 0;
 }

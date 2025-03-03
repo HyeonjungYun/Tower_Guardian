@@ -234,11 +234,16 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	FName AimSectionName;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
-	float PitchInput;
+	//펀치
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Punch")
+	TArray<class UAnimMontage*> PunchMontages;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
-	float YawInput;
+	FTimerHandle FunchComboTimerHandle;
+	int32 FunchMontageIndex = 0;
+	int32 FunchMontageMaxIndex = 0;
+	void FunchCombo(int32 MontageIndex);
+	void ResetFunchCombo();
+
 
 	// 카메라가 벽에 겹쳐졌을 때 플레이어 모델링이 가리는 문제 해결하기
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
