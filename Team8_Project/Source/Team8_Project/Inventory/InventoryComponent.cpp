@@ -220,6 +220,7 @@ int32 UInventoryComponent::ReturnAmmo(int32 RequiredAmmo, EWeaponType WeaponType
 	{
 		return -1;
 	}
+	//ensure(InventorySubsystem);
 	int32 RemainAmmo = InventorySubsystem->SearchItemByNameAndType(AmmoName,EItemType::Ammo);
 	if (RemainAmmo == INDEX_NONE)
 	{
@@ -310,4 +311,16 @@ int32 UInventoryComponent::SearchItemByName(const FName& ItemKey) const
 		return Result;
 	}
 	return INDEX_NONE;
+}
+int32 UInventoryComponent::ReturnCurrentAmmo(EWeaponType WeaponType) 
+{
+	const FName& AmmoName = ReturnAmmoName(WeaponType);
+	if (AmmoName.IsNone())
+	{
+		return INDEX_NONE;
+	}
+	
+	ensure(InventorySubsystem);
+	int32 RemainAmmo = InventorySubsystem->SearchItemByNameAndType(AmmoName, EItemType::Ammo);
+	return RemainAmmo;
 }

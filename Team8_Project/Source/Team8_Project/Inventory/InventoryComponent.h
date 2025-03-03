@@ -90,7 +90,8 @@ public:
 	
 	int32 SearchItemByNameAndType(const FName& ItemKey, const EItemType& ItemType) const;
 	int32 SearchItemByName(const FName& ItemKey) const;
-	
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	int32 ReturnCurrentAmmo(EWeaponType WeaponType);
 protected:
 	virtual void BeginPlay() override;
 
