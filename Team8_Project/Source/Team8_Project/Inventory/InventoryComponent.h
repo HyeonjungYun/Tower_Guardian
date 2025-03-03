@@ -92,7 +92,13 @@ public:
 	int32 SearchItemByName(const FName& ItemKey) const;
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	int32 ReturnCurrentAmmo(EWeaponType WeaponType);
+
+
 protected:
 	virtual void BeginPlay() override;
-
+private:
+	bool UseConsumableItem(int32 SlotIndex);
+	bool UseEquipmentItem(int32 SlotIndex);
+	bool UseOthersItem(int32 SlotIndex);
+	bool UseAmmoItem(int32 SlotIndex);
 };

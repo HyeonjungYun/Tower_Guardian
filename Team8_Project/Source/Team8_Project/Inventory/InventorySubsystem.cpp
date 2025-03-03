@@ -394,34 +394,24 @@ FName UInventorySubsystem::UseItem(int32 SlotIndex, EItemType ItemType)
 		{
 			FInventoryConsumable& Item = ConsumableItems[SlotIndex];
 			return Item.ItemID;
-			/*if (Item.Quantity > 0)
-			{
-				Item.Quantity--;
-				if (Item.Quantity <= 0)
-				{
-					RemoveItemAt(SlotIndex, EItemType::Consumable);
-				}
-				return true;
-			}*/
 		}
 		break;
 	}
-	//incomplete
 	case EItemType::Others:
 	{
 		if (OthersItems.IsValidIndex(SlotIndex))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Can not Use Item , You can Sell this"));
-
+			FInventoryOthers& Item = OthersItems[SlotIndex];
+			return Item.ItemID;
 		}
 		break;
 	}
-	//incomplete
 	case EItemType::Equipment:
 	{
 		if (OthersItems.IsValidIndex(SlotIndex))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Equipment item usage is not supported via UseItem."));
+			FInventoryEquipment& Item = EquipmentItems[SlotIndex];
+			return Item.ItemID;
 		}
 		break;
 	}
@@ -429,7 +419,8 @@ FName UInventorySubsystem::UseItem(int32 SlotIndex, EItemType ItemType)
 	{
 		if (OthersItems.IsValidIndex(SlotIndex))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Ammo dont Use"));
+			FInventoryAmmo& Item = AmmoItems[SlotIndex];
+			return Item.ItemID;
 		}
 		break;
 	}
@@ -534,7 +525,6 @@ int32 UInventorySubsystem::SearchItemByNameAndType(const FName& ItemKey, const E
 			return EquipmentItems[Index].Quantity;
 		}
 		return INDEX_NONE;
-		break;
 	}
 	case EItemType::Consumable:
 	{
@@ -544,7 +534,6 @@ int32 UInventorySubsystem::SearchItemByNameAndType(const FName& ItemKey, const E
 			return ConsumableItems[Index].Quantity;
 		}
 		return INDEX_NONE;
-		break;
 	}
 	case EItemType::Others:
 	{
@@ -554,7 +543,6 @@ int32 UInventorySubsystem::SearchItemByNameAndType(const FName& ItemKey, const E
 			return OthersItems[Index].Quantity;
 		}
 		return INDEX_NONE;
-		break;
 	}
 	case EItemType::Ammo:
 	{
@@ -564,11 +552,9 @@ int32 UInventorySubsystem::SearchItemByNameAndType(const FName& ItemKey, const E
 			return AmmoItems[Index].Quantity;
 		}
 		return INDEX_NONE;
-		break;
 	}
 	default:
 		return INDEX_NONE;
-		break;
 	}
 }
 bool UInventorySubsystem::AddOthersItem(const FName& ItemKey, int32 Quantity, UDataTable* SelectedDataTable)

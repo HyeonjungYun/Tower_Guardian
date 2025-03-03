@@ -119,7 +119,25 @@ void UInventoryComponent::SortAmmoItems(bool bIsAscending)
 }
 bool UInventoryComponent::UseItem(int32 SlotIndex, EItemType ItemType)
 {
-	if (InventorySubsystem)
+	if (!InventorySubsystem)
+	{
+		return false;
+	}
+
+	switch (ItemType)
+	{
+	case EItemType::Consumable:
+		return UseConsumableItem(SlotIndex);
+	case EItemType::Equipment:
+		return UseEquipmentItem(SlotIndex);
+	case EItemType::Others:
+		return UseOthersItem(SlotIndex);
+	case EItemType::Ammo:
+		return UseAmmoItem(SlotIndex);
+	default:
+		return false;
+	}
+	/*if (InventorySubsystem)
 	{
 		FName NameKey = InventorySubsystem->UseItem(SlotIndex, ItemType);
 		if (!NameKey.IsNone())
@@ -132,7 +150,7 @@ bool UInventoryComponent::UseItem(int32 SlotIndex, EItemType ItemType)
 				if (Effect)
 				{
 					Effect->ApplyItemEffect(GetOwner());
-					UE_LOG(LogTemp, Warning, TEXT("Owner Use Potion"));
+					UE_LOG(LogTemp, Warning, TEXT("Owner Use Consumable Item"));
 					
 					bool bResult = InventorySubsystem->RemoveItem(NameKey, 1);
 					return bResult;
@@ -140,8 +158,8 @@ bool UInventoryComponent::UseItem(int32 SlotIndex, EItemType ItemType)
 			}
 
 		}
-	}
-	return false;
+	}*/
+	//return false;
 }
 void UInventoryComponent::UpdateInventoryUI()
 {
@@ -319,8 +337,63 @@ int32 UInventoryComponent::ReturnCurrentAmmo(EWeaponType WeaponType)
 	{
 		return INDEX_NONE;
 	}
+	if (InventorySubsystem) 
+	{
+		int32 RemainAmmo = InventorySubsystem->SearchItemByNameAndType(AmmoName, EItemType::Ammo);
+		return RemainAmmo;
+	}
 	
-	ensure(InventorySubsystem);
-	int32 RemainAmmo = InventorySubsystem->SearchItemByNameAndType(AmmoName, EItemType::Ammo);
-	return RemainAmmo;
+	return INDEX_NONE;
+}
+bool UInventoryComponent::UseConsumableItem(int32 SlotIndex)
+{
+	FName NameKey = InventorySubsystem->UseItem(SlotIndex, EItemType::Consumable);
+	if (!NameKey.IsNone())
+	{
+		FConsumableItemRow* Row = ConsumableItemDataTable->FindRow<FConsumableItemRow>(NameKey, TEXT("LookupItemData"), true);
+		if (Row && Row->ItemEffectClass)
+		{
+			UItemEffectBase* Effect = NewObject<UItemEffectBase>(this, Row->ItemEffectClass);
+			if (Effect)
+			{
+				Effect->ApplyItemEffect(GetOwner());
+				UE_LOG(LogTemp, Warning, TEXT("Owner used Consumable Item: %s"), *NameKey.ToString());
+				return InventorySubsystem->RemoveItem(NameKey, 1);
+			}
+		}
+	}
+	return false;
+}
+bool UInventoryComponent::UseEquipmentItem(int32 SlotIndex)
+{
+	
+	FName NameKey = InventorySubsystem->UseItem(SlotIndex, EItemType::Equipment);
+	if (!NameKey.IsNone())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Dont Use"));
+		return true;
+	}
+	return false;
+}
+
+bool UInventoryComponent::UseOthersItem(int32 SlotIndex)
+{
+	FName NameKey = InventorySubsystem->UseItem(SlotIndex, EItemType::Others);
+	if (!NameKey.IsNone())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Dont Use"));
+		return true;
+	}
+	return false;
+}
+
+bool UInventoryComponent::UseAmmoItem(int32 SlotIndex)
+{
+	FName NameKey = InventorySubsystem->UseItem(SlotIndex, EItemType::Ammo);
+	if (!NameKey.IsNone())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Dont Use"));
+		return true;
+	}
+	return false;
 }
