@@ -94,7 +94,6 @@ void UInventoryComponent::SortEquipmentItems(bool bIsAscending)
 		InventorySubsystem->SortEquipmentItems(bIsAscending);
 	}
 }
-
 void UInventoryComponent::SortConsumableItems(bool bIsAscending)
 {
 	if (InventorySubsystem)
@@ -102,7 +101,6 @@ void UInventoryComponent::SortConsumableItems(bool bIsAscending)
 		InventorySubsystem->SortConsumableItems(bIsAscending);
 	}
 }
-
 void UInventoryComponent::SortOthersItems(bool bIsAscending)
 {
 	if (InventorySubsystem)
@@ -291,7 +289,6 @@ const TArray<FInventoryOthers>& UInventoryComponent::GetOthersItems() const
 	static TArray<FInventoryOthers> EmptyOthers;
 	return EmptyOthers;
 }
-
 int32 UInventoryComponent::SearchItemByNameAndType(const FName& ItemKey, const EItemType& ItemType) const
 {
 	if (InventorySubsystem)
@@ -355,7 +352,6 @@ bool UInventoryComponent::UseEquipmentItem(int32 SlotIndex)
 	}
 	return false;
 }
-
 bool UInventoryComponent::UseOthersItem(int32 SlotIndex)
 {
 	FName NameKey = InventorySubsystem->UseItem(SlotIndex, EItemType::Others);
@@ -366,7 +362,6 @@ bool UInventoryComponent::UseOthersItem(int32 SlotIndex)
 	}
 	return false;
 }
-
 bool UInventoryComponent::UseAmmoItem(int32 SlotIndex)
 {
 	FName NameKey = InventorySubsystem->UseItem(SlotIndex, EItemType::Ammo);
