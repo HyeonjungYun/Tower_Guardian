@@ -58,7 +58,7 @@ void AMyCharacter::BeginPlay()
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	SprintSpeed = WalkSpeed * SprintSpeedMultiplier;
 	SlowWalkSpeed = WalkSpeed * SlowWalkSpeedMultiplier;
-	FunchMontageMaxIndex = PunchMontages.Num();
+	FunchAnimMaxIndex = PunchMontages.Num();
 }
 
 void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -374,6 +374,17 @@ void AMyCharacter::Move(const FInputActionValue& value)
 {
 	if (!Controller)
 		return;
+	if (!CombatComponent->GetEquippedWeapon() && PlayerStates == EPlayerStateType::EWT_Fire)
+	{
+		//조건을 그냥 Fire로 잡으면 무기 든 상태일 때랑 구분 불가
+		PlayerStates = EPlayerStateType::EWT_Normal;
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (AnimInstance && PunchMontages.IsValidIndex(FunchAnimIndex))
+		{
+			AnimInstance->StopAllMontages(0.0f);
+		}
+	}
+	
 
 	//카메라 바라보는 방향 = 캐릭터 바라보는 방향
 	const FVector2D MoveInput = value.Get<FVector2D>();
@@ -582,7 +593,7 @@ void AMyCharacter::StartFire(const FInputActionValue& value)
 	//펀치 발동 조건
 	if (!CombatComponent->GetEquippedWeapon() && PlayerStates == EPlayerStateType::EWT_Fire)
 	{
-		FunchCombo(FunchMontageIndex);
+		FunchCombo(FunchAnimIndex);
 	}
 }
 
@@ -862,28 +873,29 @@ void AMyCharacter::SortAmmoItems(bool bIsAscending)
 	}
 }
 
-void AMyCharacter::FunchCombo(int32 MontageIndex)
+void AMyCharacter::FunchCombo(int32 AnimIndex)
 {
-	//플레이 애님몽타주
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (AnimInstance && PunchMontages.IsValidIndex(FunchMontageIndex))
-	{
-		AnimInstance->Montage_Play(PunchMontages[FunchMontageIndex]);
-	}
 	//타이머 발동
 	GetWorldTimerManager().ClearTimer(FunchComboTimerHandle);
 	GetWorld()->GetTimerManager().SetTimer(FunchComboTimerHandle, this, &AMyCharacter::ResetFunchCombo, 1.0f, false);
+
+	//플레이 애님몽타주
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && PunchMontages.IsValidIndex(FunchAnimIndex))
+	{
+		AnimInstance->Montage_Play(PunchMontages[FunchAnimIndex]);
+	}
 	
 	//1초 안에 누르면 카운트 증가
-	FunchMontageIndex++;
-	if (FunchMontageIndex >= FunchMontageMaxIndex)
+	FunchAnimIndex++;
+	if (FunchAnimIndex >= FunchAnimMaxIndex)
 	{
-		FunchMontageIndex = 0;
+		FunchAnimIndex = 0;
 	}
 }
 
 void AMyCharacter::ResetFunchCombo()
 {
 	//1초 후 콤보 카운트 리셋
-	FunchMontageIndex = 0;
+	FunchAnimIndex = 0;
 }

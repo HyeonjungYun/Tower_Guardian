@@ -238,10 +238,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Punch")
 	TArray<class UAnimMontage*> PunchMontages;
 
+	int32 FunchAnimIndex = 0;
+	int32 FunchAnimMaxIndex = 0;
 	FTimerHandle FunchComboTimerHandle;
-	int32 FunchMontageIndex = 0;
-	int32 FunchMontageMaxIndex = 0;
-	void FunchCombo(int32 MontageIndex);
+	void FunchCombo(int32 AnimIndex);
 	void ResetFunchCombo();
 
 
