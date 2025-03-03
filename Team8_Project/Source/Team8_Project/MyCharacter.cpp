@@ -754,35 +754,35 @@ void AMyCharacter::SortOthersItems(bool bIsAscending)
 }
 int32 AMyCharacter::GetGold() const
 {
-	if (Inventory && Inventory->InventorySubsystem)
+	if (Inventory)
 	{
-		return Inventory->InventorySubsystem->GetGold();
+		return Inventory->GetGold();
 	}
 	return 0;
 }
 const TArray<FInventoryConsumable>& AMyCharacter::GetConsumableItems() const
 {
-	if (Inventory && Inventory->InventorySubsystem)
+	if (Inventory)
 	{
-		return Inventory->InventorySubsystem->GetConsumableItems();
+		return Inventory->GetConsumableItems();
 	}
 	static TArray<FInventoryConsumable> EmptyConsumables;
 	return EmptyConsumables;
 }
 const TArray<FInventoryEquipment>& AMyCharacter::GetEquipmentItems() const
 {
-	if (Inventory && Inventory->InventorySubsystem)
+	if (Inventory)
 	{
-		return Inventory->InventorySubsystem->GetEquipmentItems();
+		return Inventory->GetEquipmentItems();
 	}
 	static TArray<FInventoryEquipment> EmptyEquipments;
 	return EmptyEquipments;
 }
 const TArray<FInventoryOthers>& AMyCharacter::GetOthersItems() const
 {
-	if (Inventory && Inventory->InventorySubsystem)
+	if (Inventory)
 	{
-		return Inventory->InventorySubsystem->GetOthersItems();
+		return Inventory->GetOthersItems();
 	}
 	static TArray<FInventoryOthers> EmptyOthers;
 	return EmptyOthers;
@@ -825,24 +825,30 @@ void AMyCharacter::SwapItem(int32 PrevIndex, int32 CurrentIndex, EItemType PrevS
 }
 const TArray<FInventoryAmmo>& AMyCharacter::GetAmmoItems() const
 {
-	if (Inventory && Inventory->InventorySubsystem)
+	if (Inventory)
 	{
-		return Inventory->InventorySubsystem->GetAmmoItems();
+		return Inventory->GetAmmoItems();
 	}
 	static TArray<FInventoryAmmo> EmptyAmmos;
 	return EmptyAmmos;
 }
 int32 AMyCharacter::SearchItemByNameAndType(const FName& ItemKey, const EItemType& ItemType) const
 {
-	check(Inventory);
-	int32 Result = Inventory->InventorySubsystem->SearchItemByNameAndType(ItemKey, ItemType);
-	return Result;
+	if (Inventory) 
+	{
+		int32 Result = Inventory->SearchItemByNameAndType(ItemKey, ItemType);
+		return Result;
+	}
+	return INDEX_NONE;
 }
 int32 AMyCharacter::SearchItemByName(const FName& ItemKey) const
 {
-	check(Inventory);
-	int32 Result = Inventory->InventorySubsystem->SearchItemByName(ItemKey);
-	return Result;
+	if (Inventory)
+	{
+		int32 Result = Inventory->SearchItemByName(ItemKey);
+		return Result;
+	}
+	return INDEX_NONE;
 }
 void AMyCharacter::SortAmmoItems(bool bIsAscending)
 {

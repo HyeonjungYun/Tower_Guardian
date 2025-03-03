@@ -82,6 +82,14 @@ public:
 	int32 ReturnAmmo(int32 RequiredAmmo,EWeaponType WeaponType);
 
 	FName ReturnAmmoName(EWeaponType WeaponType);
+
+	const TArray<FInventoryAmmo>& GetAmmoItems() const;
+	const TArray<FInventoryOthers>& GetOthersItems() const;
+	const TArray<FInventoryEquipment>& GetEquipmentItems() const;
+	const TArray<FInventoryConsumable>& GetConsumableItems() const;
+	
+	int32 SearchItemByNameAndType(const FName& ItemKey, const EItemType& ItemType) const;
+	int32 SearchItemByName(const FName& ItemKey) const;
 	
 protected:
 	virtual void BeginPlay() override;

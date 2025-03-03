@@ -256,3 +256,58 @@ FName UInventoryComponent::ReturnAmmoName(EWeaponType WeaponType)
 
 	return NAME_None;
 }
+const TArray<FInventoryEquipment>& UInventoryComponent::GetEquipmentItems() const
+{
+	if (InventorySubsystem)
+	{
+		return InventorySubsystem->GetEquipmentItems();
+	}
+	static TArray<FInventoryEquipment> EmptyEquipments;
+	return EmptyEquipments;
+}
+const TArray<FInventoryAmmo>& UInventoryComponent::GetAmmoItems() const
+{
+	if (InventorySubsystem)
+	{
+		return InventorySubsystem->GetAmmoItems();
+	}
+	static TArray<FInventoryAmmo> EmptyAmmos;
+	return EmptyAmmos;
+}
+const TArray<FInventoryConsumable>& UInventoryComponent::GetConsumableItems() const
+{
+	if (InventorySubsystem)
+	{
+		return InventorySubsystem->GetConsumableItems();
+	}
+	static TArray<FInventoryConsumable> EmptyConsumables;
+	return EmptyConsumables;
+}
+const TArray<FInventoryOthers>& UInventoryComponent::GetOthersItems() const
+{
+	if (InventorySubsystem)
+	{
+		return InventorySubsystem->GetOthersItems();
+	}
+	static TArray<FInventoryOthers> EmptyOthers;
+	return EmptyOthers;
+}
+
+int32 UInventoryComponent::SearchItemByNameAndType(const FName& ItemKey, const EItemType& ItemType) const
+{
+	if (InventorySubsystem)
+	{
+		int32 Result = InventorySubsystem->SearchItemByNameAndType(ItemKey, ItemType);
+		return Result;
+	}
+	return INDEX_NONE;
+}
+int32 UInventoryComponent::SearchItemByName(const FName& ItemKey) const
+{
+	if (InventorySubsystem)
+	{
+		int32 Result = InventorySubsystem->SearchItemByName(ItemKey);
+		return Result;
+	}
+	return INDEX_NONE;
+}
