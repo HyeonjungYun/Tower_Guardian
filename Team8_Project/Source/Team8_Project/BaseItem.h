@@ -46,6 +46,7 @@ public:
 
 	EItemType GetSlotType() const;
 
+	int32 GetQuantity();
 protected:
 	virtual void OnItemOverlap(
 		UPrimitiveComponent* OverlappedComp,

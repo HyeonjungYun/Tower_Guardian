@@ -59,6 +59,7 @@ void AMyCharacter::BeginPlay()
 	SprintSpeed = WalkSpeed * SprintSpeedMultiplier;
 	SlowWalkSpeed = WalkSpeed * SlowWalkSpeedMultiplier;
 }
+
 void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -148,26 +149,7 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 					&AMyCharacter::StopPickUp
 				);
 			}
-			//
-			if (PlayerController->ProneAction)
-			{
-				EnhancedInput->BindAction(
-					PlayerController->ProneAction,
-					ETriggerEvent::Triggered,
-					this,
-					&AMyCharacter::StartProne
-				);
-			}
 
-			if (PlayerController->ProneAction)
-			{
-				EnhancedInput->BindAction(
-					PlayerController->ProneAction,
-					ETriggerEvent::Completed,
-					this,
-					&AMyCharacter::StopProne
-				);
-			}
 			//
 			if (PlayerController->CrouchAction)
 			{
@@ -282,7 +264,8 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 void AMyCharacter::Tick(float DeltaTime)
 {
 	HideCameraIfCharacterClose();
-}
+	CalculateRotation(DeltaTime);
+	OnPickupItem();}
 
 void AMyCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
@@ -307,7 +290,7 @@ void AMyCharacter::OnPickupItem()
 	{
 		FName ItemKey = OverlappingItem->GetItemType();
 		EItemType SlotType = OverlappingItem->GetSlotType();
-		int32 Quantity = 1; 
+		int32 Quantity = OverlappingItem->GetQuantity();
 
 		if (Inventory)
 		{
@@ -327,7 +310,7 @@ void AMyCharacter::OnPickupItem()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No overlapping item to pick up."));
+		//UE_LOG(LogTemp, Warning, TEXT("No overlapping item to pick up."));
 	}
 
 
@@ -391,11 +374,13 @@ void AMyCharacter::Move(const FInputActionValue& value)
 	if (!Controller)
 		return;
 
+	//카메라 바라보는 방향 = 캐릭터 바라보는 방향
 	const FVector2D MoveInput = value.Get<FVector2D>();
 	const FRotator Rotation = Controller->GetControlRotation();
-	const FRotator YawRatotion = FRotator(0, Rotation.Yaw, 0);
-	const FVector ForwardDir = FRotationMatrix(YawRatotion).GetUnitAxis(EAxis::X);
-	const FVector RightDir = FRotationMatrix(YawRatotion).GetUnitAxis(EAxis::Y);
+	const FRotator YawRotation = FRotator(0, Rotation.Yaw, 0);
+	const FVector ForwardDir = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+	const FVector RightDir = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+	SetActorRotation(NewRotation);
 
 	if (!FMath::IsNearlyZero(MoveInput.X))
 	{
@@ -406,8 +391,6 @@ void AMyCharacter::Move(const FInputActionValue& value)
 	{
 		AddMovementInput(RightDir, MoveInput.Y * MouseSensitivity);
 	}
-
-
 }
 
 void AMyCharacter::StartJump(const FInputActionValue& value)
@@ -440,6 +423,8 @@ void AMyCharacter::Look(const FInputActionValue& value)
 	{
 		AddControllerPitchInput(LookInput.Y * MouseSensitivity);
 	}
+
+
 }
 
 void AMyCharacter::StartSprint(const FInputActionValue& value)
@@ -479,9 +464,6 @@ void AMyCharacter::StartPickUp(const FInputActionValue& value)
 			{
 				// 주울수있는 아이템이 무기 인경우 && 빈손인 경우
 				CombatComponent->EquipWeapon(WeaponToEquip);
-
-				//임시 추가:전지현
-				bHasWeapon = true;
 			}
 			if (ABaseItem* ItemToPickUp =
 				Cast<ABaseItem>(PickableItem))
@@ -506,34 +488,6 @@ void AMyCharacter::StopPickUp(const FInputActionValue& value)
 	}
 }
 
-void AMyCharacter::StartProne(const FInputActionValue& value)
-{
-	if (value.Get<bool>())
-	{
-		if (GetCharacterMovement())
-		{
-			if (GEngine) //for debug
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StartProne!"));
-			}
-		}
-	}
-}
-
-void AMyCharacter::StopProne(const FInputActionValue& value)
-{
-	if (!value.Get<bool>())
-	{
-		if (GetCharacterMovement())
-		{
-			if (GEngine) //for debug
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StopProne!"));
-			}
-		}
-	}
-}
-
 void AMyCharacter::StartCrouch(const FInputActionValue& value)
 {
 	if (!bIsCrouching)
@@ -542,12 +496,8 @@ void AMyCharacter::StartCrouch(const FInputActionValue& value)
 
 		if (GetCharacterMovement())
 		{
-			if (GEngine) //for debug
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StartCrouch!"));
-			}
+			GetCharacterMovement()->MaxWalkSpeed = SlowWalkSpeed;
 		}
-		GetCharacterMovement()->MaxWalkSpeed = SlowWalkSpeed;
 		Crouch(bIsCrouching);
 	}
 
@@ -561,12 +511,8 @@ void AMyCharacter::StopCrouch(const FInputActionValue& value)
 
 		if (GetCharacterMovement())
 		{
-			if (GEngine) //for debug
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StopCrouch!"));
-			}
+			GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 		}
-		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 		UnCrouch(bIsCrouching);
 	}
 }
@@ -579,12 +525,8 @@ void AMyCharacter::StartSlowWalking(const FInputActionValue& value)
 
 		if (GetCharacterMovement())
 		{
-			if (GEngine) //for debug
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StartSlowWalking!"));
-			}
+			GetCharacterMovement()->MaxWalkSpeed = SlowWalkSpeed;
 		}
-		GetCharacterMovement()->MaxWalkSpeed = SlowWalkSpeed;
 	}
 }
 
@@ -596,31 +538,25 @@ void AMyCharacter::StopSlowWalking(const FInputActionValue& value)
 
 		if (GetCharacterMovement())
 		{
-			if (GEngine) //for debug
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StopSlowWalking!"));
-			}
+			GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 		}
-		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	}
 }
 
 void AMyCharacter::StartReload(const FInputActionValue& value)
 {
+	PlayerStates = EPlayerStateType::EWT_Reload;
+
 	if (value.Get<bool>())
 	{
-		if (GetCharacterMovement())
-		{
-			if (GEngine) //for debug
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StartReload!"));
-			}
-		}
+		CombatComponent->StartWeaponReload();
 	}
 }
 
 void AMyCharacter::StopReload(const FInputActionValue& value)
 {
+	PlayerStates = EPlayerStateType::EWT_Normal;
+
 	if (!value.Get<bool>())
 	{
 		if (GetCharacterMovement())
@@ -635,6 +571,8 @@ void AMyCharacter::StopReload(const FInputActionValue& value)
 
 void AMyCharacter::StartFire(const FInputActionValue& value)
 {
+	PlayerStates = EPlayerStateType::EWT_Fire;
+
 	if (CombatComponent)
 	{
 		CombatComponent->FireButtonPressed(true);
@@ -643,11 +581,24 @@ void AMyCharacter::StartFire(const FInputActionValue& value)
 
 void AMyCharacter::StopFire(const FInputActionValue& value)
 {
+	PlayerStates = EPlayerStateType::EWT_Normal;
+
 	if (CombatComponent)
 	{
 		CombatComponent->FireButtonPressed(false);
 	}
 }
+
+void AMyCharacter::CalculateRotation(float DeltaTime)
+{
+	const FRotator Rotation = Controller->GetControlRotation();
+	FRotator ActorRot = GetActorRotation();
+	FRotator InterpRotation = FMath::RInterpTo(ActorRot, Rotation, DeltaTime, RotationSpeed);
+	InterpRotation.Pitch = 0.f;
+	InterpRotation.Roll = 0.f;
+	NewRotation = InterpRotation;
+}
+
 void AMyCharacter::OnAiming()
 {
 	if (CombatComponent == nullptr)
@@ -714,6 +665,39 @@ void AMyCharacter::PlayFireMontage(bool bAiming)
 		SectionName = bAiming ? FName("RifleAim") : FName("RifleHip");
 		AnimInstance->Montage_JumpToSection(SectionName);
 	}
+}
+
+UPlayerCombatComponent* AMyCharacter::GetCombatComponent()
+{
+	return CombatComponent;
+}
+
+float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	float CurrentHealth =  FMath::Clamp(
+		CombatComponent->GetCurrentPlayerHealth() - DamageAmount
+		,0
+		,CombatComponent->GetMaxPlayerHealth());
+	
+	SetHP(CurrentHealth);
+
+	// HUD 갱신
+	CombatComponent->UpdateHealth();
+
+	// 사망 확인
+	if (CombatComponent->IsPlayerDead())
+	{
+		// 사망 처리 애니메이션 재생, UI 출력, GameState 호출 등등 처리 해주세요
+		OnDeath();
+	}
+	
+	return DamageAmount;
+}
+
+void AMyCharacter::OnDeath()
+{
+	// 사망관련 Character에서 해야할 것 수행
+	UE_LOG(LogTemp, Warning, TEXT("플레이어 사망 확인"));
 }
 
 
@@ -787,6 +771,25 @@ const TArray<FInventoryOthers>& AMyCharacter::GetOthersItems() const
 	static TArray<FInventoryOthers> EmptyOthers;
 	return EmptyOthers;
 }
+
+float AMyCharacter::GetHP() const
+{
+	if (CombatComponent)
+	{
+		return CombatComponent->GetCurrentPlayerHealth();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("컴뱃 컴포넌트 없음"));
+		return -1;
+	}
+
+}
+void AMyCharacter::SetHP(float Value)
+{
+	CombatComponent->SetCurrentPlayerHealth(Value);
+}
+
 bool AMyCharacter::AddItem(const FName& ItemKey, int32 Quantity,EItemType ItemType)
 {
 	if (Inventory)

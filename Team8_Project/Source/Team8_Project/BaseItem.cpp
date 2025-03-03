@@ -94,3 +94,8 @@ EItemType ABaseItem::GetSlotType() const
     return SlotType;
 }
 
+int32 ABaseItem::GetQuantity()
+{
+    return Quantity;
+}
+

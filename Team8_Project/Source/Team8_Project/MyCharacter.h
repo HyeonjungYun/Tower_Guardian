@@ -3,8 +3,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Inventory/InventoryInterface.h"
+#include "Damageable.h"
 #include "MyCharacter.generated.h"
-
 
 class USpringArmComponent;
 class UCameraComponent;
@@ -14,8 +14,20 @@ class UCapsuleComponent;
 class UInventoryComponent;
 class ABaseItem;
 
+UENUM(BlueprintType)
+enum class EPlayerStateType : uint8
+{
+	EWT_Normal UMETA(DisplayName = "Normal"),
+	EWT_Fire UMETA(DisplayName = "Fire"),
+	EWT_Reload UMETA(DisplayName = "Reload"),
+	EWT_ChangeWeapon UMETA(DisplayName = "ChangeWeapon"),
+	EWT_Damaged UMETA(DisplayName = "Damaged"),
+	EWT_Dead UMETA(DisplayName = "Dead")
+
+};
+
 UCLASS()
-class TEAM8_PROJECT_API AMyCharacter : public ACharacter ,public IInventoryInterface
+class TEAM8_PROJECT_API AMyCharacter : public ACharacter ,public IInventoryInterface, public IDamageable
 {
 	GENERATED_BODY()
 
@@ -34,14 +46,14 @@ public:
 	virtual const TArray<FInventoryEquipment>& GetEquipmentItems() const override;
 	virtual const TArray<FInventoryOthers>& GetOthersItems() const override;
 	virtual const TArray<FInventoryAmmo>& GetAmmoItems() const override;
-
+	virtual float GetHP() const override;
 	// Set Method
 	virtual bool AddItem(const FName& ItemKey, int32 Quantity, EItemType ItemType) override;
 	virtual bool RemoveItem(const FName& ItemKey, int32 Quantity) override;
 	virtual bool UseItem(int32 SlotIndex, EItemType ItemType) override;
 	virtual void SetGold(int32 NewGold) override;
 	virtual void SwapItem(int32 PrevIndex, int32 CurrentIndex, EItemType PrevSlotType, EItemType CurrentSlotType)override;
-	
+	virtual void SetHP(float Value) override;
 
 	//Search Method
 	virtual int32 SearchItemByNameAndType(const FName& ItemKey, const EItemType& ItemType) const override;
@@ -106,6 +118,11 @@ protected:
 
 
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player")
+	float HP = 100.0f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player")
+	float MaxHP = 100.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSpeed")
 	float WalkSpeed = 400.0f;
@@ -131,11 +148,14 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
 	bool bIsSlowWalking = false;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSetting")
+	float RotationSpeed = 5.f;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
-	bool bHasWeapon = false;
+	EPlayerStateType PlayerStates = EPlayerStateType::EWT_Normal;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
-	bool bIsAiming = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSetting")
+	FRotator NewRotation;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
 	bool bIsInventoryVisible = false;
@@ -167,12 +187,6 @@ protected:
 	UFUNCTION()
 	void StopPickUp(const FInputActionValue& value);
 
-	UFUNCTION() //엎드리기 Z
-		void StartProne(const FInputActionValue& value);
-
-	UFUNCTION()
-	void StopProne(const FInputActionValue& value);
-
 	UFUNCTION() //앉기 X
 		void StartCrouch(const FInputActionValue& value);
 
@@ -197,6 +211,9 @@ protected:
 	UFUNCTION()
 	void StopFire(const FInputActionValue& value);
 
+	UFUNCTION() //이동 시 캐릭터 보간 회전, turn in place 를 위한 
+	void CalculateRotation(float DeltaTime);
+
 
 	UFUNCTION()
 	void OnAiming();
@@ -213,9 +230,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	class UAnimMontage* FireRifleAnimMontage;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
-	class UAnimMontage* AimHipAnimMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	FName AimSectionName;
@@ -237,7 +251,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void ShowSniperScopeWidget(bool bShowScope);
 	// 블루프린트에서 재생
-
+	UPlayerCombatComponent* GetCombatComponent();
 
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return Camera; };
 	/*
@@ -247,4 +261,20 @@ public:
 public:
 	class AMyPlayerController* MyPlayerController;
 	 
+
+	/*
+		사망 관련
+	*/
+public:
+		UFUNCTION()
+		virtual float TakeDamage
+		(
+			float DamageAmount,
+			struct FDamageEvent const& DamageEvent,
+			class AController* EventInstigator,
+			AActor* DamageCauser
+		) override;
+
+		UFUNCTION(BlueprintCallable)
+		virtual void OnDeath();
 };

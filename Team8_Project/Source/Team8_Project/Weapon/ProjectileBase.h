@@ -48,6 +48,5 @@ public:
 	FTimerHandle ProjectileTimerHandle;
 
 protected:
-	UPROPERTY(EditAnywhere)
-	float ProjectileDamage = 20.0f;
+	float ProjectileDamage;
 };

@@ -9,4 +9,5 @@ ASniperAmmoItem::ASniperAmmoItem()
 	StaticMesh->SetupAttachment(GetRootComponent());
 	SlotType = EItemType::Ammo;
 	FItemType = "SniperAmmo";
+	Quantity = 30;
 }

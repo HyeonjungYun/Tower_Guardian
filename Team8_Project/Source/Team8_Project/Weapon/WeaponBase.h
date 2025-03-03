@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "../Inventory/ItemInterface.h"
+#include "WeaponType.h"
 #include "WeaponBase.generated.h"
 
 
@@ -11,16 +12,6 @@ class USphereComponent;
 /*
 *	무기의 종류를 결정할 무기 종류 열거형 클래스
 */
-UENUM(BlueprintType)
-enum class EWeaponType : uint8
-{
-    EWT_None UMETA(DisplayName="None"),
-    EWT_Pistol UMETA(DisplayName = "Pistol"),
-    EWT_Rifle UMETA(DisplayName = "Rifle"),
-    EWT_Shotgun UMETA(DisplayName = "Shotgun"),
-    EWT_RocketLauncher UMETA(DisplayName = "Rocket Launcher"),
-    EWT_Sniper UMETA(DisplayName = "BoltAction")
-};
 
 /*
     무기의 상태
@@ -95,15 +86,14 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties")
     EWeaponState WeaponState;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Ammo")
-    int32 CurrentWeaponAmmo;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+    FName AmmoItemKey;
 
     // 총기용 USkeletalMeshComponent 추가
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|Component")
     USkeletalMeshComponent* WeaponSkeletalMesh;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Ammo")
-    int32 MaxWeaponAmmo;
+
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties")
     class UAnimationAsset* FireAnimation;
@@ -120,10 +110,10 @@ protected:
     TSubclassOf<class ABulletCaseBase> BulletCaseClass;
 
     UPROPERTY()
-    class AMyCharacter* PlayerCharacter;
+    class AMyCharacter* OwnerPlayerCharacter;
 
     UPROPERTY()
-    class AMyPlayerController* PlayerController;
+    class AMyPlayerController* OwnerPlayerController;
 
     // 조준
     UPROPERTY(EditAnywhere)
@@ -146,15 +136,12 @@ public:
 
     EWeaponType GetWeaponType() const;
 
-    int32 GetCurrrentWeaponAmmo() const;
 
-    void SetCurrentWeaponAmmo(int32 _ammo);
 
     USphereComponent* GetAreaSphere() const { return AreaSphere; }
     USkeletalMeshComponent* GetWeaponMesh() const { return WeaponSkeletalMesh; }
 
-    UFUNCTION(BlueprintCallable)
-    virtual void Reload();
+
 protected:
     virtual void BeginPlay() override;
 
@@ -167,17 +154,59 @@ protected:
 public:
     UFUNCTION()
     void SpendRound();
-protected:
-    UPROPERTY(EditAnywhere)
-    int32 CurrentAmmo = 0;
-    UPROPERTY(EditAnywhere)
-    int32 MaxAmmo = 30;
 
+    UFUNCTION(BlueprintCallable)
+    int32 GetCurrrentWeaponAmmo() const;
+
+    UFUNCTION(BlueprintCallable)
+    void SetCurrentWeaponAmmo(int32 _Ammo);
+
+    UFUNCTION(BlueprintCallable)
+    int32 GetMaxWeaponAmmo() const;
+
+    UFUNCTION(BlueprintCallable)
+    void SetMaxWeaponAmmo(int32 _Ammo);
+
+    bool IsWeaponMagEmpty();
+
+    float GetWeaponDamage();
+    void SetWeaponDamage(float NewDamage);
+protected:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Ammo")
+    float WeaponDamage = 50.f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Ammo")
+    int32 CurrentWeaponAmmo;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Ammo")
+    int32 MaxWeaponAmmo;
+
+public:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Fire")
+    bool bIsWeaponAutomatic = true;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Fire")
+    float WeaponFireRate = .15f;
     /*
-    무기 버리기
+        무기 버리기
     */
 
 public:
     UFUNCTION()
     void Dropped();
+
+    /***
+        재장전
+    ***/
+public:
+    UFUNCTION(BlueprintCallable)
+    virtual void Reload();
+    UFUNCTION()
+    float GetTimeToFinishReload();
+    UFUNCTION()
+    void SetTimeToFinishReload(float NewReloadTime);
+protected:
+
+    UPROPERTY(EditAnywhere,BlueprintReadWrite)
+    float TimeToFinishReload = 2.f;
 };
