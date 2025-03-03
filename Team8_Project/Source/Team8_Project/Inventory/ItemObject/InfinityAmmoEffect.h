@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(Blueprintable)
 class TEAM8_PROJECT_API UInfinityAmmoEffect : public UItemEffectBase
 {
 	GENERATED_BODY()

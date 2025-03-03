@@ -213,6 +213,8 @@ UDataTable* UInventoryComponent::SelectDataTable(const EItemType ItemType) const
 }
 int32 UInventoryComponent::ReturnAmmo(int32 RequiredAmmo, EWeaponType WeaponType)
 {
+	//인자하나 더 해서 함수 매개변수에 의한 값에의한 참조 깊은복사,얕은복사 
+	// 남은 총 탄창을 Max를 
 	FName AmmoName = ReturnAmmoName(WeaponType);
 	if (AmmoName.IsNone())
 	{
@@ -234,9 +236,6 @@ int32 UInventoryComponent::ReturnAmmo(int32 RequiredAmmo, EWeaponType WeaponType
 		RemoveItem(AmmoName, RequiredAmmo);
 		return RequiredAmmo;
 	}
-
-
-
 }
 FName UInventoryComponent::ReturnAmmoName(EWeaponType WeaponType)
 {

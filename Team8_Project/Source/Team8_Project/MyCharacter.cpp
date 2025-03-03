@@ -863,3 +863,42 @@ float AMyCharacter::GetMaxHP()
 {
 	return CombatComponent->PlayerMaxHealth;
 }
+void AMyCharacter::ApplySpeedBoost(float BoostPercent, float Duration)
+{
+	if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
+	{
+		if (GetWorldTimerManager().IsTimerActive(SpeedBoostTimerHandle))
+		{
+			GetWorldTimerManager().ClearTimer(SpeedBoostTimerHandle);
+		}
+
+		//Tick등에서 MoveComp->MaxWalkSpeed를 항상 업데이트를 해주는 방식이 아니기때문에 
+		//직접 값을 변경해줘야 한다.
+		float OriginalWalkSpeed = WalkSpeed;
+		float OriginalComponentWalkSpeed = MoveComp->MaxWalkSpeed;
+		float OriginalSprintSpeed = SprintSpeed;  
+
+		MoveComp->MaxWalkSpeed *= (1.0f + BoostPercent / 100.0f);
+		WalkSpeed *= (1.0f + BoostPercent / 100.0f);
+		SprintSpeed *= (1.0f + BoostPercent / 100.0f);
+
+		// 타이머 설정: 지속시간 후에 원래 속도로 복원
+		GetWorldTimerManager().SetTimer(SpeedBoostTimerHandle, FTimerDelegate::CreateLambda([this, OriginalComponentWalkSpeed, OriginalWalkSpeed, OriginalSprintSpeed]()
+			{
+				if (UCharacterMovementComponent* MoveCompInner = GetCharacterMovement())
+				{
+					MoveCompInner->MaxWalkSpeed = OriginalComponentWalkSpeed;
+					WalkSpeed = OriginalWalkSpeed;
+					SprintSpeed = OriginalSprintSpeed;
+				}
+			}), Duration, false);
+		
+	}
+}
+//블루 프린트 용
+float AMyCharacter::GetPlayerSpeed()
+{
+	UCharacterMovementComponent* MoveComp = GetCharacterMovement();
+
+	return MoveComp->MaxWalkSpeed;
+}

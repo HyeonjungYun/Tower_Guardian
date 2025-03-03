@@ -251,4 +251,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetHP(float setHp);
 	float GetMaxHP();
+
+private:
+		FTimerHandle SpeedBoostTimerHandle;
+public:
+	UFUNCTION(BlueprintCallable, Category = "Speed")
+	void ApplySpeedBoost(float Percent, float Duration);
+
+	UFUNCTION(BlueprintCallable, Category = "Speed")
+	float GetPlayerSpeed();
 };

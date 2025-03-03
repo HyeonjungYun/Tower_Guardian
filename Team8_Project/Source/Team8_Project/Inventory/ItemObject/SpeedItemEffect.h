@@ -6,10 +6,8 @@
 #include "ItemEffectBase.h"
 #include "SpeedItemEffect.generated.h"
 
-/**
- * 
- */
-UCLASS()
+
+UCLASS(Blueprintable)
 class TEAM8_PROJECT_API USpeedItemEffect : public UItemEffectBase
 {
 	GENERATED_BODY()

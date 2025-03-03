@@ -10,7 +10,7 @@ void USpeedItemEffect::ApplyItemEffect(AActor* Target)
     {
         if (AMyCharacter* player = Cast<AMyCharacter>(Target))
         {
-            
+            player->ApplySpeedBoost(SpeedAmount, Duration);
         }
     }
 }
