@@ -39,21 +39,25 @@ public:
 	virtual void SortEquipmentItems(bool bIsAscending) override;
 	virtual void SortConsumableItems(bool bIsAscending) override;
 	virtual void SortOthersItems(bool bIsAscending) override;
+	virtual void SortAmmoItems(bool bIsAscending) override;
 	// Get Method
 	virtual int32 GetGold() const override;
 	virtual const TArray<FInventoryConsumable>& GetConsumableItems() const override;
 	virtual const TArray<FInventoryEquipment>& GetEquipmentItems() const override;
 	virtual const TArray<FInventoryOthers>& GetOthersItems() const override;
+	virtual const TArray<FInventoryAmmo>& GetAmmoItems() const override;
 	virtual float GetHP() const override;
-	
 	// Set Method
-	virtual bool AddItem(const FName& ItemKey, int32 Quantity) override;
+	virtual bool AddItem(const FName& ItemKey, int32 Quantity, EItemType ItemType) override;
 	virtual bool RemoveItem(const FName& ItemKey, int32 Quantity) override;
 	virtual bool UseItem(int32 SlotIndex, EItemType ItemType) override;
 	virtual void SetGold(int32 NewGold) override;
 	virtual void SwapItem(int32 PrevIndex, int32 CurrentIndex, EItemType PrevSlotType, EItemType CurrentSlotType)override;
 	virtual void SetHP(float Value) override;
 
+	//Search Method
+	virtual int32 SearchItemByNameAndType(const FName& ItemKey, const EItemType& ItemType) const override;
+	virtual	int32 SearchItemByName(const FName& ItemKey) const override;
 public:
 	AMyCharacter();
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
@@ -68,6 +72,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "inventory")
 	UInventoryComponent* Inventory;
 	void SetPickableItem(class ABaseItem* OverlappedItem);
+
+	void SetPickableWeapon(class AWeaponBase* OverlappedWeapon);
+
+	AWeaponBase* PickableWeapon = nullptr;
 protected:
 	float NormalSpeed = 600.f;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -149,6 +157,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSetting")
 	FRotator NewRotation;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
+	bool bIsInventoryVisible = false;
+
+
 	ABaseItem* PickableItem;
 
 	UFUNCTION()
@@ -228,6 +240,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	float YawInput;
 
+	// 카메라가 벽에 겹쳐졌을 때 플레이어 모델링이 가리는 문제 해결하기
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
+	float CameraThreshold = 200.f;
+	void HideCameraIfCharacterClose();
 public:
 	UFUNCTION(BlueprintCallable)
 	void PlayFireMontage(bool bAiming);
@@ -235,7 +251,14 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void ShowSniperScopeWidget(bool bShowScope);
 	// 블루프린트에서 재생
-
+	UPlayerCombatComponent* GetCombatComponent();
 
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return Camera; };
+	/*
+	// HUD 접근을 위한
+	// 멤버 변수 및 함수
+	*/
+public:
+	class AMyPlayerController* MyPlayerController;
+	 
 };

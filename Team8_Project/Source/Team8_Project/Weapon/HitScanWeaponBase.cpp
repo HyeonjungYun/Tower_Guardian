@@ -7,7 +7,19 @@
 #include "Kismet/GameplayStatics.h" // Tracer
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
-#include "Particles/ParticleSystemComponent.h"
+#include "../Damageable.h"
+#include "../MyPlayerController.h"
+#include "WeaponCrosshairHUD.h"
+#include "PlayerCombatOverlay.h"
+#include "PlayerCombatComponent.h"
+void AHitScanWeaponBase::BeginPlay()
+
+{
+	Super::BeginPlay();
+	AMyCharacter* OwnerPlayer = Cast<AMyCharacter>(GetOwner());
+
+	HitScanDamage = GetWeaponDamage();
+}
 
 void AHitScanWeaponBase::Fire(const FVector& HitTarget)
 {
@@ -49,11 +61,30 @@ void AHitScanWeaponBase::Fire(const FVector& HitTarget)
 
 			if (FireHit.bBlockingHit)
 			{
-				// 히트스캔
+				
 				// 추후 데미지 계산
-
-
-
+				AActor* OtherActor = FireHit.GetActor();
+				// 히트스캔
+				if (OtherActor && OtherActor->GetClass()->ImplementsInterface(UDamageable::StaticClass()))
+				{
+					AController* InstigatorController = nullptr;
+					AActor* OwnerActor = GetOwner();
+					if (APawn* OwnerPawn = Cast<APawn>(OwnerActor))
+					{
+						InstigatorController = OwnerPawn->GetController();
+						UGameplayStatics::ApplyDamage(OtherActor, HitScanDamage, InstigatorController, this, UDamageType::StaticClass());
+					
+						AMyPlayerController* PC = Cast<AMyPlayerController>(InstigatorController);
+						if (PC)
+						{
+							AWeaponCrosshairHUD* WCHUD = Cast<AWeaponCrosshairHUD>(PC->GetHUD());
+							if (WCHUD && WCHUD->CombatOverlay)
+							{
+								WCHUD->CombatOverlay->PlayHitMarker();
+							}
+						}
+					}
+				}
 				// 피격 이펙트 생성
 				if (ImpactParticles)
 				{
@@ -68,3 +99,5 @@ void AHitScanWeaponBase::Fire(const FVector& HitTarget)
 		}
 	}
 }
+
+

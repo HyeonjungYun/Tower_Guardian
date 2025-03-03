@@ -8,6 +8,7 @@ UInventorySubsystem::UInventorySubsystem()
 	EquipmentItems.Init(FInventoryEquipment(), MaxInventoryNum);
 	ConsumableItems.Init(FInventoryConsumable(), MaxInventoryNum);
 	OthersItems.Init(FInventoryOthers(), MaxInventoryNum);
+	AmmoItems.Init(FInventoryAmmo(), MaxInventoryNum);
 }
 int32 UInventorySubsystem::FindEquipmentIndex(const FName& ItemKey) const
 {
@@ -45,161 +46,146 @@ int32 UInventorySubsystem::FindOthersIndex(const FName& ItemKey) const
 	}
 	return INDEX_NONE;
 }
-
-bool UInventorySubsystem::AddItem(const FName& ItemKey, int32 Quantity, UDataTable* ItemDataTable)
+int32 UInventorySubsystem::FindAmmoIndex(const FName& ItemKey) const
 {
-	ensure(ItemDataTable != nullptr);
+	for (int32 i = 0; i < AmmoItems.Num(); i++)
+	{
+		if (AmmoItems[i].ItemID == ItemKey)
+		{
+			return i;
+		}
+	}
+	return INDEX_NONE;
+}
+bool UInventorySubsystem::AddConsumableItem(const FName& ItemKey, int32 Quantity,UDataTable* SelectedDataTable)
+{
+	
 	ensure(Quantity > 0);
-	if (!ItemDataTable || Quantity <= 0)
+	if (Quantity <= 0 || !SelectedDataTable)
 	{
 		return false;
 	}
 
 	//TODO : OthersItem
 	//TODO : MaxInventoryNum
-	const FConsumableItemRow* Row = ItemDataTable->FindRow<FConsumableItemRow>(ItemKey, TEXT("LookupItemData"), true);
+	const FConsumableItemRow* Row = SelectedDataTable->FindRow<FConsumableItemRow>(ItemKey, TEXT("LookupItemData"), true);
 
-	if (!Row)
+	if (Row->ItemType != EItemType::Consumable || !Row)
 	{
+		UE_LOG(LogTemp, Display, TEXT("im in SubSystem , Type Error"));
 		return false;
 	}
 
-	switch (Row->ItemType)
+	int32 Index = FindConsumableIndex(ItemKey);
+	if (Index != INDEX_NONE)
 	{
-	case EItemType::Equipment:
-	{
-		int32 Index = FindEquipmentIndex(ItemKey);
-		if (Index != INDEX_NONE)
-		{
-			EquipmentItems[Index].Quantity = 1;
-			UE_LOG(LogTemp, Warning, TEXT("It Exist But Add Test"));
-			FInventoryEquipment NewEquipment;
-			NewEquipment.ItemID = ItemKey;
-			NewEquipment.ItemName = Row->ItemName;
-			NewEquipment.Quantity = 1;
-			NewEquipment.ItemImage = Row->ItemImage;
-			//EquipmentItems.Add(NewEquipment);
-		}
-		else
-		{
-			int32 EmptyIndex = INDEX_NONE;
-			for (int32 i = 0; i < EquipmentItems.Num(); ++i)
-			{
-				if (EquipmentItems[i].ItemID.IsNone())
-				{
-					EmptyIndex = i;
-					break;
-				}
-			}
-			if (EmptyIndex != INDEX_NONE)
-			{
-				FInventoryEquipment NewEquipment;
-				NewEquipment.ItemID = ItemKey;
-				NewEquipment.ItemName = Row->ItemName;
-				NewEquipment.Quantity = 1;
-				NewEquipment.ItemImage = Row->ItemImage;
-				EquipmentItems[EmptyIndex] = NewEquipment;
-			}
-			else if(EmptyIndex == INDEX_NONE)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Inventory Is Full"));
-				return false;
-			}
-		}
-		break;
+		ConsumableItems[Index].Quantity += Quantity;
 	}
-
-	case EItemType::Consumable:
+	else
 	{
-		int32 Index = FindConsumableIndex(ItemKey);
-		if (Index != INDEX_NONE)
-		{
-			ConsumableItems[Index].Quantity += Quantity;
-		}
-		else
-		{
-			int32 EmptyIndex = INDEX_NONE;
-			for (int32 i = 0; i < ConsumableItems.Num(); ++i)
-			{
-				if (ConsumableItems[i].ItemID.IsNone())
-				{
-					EmptyIndex = i;
-					break;
-				}
-			}
-			if (EmptyIndex != INDEX_NONE)
-			{
-				FInventoryConsumable NewConsumable;
-				NewConsumable.ItemID = ItemKey;
-				NewConsumable.ItemName = Row->ItemName;
-				NewConsumable.Quantity = Quantity;
-				NewConsumable.ItemImage = Row->ItemImage;
-				ConsumableItems[EmptyIndex] = NewConsumable;
-			}
-			else if (EmptyIndex == INDEX_NONE)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Inventory Is Full"));
-				return false;
-			}
-		}
-
-		UE_LOG(LogTemp, Log, TEXT("=== Debug Print Consumable Items ==="));
+		int32 EmptyIndex = INDEX_NONE;
 		for (int32 i = 0; i < ConsumableItems.Num(); ++i)
 		{
-			const FInventoryConsumable& Item = ConsumableItems[i];
-			UE_LOG(LogTemp, Log, TEXT("Index %d: ItemID: %s, ItemName: %s, Quantity: %d"),
-				i,
-				*Item.ItemID.ToString(),
-				*Item.ItemName,
-				Item.Quantity);
+			if (ConsumableItems[i].ItemID.IsNone())
+			{
+				EmptyIndex = i;
+				break;
+			}
 		}
-
-		break;
+		if (EmptyIndex != INDEX_NONE)
+		{
+			FInventoryConsumable NewConsumable;
+			NewConsumable.ItemID = ItemKey;
+			NewConsumable.ItemName = Row->ItemName;
+			NewConsumable.Quantity = Quantity;
+			NewConsumable.ItemImage = Row->ItemImage;
+			ConsumableItems[EmptyIndex] = NewConsumable;
+		}
+		else if (EmptyIndex == INDEX_NONE)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Inventory Is Full"));
+			return false;
+		}
 	}
 
-	case EItemType::Others:
+	UE_LOG(LogTemp, Log, TEXT("=== Debug Print Consumable Items ==="));
+	for (int32 i = 0; i < ConsumableItems.Num(); ++i)
 	{
-		int32 Index = FindOthersIndex(ItemKey);
-		if (Index != INDEX_NONE)
-		{
-			OthersItems[Index].Quantity += Quantity;
-		}
-		else
-		{
-			int32 EmptyIndex = INDEX_NONE;
-			for (int32 i = 0; i < OthersItems.Num(); ++i)
-			{
-				if (OthersItems[i].ItemID.IsNone())
-				{
-					EmptyIndex = i;
-					break;
-				}
-			}
-
-			if (EmptyIndex != INDEX_NONE)
-			{
-				FInventoryOthers NewOthers;
-				NewOthers.ItemID = ItemKey;
-				NewOthers.ItemName = Row->ItemName;
-				NewOthers.Quantity = Quantity;
-				NewOthers.ItemImage = Row->ItemImage;
-				OthersItems[EmptyIndex] = NewOthers;
-			}
-			else if (EmptyIndex == INDEX_NONE)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Inventory Is Full"));
-				return false;
-			}
-		}
-		break;
-	}
-
-	default:
-		return false;
+		const FInventoryConsumable& Item = ConsumableItems[i];
+		UE_LOG(LogTemp, Log, TEXT("Index %d: ItemID: %s, ItemName: %s, Quantity: %d"),
+			i,
+			*Item.ItemID.ToString(),
+			*Item.ItemName,
+			Item.Quantity);
 	}
 
 	return true;
 }
+bool UInventorySubsystem::AddAmmoItem(const FName& ItemKey, int32 Quantity,UDataTable* SelectedDataTable)
+{
+
+	ensure(Quantity > 0);
+	if (Quantity <= 0 || !SelectedDataTable)
+	{
+		return false;
+	}
+
+	//TODO : OthersItem
+	//TODO : MaxInventoryNum
+	const FWeaponAmmunitionRow* Row = SelectedDataTable->FindRow<FWeaponAmmunitionRow>(ItemKey, TEXT("LookupItemData"), true);
+
+	if (Row->ItemType != EItemType::Ammo || !Row)
+	{
+		UE_LOG(LogTemp, Display, TEXT("im in SubSystem , Type Error"));
+		return false;
+	}
+
+	int32 Index = FindAmmoIndex(ItemKey);
+	if (Index != INDEX_NONE)
+	{
+		AmmoItems[Index].Quantity += Quantity;
+	}
+	else
+	{
+		int32 EmptyIndex = INDEX_NONE;
+		for (int32 i = 0; i < AmmoItems.Num(); ++i)
+		{
+			if (AmmoItems[i].ItemID.IsNone())
+			{
+				EmptyIndex = i;
+				break;
+			}
+		}
+		if (EmptyIndex != INDEX_NONE)
+		{
+			FInventoryAmmo NewAmmo;
+			NewAmmo.ItemID = ItemKey;
+			NewAmmo.ItemName = Row->ItemName;
+			NewAmmo.Quantity = Quantity;
+			NewAmmo.ItemImage = Row->ItemImage;
+			AmmoItems[EmptyIndex] = NewAmmo;
+		}
+		else if (EmptyIndex == INDEX_NONE)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Inventory Is Full"));
+			return false;
+		}
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("=== Debug Print Ammo Items ==="));
+	for (int32 i = 0; i < AmmoItems.Num(); ++i)
+	{
+		const FInventoryAmmo& Item = AmmoItems[i];
+		UE_LOG(LogTemp, Log, TEXT("Index %d: ItemID: %s, ItemName: %s, Quantity: %d"),
+			i,
+			*Item.ItemID.ToString(),
+			*Item.ItemName,
+			Item.Quantity);
+	}
+	return true;
+}
+
+
 
 bool UInventorySubsystem::RemoveItem(const FName& ItemKey, int32 Quantity)
 {
@@ -238,10 +224,21 @@ bool UInventorySubsystem::RemoveItem(const FName& ItemKey, int32 Quantity)
 		RemoveItemAt(Index, EItemType::Equipment);
 		return true;
 	}
-
+	Index = FindAmmoIndex(ItemKey);
+	if (Index != INDEX_NONE)
+	{
+		if (AmmoItems[Index].Quantity > Quantity)
+		{
+			AmmoItems[Index].Quantity -= Quantity;
+		}
+		else
+		{
+			RemoveItemAt(Index, EItemType::Ammo);
+		}
+		return true;
+	}
 	return false;
 }
-
 void UInventorySubsystem::RemoveItemAt(int32 SlotIndex, EItemType InventoryType)
 {
 	switch (InventoryType)
@@ -264,11 +261,16 @@ void UInventorySubsystem::RemoveItemAt(int32 SlotIndex, EItemType InventoryType)
 			OthersItems[SlotIndex] = FInventoryOthers();
 		}
 		break;
+	case EItemType::Ammo:
+		if (AmmoItems.IsValidIndex(SlotIndex))
+		{
+			AmmoItems[SlotIndex] = FInventoryAmmo();
+		}
+		break;
 	default:
 		break;
 	}
 }
-
 int32 UInventorySubsystem::GetGold() const
 {
 	return CurrentGold;
@@ -277,7 +279,6 @@ void UInventorySubsystem::SetGold(int32 NewGold)
 {
 	CurrentGold = NewGold;
 }
-//TODO : WHEN SORT , ITEM_NONE ->REMOVE
 void UInventorySubsystem::SortEquipmentItems(bool bIsAscending)
 {
 	Algo::Sort(EquipmentItems, [bIsAscending](const FInventoryEquipment& A, const FInventoryEquipment& B)
@@ -304,7 +305,6 @@ void UInventorySubsystem::SortEquipmentItems(bool bIsAscending)
 			return bIsAscending ? (A.ItemName < B.ItemName) : (A.ItemName > B.ItemName);
 		});
 }
-
 void UInventorySubsystem::SortConsumableItems(bool bIsAscending)
 {
 	Algo::Sort(ConsumableItems, [bIsAscending](const FInventoryConsumable& A, const FInventoryConsumable& B)
@@ -331,7 +331,6 @@ void UInventorySubsystem::SortConsumableItems(bool bIsAscending)
 			return bIsAscending ? (A.ItemName < B.ItemName) : (A.ItemName > B.ItemName);
 		});
 }
-
 void UInventorySubsystem::SortOthersItems(bool bIsAscending)
 {
 	Algo::Sort(OthersItems, [bIsAscending](const FInventoryOthers& A, const FInventoryOthers& B)
@@ -358,7 +357,32 @@ void UInventorySubsystem::SortOthersItems(bool bIsAscending)
 			return bIsAscending ? (A.ItemName < B.ItemName) : (A.ItemName > B.ItemName);
 		});
 }
+void UInventorySubsystem::SortAmmoItems(bool bIsAscending)
+{
+	Algo::Sort(AmmoItems, [bIsAscending](const FInventoryAmmo& A, const FInventoryAmmo& B)
+		{
+			bool bIsAEmpty = A.ItemID.IsNone();
+			bool bIsBEmpty = B.ItemID.IsNone();
 
+			if (bIsAEmpty && !bIsBEmpty)
+			{
+				return false;
+			}
+			else if (!bIsAEmpty && bIsBEmpty)
+			{
+				return true;
+			}
+			else if (bIsAEmpty && bIsBEmpty)
+			{
+				return false;
+			}
+			if (A.ItemName == B.ItemName)
+			{
+				return bIsAscending ? (A.Quantity < B.Quantity) : (A.Quantity > B.Quantity);
+			}
+			return bIsAscending ? (A.ItemName < B.ItemName) : (A.ItemName > B.ItemName);
+		});
+}
 //return item ?
 bool UInventorySubsystem::UseItem(int32 SlotIndex, EItemType ItemType)
 {
@@ -400,6 +424,16 @@ bool UInventorySubsystem::UseItem(int32 SlotIndex, EItemType ItemType)
 		}
 		break;
 	}
+	case EItemType::Ammo:
+	{
+		if (OthersItems.IsValidIndex(SlotIndex))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Ammo dont Use"));
+		}
+		break;
+	}
+
+
 	default:
 		break;
 	}
@@ -409,7 +443,6 @@ const TArray<FInventoryConsumable>& UInventorySubsystem::GetConsumableItems() co
 {
 	return ConsumableItems;
 }
-
 const TArray<FInventoryEquipment>& UInventorySubsystem::GetEquipmentItems() const
 {
 	return EquipmentItems;
@@ -417,6 +450,10 @@ const TArray<FInventoryEquipment>& UInventorySubsystem::GetEquipmentItems() cons
 const TArray<FInventoryOthers>& UInventorySubsystem::GetOthersItems() const
 {
 	return OthersItems;
+}
+const TArray<FInventoryAmmo>& UInventorySubsystem::GetAmmoItems() const
+{
+	return AmmoItems;
 }
 void UInventorySubsystem::SwapItem(int32 PrevIndex, int32 CurrentIndex, EItemType PrevSlotType, EItemType CurrentSlotType)
 {
@@ -445,5 +482,152 @@ void UInventorySubsystem::SwapItem(int32 PrevIndex, int32 CurrentIndex, EItemTyp
 			OthersItems.Swap(PrevIndex, CurrentIndex);
 		}
 		break;
+	case EItemType::Ammo:
+
+		if (AmmoItems.IsValidIndex(PrevIndex) && AmmoItems.IsValidIndex(CurrentIndex))
+		{
+			AmmoItems.Swap(PrevIndex, CurrentIndex);
+		}
+		break;
+
 	}
+
+
+}
+int32 UInventorySubsystem::SearchItemByName(const FName& ItemKey) const
+{
+	int32 Index = FindEquipmentIndex(ItemKey);
+	if (Index != INDEX_NONE)
+	{
+		return EquipmentItems[Index].Quantity;
+	}
+
+	Index = FindConsumableIndex(ItemKey);
+	if (Index != INDEX_NONE)
+	{
+		return ConsumableItems[Index].Quantity;
+	}
+
+	Index = FindOthersIndex(ItemKey);
+	if (Index != INDEX_NONE)
+	{
+		return OthersItems[Index].Quantity;
+	}
+
+	Index = FindAmmoIndex(ItemKey);
+	if (Index != INDEX_NONE)
+	{
+		return AmmoItems[Index].Quantity;
+	}
+	return INDEX_NONE;
+}
+int32 UInventorySubsystem::SearchItemByNameAndType(const FName& ItemKey, const EItemType& ItemType) const
+{
+	switch (ItemType)
+	{
+	case EItemType::Equipment:
+	{
+		int32 Index = FindEquipmentIndex(ItemKey);
+		if (Index != INDEX_NONE)
+		{
+			return EquipmentItems[Index].Quantity;
+		}
+		return INDEX_NONE;
+		break;
+	}
+	case EItemType::Consumable:
+	{
+		int32 Index = FindConsumableIndex(ItemKey);
+		if (Index != INDEX_NONE)
+		{
+			return ConsumableItems[Index].Quantity;
+		}
+		return INDEX_NONE;
+		break;
+	}
+	case EItemType::Others:
+	{
+		int32 Index = FindOthersIndex(ItemKey);
+		if (Index != INDEX_NONE)
+		{
+			return OthersItems[Index].Quantity;
+		}
+		return INDEX_NONE;
+		break;
+	}
+	case EItemType::Ammo:
+	{
+		int32 Index = FindAmmoIndex(ItemKey);
+		if (Index != INDEX_NONE)
+		{
+			return AmmoItems[Index].Quantity;
+		}
+		return INDEX_NONE;
+		break;
+	}
+	default:
+		return INDEX_NONE;
+		break;
+	}
+}
+bool UInventorySubsystem::AddOthersItem(const FName& ItemKey, int32 Quantity, UDataTable* SelectedDataTable)
+{
+
+	ensure(Quantity > 0);
+	if (Quantity <= 0 || !SelectedDataTable)
+	{
+		return false;
+	}
+
+	const FOtherItemRow* Row = SelectedDataTable->FindRow<FOtherItemRow>(ItemKey, TEXT("LookupOtherItemData"), true);
+
+	if (Row->ItemType != EItemType::Others || !Row)
+	{
+		UE_LOG(LogTemp, Display, TEXT("im in SubSystem , Type Error"));
+		return false;
+	}
+
+	int32 Index = FindOthersIndex(ItemKey);
+	if (Index != INDEX_NONE)
+	{
+		OthersItems[Index].Quantity += Quantity;
+	}
+	else
+	{
+		int32 EmptyIndex = INDEX_NONE;
+		for (int32 i = 0; i < OthersItems.Num(); ++i)
+		{
+			if (OthersItems[i].ItemID.IsNone())
+			{
+				EmptyIndex = i;
+				break;
+			}
+		}
+		if (EmptyIndex != INDEX_NONE)
+		{
+			FInventoryOthers NewItem;
+			NewItem.ItemID = ItemKey;
+			NewItem.ItemName = Row->ItemName;
+			NewItem.Quantity = Quantity;
+			NewItem.ItemImage = Row->ItemImage;
+			OthersItems[EmptyIndex] = NewItem;
+		}
+		else if (EmptyIndex == INDEX_NONE)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Inventory Is Full"));
+			return false;
+		}
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("=== Debug Print Other Items ==="));
+	for (int32 i = 0; i < OthersItems.Num(); ++i)
+	{
+		const FInventoryOthers& Item = OthersItems[i];
+		UE_LOG(LogTemp, Log, TEXT("Index %d: ItemID: %s, ItemName: %s, Quantity: %d"),
+			i,
+			*Item.ItemID.ToString(),
+			*Item.ItemName,
+			Item.Quantity);
+	}
+	return true;
 }

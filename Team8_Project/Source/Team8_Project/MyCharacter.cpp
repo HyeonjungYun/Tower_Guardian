@@ -1,5 +1,4 @@
 ﻿#include "MyCharacter.h"
-
 #include "Components/CapsuleComponent.h"
 #include "EnhancedInputComponent.h"
 #include "MyPlayerController.h"
@@ -43,6 +42,14 @@ AMyCharacter::AMyCharacter()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+
+	// PlayerController 받아오기
+	MyPlayerController = Cast<AMyPlayerController>(Controller);
+	if (MyPlayerController)
+	{
+		// 초기화를 위한 현재 정보를 HUD로 넘기려면 여기서
+		// PC->HUD->HUD의 각종 UI 오버레이등을 사용
+	}
 }
 
 void AMyCharacter::BeginPlay()
@@ -256,9 +263,9 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void AMyCharacter::Tick(float DeltaTime)
 {
+	HideCameraIfCharacterClose();
 	CalculateRotation(DeltaTime);
-	OnPickupItem();
-}
+	OnPickupItem();}
 
 void AMyCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
@@ -278,14 +285,16 @@ void AMyCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 
 void AMyCharacter::OnPickupItem()
 {
+
 	if (OverlappingItem)
 	{
 		FName ItemKey = OverlappingItem->GetItemType();
-		int32 Quantity = 1; 
+		EItemType SlotType = OverlappingItem->GetSlotType();
+		int32 Quantity = OverlappingItem->GetQuantity();
 
 		if (Inventory)
 		{
-			bool bAdded = Inventory->AddItem(ItemKey, Quantity);
+			bool bAdded = AddItem(ItemKey, Quantity, SlotType);
 			if (bAdded)
 			{
 				UE_LOG(LogTemp, Log, TEXT("Character to Inventory %s added to inventory."), *ItemKey.ToString());
@@ -325,16 +334,18 @@ void AMyCharacter::ToggleInventory(const FInputActionValue& Value)
 
 	if (Inventory->InventoryWidget->IsVisible())
 	{
+		bIsInventoryVisible = true;
+		//상태 추가 
 		Inventory->InventoryWidget->SetVisibility(ESlateVisibility::Collapsed);
 		FInputModeGameOnly InputMode;
 		PC->SetInputMode(InputMode);
 		PC->bShowMouseCursor = false;
+		
 	
 	}
 	else
 	{
 		Inventory->InventoryWidget->SetVisibility(ESlateVisibility::Visible);
-		
 		Inventory->InventoryWidget->UpdateInventoryUI();
 		//입력이 ui에 전달되고 그다음 게임쪽으로 전달된다
 		FInputModeGameAndUI  InputMode;
@@ -447,14 +458,14 @@ void AMyCharacter::StartPickUp(const FInputActionValue& value)
 		if (CombatComponent)
 		{
 			AWeaponBase* WeaponToEquip =
-				Cast<AWeaponBase>(PickableItem);
+				Cast<AWeaponBase>(PickableWeapon);
 
-			if (WeaponToEquip && CombatComponent->EquippedWeapon == nullptr)
+			if (WeaponToEquip)
 			{
 				// 주울수있는 아이템이 무기 인경우 && 빈손인 경우
 				CombatComponent->EquipWeapon(WeaponToEquip);
 			}
-			else if (ABaseItem* ItemToPickUp =
+			if (ABaseItem* ItemToPickUp =
 				Cast<ABaseItem>(PickableItem))
 			{
 				OnPickupItem();// 인벤토리용
@@ -538,13 +549,7 @@ void AMyCharacter::StartReload(const FInputActionValue& value)
 
 	if (value.Get<bool>())
 	{
-		if (GetCharacterMovement())
-		{
-			if (GEngine) //for debug
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StartReload!"));
-			}
-		}
+		CombatComponent->StartWeaponReload();
 	}
 }
 
@@ -623,6 +628,28 @@ void AMyCharacter::ReleaseAiming()
 	}
 }
 
+void AMyCharacter::HideCameraIfCharacterClose()
+{
+	if ((Camera->GetComponentLocation()-GetActorLocation()).Size()<CameraThreshold)
+	{
+		GetMesh()->SetVisibility(false);
+		if (CombatComponent && CombatComponent->EquippedWeapon && CombatComponent->EquippedWeapon->GetWeaponMesh())
+		{
+			// 소유자=>유저1번 만 안보이게 
+			CombatComponent->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = true;
+		}
+	}
+	else
+	{
+		GetMesh()->SetVisibility(true);
+		if (CombatComponent && CombatComponent->EquippedWeapon && CombatComponent->EquippedWeapon->GetWeaponMesh())
+		{
+			// 소유자=>유저1번 만 안보이게 
+			CombatComponent->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = false;
+		}
+	}
+}
+
 void AMyCharacter::PlayFireMontage(bool bAiming)
 {
 	if (CombatComponent == nullptr ||
@@ -640,10 +667,24 @@ void AMyCharacter::PlayFireMontage(bool bAiming)
 	}
 }
 
+UPlayerCombatComponent* AMyCharacter::GetCombatComponent()
+{
+	return CombatComponent;
+}
+
 
 void AMyCharacter::SetPickableItem(ABaseItem* OverlappedItem)
 {
 	PickableItem = OverlappedItem;
+}
+
+void AMyCharacter::SetPickableWeapon(AWeaponBase* OverlappedWeapon)
+{
+	if (OverlappedWeapon)
+	{
+		PickableWeapon = OverlappedWeapon;
+	}
+
 }
 
 void AMyCharacter::SortEquipmentItems(bool bIsAscending)
@@ -702,15 +743,25 @@ const TArray<FInventoryOthers>& AMyCharacter::GetOthersItems() const
 	static TArray<FInventoryOthers> EmptyOthers;
 	return EmptyOthers;
 }
+
 float AMyCharacter::GetHP() const
 {
 	return HP;
 }
+void AMyCharacter::SetHP(float Value)
+{
+	HP = FMath::Clamp(0, MaxHP, HP + Value);
+}
+
 bool AMyCharacter::AddItem(const FName& ItemKey, int32 Quantity)
+
+
+
+bool AMyCharacter::AddItem(const FName& ItemKey, int32 Quantity,EItemType ItemType)
 {
 	if (Inventory)
 	{
-		return Inventory->AddItem(ItemKey, Quantity);
+		return Inventory->AddItem(ItemKey, Quantity, ItemType);
 	}
 	return false;
 }
@@ -742,23 +793,31 @@ void AMyCharacter::SwapItem(int32 PrevIndex, int32 CurrentIndex, EItemType PrevS
 	check(Inventory);
 	Inventory->SwapItem(PrevIndex, CurrentIndex, PrevSlotType, CurrentSlotType);
 }
-
-void AMyCharacter::SetHP(float Value)
+const TArray<FInventoryAmmo>& AMyCharacter::GetAmmoItems() const
 {
-	HP = FMath::Clamp(0, MaxHP, HP + Value);
+	if (Inventory && Inventory->InventorySubsystem)
+	{
+		return Inventory->InventorySubsystem->GetAmmoItems();
+	}
+	static TArray<FInventoryAmmo> EmptyAmmos;
+	return EmptyAmmos;
 }
-
-
-/*
-평상시 상태에서 에임오프셋 적용
-
-무기 없는 상태
-무기 있는상태 - > Hip 자세 - > 무기 & 우클릭안했을때
-
-무기 있는상태 - > 조준 상태  → 우클릭 누르고
-
-
-무빙
-
-카메라 포워드 & 캐릭터 포워드는 항상 일치,  회전은 마우스 움직임, 키보드 입력은 이동만,  
-*/
+int32 AMyCharacter::SearchItemByNameAndType(const FName& ItemKey, const EItemType& ItemType) const
+{
+	check(Inventory);
+	int32 Result = Inventory->InventorySubsystem->SearchItemByNameAndType(ItemKey, ItemType);
+	return Result;
+}
+int32 AMyCharacter::SearchItemByName(const FName& ItemKey) const
+{
+	check(Inventory);
+	int32 Result = Inventory->InventorySubsystem->SearchItemByName(ItemKey);
+	return Result;
+}
+void AMyCharacter::SortAmmoItems(bool bIsAscending)
+{
+	if (Inventory)
+	{
+		Inventory->SortAmmoItems(bIsAscending);
+	}
+}

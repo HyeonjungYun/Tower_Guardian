@@ -51,6 +51,10 @@ void UInventoryWidget::NativeConstruct()
 		MainButton->OnPressed.AddDynamic(this, &UInventoryWidget::MoveStart);
 		MainButton->OnReleased.AddDynamic(this, &UInventoryWidget::MoveEnd);
 	}
+	if (AmmoItemButton)
+	{
+		AmmoItemButton->OnClicked.AddDynamic(this, &UInventoryWidget::OnAmmoTabClicked);
+	}
 
 	InitInventorySlots();
 	InitInventoryUI();
@@ -72,6 +76,7 @@ void UInventoryWidget::InitInventorySlots()
 	EquipmentSlots.Init(nullptr, FixedSlotCount);
 	ConsumableSlots.Init(nullptr, FixedSlotCount);
 	OthersSlots.Init(nullptr, FixedSlotCount);
+	AmmoSlots.Init(nullptr, FixedSlotCount);
 }
 void UInventoryWidget::InitInventoryUI()
 {
@@ -93,6 +98,12 @@ void UInventoryWidget::InitInventoryUI()
 		UpdatePanel(OthersPanel, InventoryInterface->GetOthersItems());
 		OthersPanel->SetVisibility(ESlateVisibility::Collapsed);
 	}
+	if (AmmoPanel)
+	{
+		AmmoPanel->ClearChildren();
+		UpdatePanel(AmmoPanel, InventoryInterface->GetAmmoItems());
+		AmmoPanel->SetVisibility(ESlateVisibility::Collapsed);
+	}
 
 	if (GoldText)
 	{
@@ -106,32 +117,6 @@ void UInventoryWidget::UpdateInventoryUI()
 	{
 		return;
 	}
-	/*if (EquipmentPanel)
-	{
-		EquipmentPanel->ClearChildren();
-		EquipmentPanel->SetVisibility(CurrentInventoryType == EItemType::Equipment ?
-			ESlateVisibility::Visible :
-			ESlateVisibility::Collapsed);
-	}
-	if (ConsumablePanel)
-	{
-		ConsumablePanel->ClearChildren();
-		ConsumablePanel->SetVisibility(CurrentInventoryType == EItemType::Consumable ? 
-			ESlateVisibility::Visible : 
-			ESlateVisibility::Collapsed);
-	}
-	if (OthersPanel)
-	{
-		OthersPanel->ClearChildren();
-		OthersPanel->SetVisibility(CurrentInventoryType == EItemType::Others ? 
-			ESlateVisibility::Visible : 
-			ESlateVisibility::Collapsed);
-	}
-	if (GoldText)
-	{
-		GoldText->SetText(FText::AsNumber(InventoryInterface->GetGold()));
-	}*/
-
 	switch (CurrentInventoryType)
 	{
 	case EItemType::Equipment:
@@ -143,7 +128,6 @@ void UInventoryWidget::UpdateInventoryUI()
 	case EItemType::Consumable:
 		if (ConsumablePanel)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Consumable UI Start"));
 			UpdatePanel(ConsumablePanel, InventoryInterface->GetConsumableItems());
 		}
 		break;
@@ -151,6 +135,12 @@ void UInventoryWidget::UpdateInventoryUI()
 		if (OthersPanel)
 		{
 			UpdatePanel(OthersPanel, InventoryInterface->GetOthersItems());
+		}
+		break;
+	case EItemType::Ammo:
+		if (AmmoPanel)
+		{
+			UpdatePanel(AmmoPanel, InventoryInterface->GetAmmoItems());
 		}
 		break;
 	default:
@@ -200,6 +190,13 @@ void UInventoryWidget::SetInventoryType(EItemType NewType)
 			ESlateVisibility::Visible :
 			ESlateVisibility::Collapsed);
 	}
+	if (AmmoPanel)
+	{
+		AmmoPanel->ClearChildren();
+		AmmoPanel->SetVisibility(CurrentInventoryType == EItemType::Ammo ?
+			ESlateVisibility::Visible :
+			ESlateVisibility::Collapsed);
+	}
 	if (GoldText)
 	{
 		GoldText->SetText(FText::AsNumber(InventoryInterface->GetGold()));
@@ -240,6 +237,10 @@ void UInventoryWidget::SortCurrentItems()
 		break;
 	case EItemType::Others:
 		InventoryInterface->SortOthersItems(false);
+		UpdateInventoryUI();
+		break;
+	case EItemType::Ammo:
+		InventoryInterface->SortAmmoItems(false);
 		UpdateInventoryUI();
 		break;
 	default:
@@ -292,4 +293,8 @@ void UInventoryWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime
 			slot->SetPosition(InitialPos);
 		}
 	}
+}
+void UInventoryWidget::OnAmmoTabClicked()
+{
+	SetInventoryType(EItemType::Ammo);
 }

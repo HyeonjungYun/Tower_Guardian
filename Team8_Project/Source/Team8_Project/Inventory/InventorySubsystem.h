@@ -7,6 +7,8 @@
 #include "Engine/DataTable.h"
 #include "InventoryType.h"
 #include "ConsumableItemRow.h"  
+#include "WeaponAmmunitionRow.h"
+#include "OtherItemRow.h"
 #include "InventorySubsystem.generated.h"
 
 UCLASS()
@@ -19,7 +21,16 @@ public:
 	UInventorySubsystem();
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	bool AddItem(const FName& ItemKey, int32 Quantity, UDataTable* ItemDataTable);
+	bool AddConsumableItem(const FName& ItemKey, int32 Quantity, UDataTable* SelectedDataTable);
+	
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	bool AddOthersItem(const FName& ItemKey, int32 Quantity, UDataTable* SelectedDataTable);
+	/*
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	bool AddEquipmentItem(const FName& ItemKey, int32 Quantity, const FConsumableItemRow* Row);*/
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	bool AddAmmoItem(const FName& ItemKey, int32 Quantity,UDataTable* SelectedDataTable);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	bool RemoveItem(const FName& ItemKey, int32 Quantity);
@@ -35,6 +46,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void SortOthersItems(bool bIsAscending);
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void SortAmmoItems(bool bIsAscending);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	bool UseItem(int32 SlotIndex, EItemType ItemType);
@@ -58,7 +72,17 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	const TArray<FInventoryOthers>& GetOthersItems() const;
-	
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	const TArray<FInventoryAmmo>& GetAmmoItems() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	int32 SearchItemByName(const FName& ItemKey) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	int32 SearchItemByNameAndType(const FName& ItemKey, const EItemType& ItemType) const;
+
+	 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
 	TArray<FInventoryConsumable> ConsumableItems;
@@ -68,6 +92,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
 	TArray<FInventoryOthers> OthersItems;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
+	TArray<FInventoryAmmo> AmmoItems;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
 	int32 CurrentGold;
@@ -81,4 +108,6 @@ private:
 	int32 FindConsumableIndex(const FName& ItemKey) const;
 
 	int32 FindOthersIndex(const FName& ItemKey) const;
+
+	int32 FindAmmoIndex(const FName& ItemKey) const;
 };

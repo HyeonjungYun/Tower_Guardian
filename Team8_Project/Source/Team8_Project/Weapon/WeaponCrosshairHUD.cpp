@@ -3,6 +3,10 @@
 
 #include "WeaponCrosshairHUD.h"
 #include "Kismet/GameplayStatics.h"//crosshair
+#include "PlayerCombatOverlay.h"
+#include "HealthImageWidget.h"
+
+
 void AWeaponCrosshairHUD::DrawHUD()
 {
 	Super::DrawHUD();
@@ -77,4 +81,46 @@ void AWeaponCrosshairHUD::DrawCrosshair(UTexture2D* Texture, FVector2D ViewportC
 		1.f,1.f,FLinearColor::White
 	);
 
+}
+
+void AWeaponCrosshairHUD::BeginPlay()
+{
+	Super::BeginPlay();
+
+	AddCombatOverlay();
+	//AddHealthOverlay();
+	
+	CallCreateHPSeg(InitHUDMaxHealth);
+
+}
+
+void AWeaponCrosshairHUD::AddCombatOverlay()
+{
+	APlayerController* PlayerController = GetOwningPlayerController();
+
+	if (PlayerController && CombatOverlayclass)
+	{
+		CombatOverlay = CreateWidget<UPlayerCombatOverlay>(PlayerController, CombatOverlayclass);
+		CombatOverlay->AddToViewport();
+	}
+	if (CombatOverlay)
+	{
+		CombatOverlay->HUDMaxHealth = InitHUDMaxHealth;
+	}
+}
+
+//void AWeaponCrosshairHUD::AddHealthOverlay()
+//{
+//	APlayerController* PlayerController = GetOwningPlayerController();
+//
+//	if (PlayerController && HealthWidgetclass)
+//	{
+//		HealthWidget = CreateWidget<UHealthImageWidget>(PlayerController, HealthWidgetclass);
+//		HealthWidget->AddToViewport();
+//	}
+//}
+
+void AWeaponCrosshairHUD::CallCreateHPSeg(float _InitHP)
+{
+	CombatOverlay->CreateHPSeg(_InitHP);
 }
