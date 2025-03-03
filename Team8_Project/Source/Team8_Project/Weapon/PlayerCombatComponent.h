@@ -118,6 +118,10 @@ public:
 	/*
 		발사, 발사 속도 조절
 	*/
+
+
+	// 분산도
+	float CurrentWeaponSpread = 0.0f;
 public:
 	
 	bool bIsCanFireinRate = true;// 무기 발사속도에따라 

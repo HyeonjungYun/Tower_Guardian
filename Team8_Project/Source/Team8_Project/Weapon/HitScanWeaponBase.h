@@ -17,7 +17,7 @@ class TEAM8_PROJECT_API AHitScanWeaponBase : public AWeaponBase
 public:
 	virtual void BeginPlay() override;
 
-	virtual void Fire(const FVector& HitTarget); // 히트스캔 무기 발사 재정의
+	virtual void Fire(const FVector& HitTarget, float CurrentWeaponSpread); // 히트스캔 무기 발사 재정의
 
 protected:
 	float HitScanDamage;

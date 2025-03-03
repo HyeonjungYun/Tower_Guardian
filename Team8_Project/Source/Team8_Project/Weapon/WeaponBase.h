@@ -126,7 +126,7 @@ public:
     AWeaponBase();
     void SetWeaponState(EWeaponState CurWeaponState);
     UFUNCTION(BlueprintCallable)
-    virtual void Fire(const FVector& HitTarget);
+    virtual void Fire(const FVector& HitTarget, float CurrentWeaponSpread);
 
     float GetWeaponZoomFov() const;
     
@@ -209,4 +209,30 @@ protected:
 
     UPROPERTY(EditAnywhere,BlueprintReadWrite)
     float TimeToFinishReload = 2.f;
+
+    /***
+        무기 모딩을 위한 세부 값들
+    ***/
+public:
+
+
+
+public:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponModify")
+    bool bIsWeaponCanModify = false;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponModify|Optic")
+    bool bIsCanModifyOptic = false;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponModify|Muzzle")
+    bool bIsCanModifyMuzzle = false;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponModify|Magazine")
+    bool bIsCanModifyMagazine = false;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponModify|ForeGrip")
+    bool bIsCanModifyForeGrip = false;
+
+    float WeaponVerticalSpreads = 0.0f;
+    float WeapopnHorizontalSpreads = 0.0f;
+    float WeaponCurrentSpreads = 0.0f;
+
+    bool bIsInfiniteAmmo = false;
+    
 };

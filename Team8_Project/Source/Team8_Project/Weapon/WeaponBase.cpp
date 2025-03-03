@@ -107,16 +107,23 @@ void AWeaponBase::ActivateItem(AActor* Activator)
 
 void AWeaponBase::SpendRound()
 {
-	CurrentWeaponAmmo = FMath::Clamp(CurrentWeaponAmmo - 1, 0, MaxWeaponAmmo);
-	OwnerPlayerCharacter = OwnerPlayerCharacter == nullptr ? Cast<AMyCharacter>(GetOwner()) : OwnerPlayerCharacter;
-
-	if (OwnerPlayerCharacter)
+	if (bIsInfiniteAmmo)
 	{
-		OwnerPlayerController =
-			OwnerPlayerController == nullptr ? Cast<AMyPlayerController>(OwnerPlayerCharacter->Controller) : OwnerPlayerController;
-		if (OwnerPlayerController)
+
+	}
+	else
+	{
+		CurrentWeaponAmmo = FMath::Clamp(CurrentWeaponAmmo - 1, 0, MaxWeaponAmmo);
+		OwnerPlayerCharacter = OwnerPlayerCharacter == nullptr ? Cast<AMyCharacter>(GetOwner()) : OwnerPlayerCharacter;
+
+		if (OwnerPlayerCharacter)
 		{
-			OwnerPlayerController->SetHUDWeaponAmmo(CurrentWeaponAmmo);
+			OwnerPlayerController =
+				OwnerPlayerController == nullptr ? Cast<AMyPlayerController>(OwnerPlayerCharacter->Controller) : OwnerPlayerController;
+			if (OwnerPlayerController)
+			{
+				OwnerPlayerController->SetHUDWeaponAmmo(CurrentWeaponAmmo);
+			}
 		}
 	}
 }
@@ -176,7 +183,7 @@ void AWeaponBase::SetMaxWeaponAmmo(int32 _Ammo)
 	MaxWeaponAmmo = _Ammo;
 }
 
-void AWeaponBase::Fire(const FVector& HitTarget)
+void AWeaponBase::Fire(const FVector& HitTarget, float CurrentWeaponSpread)
 {
 	
 	// 무기 발사

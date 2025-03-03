@@ -26,6 +26,7 @@ UPlayerCombatComponent::UPlayerCombatComponent()
 
 	CarriedAmmoMap.Add(EWeaponType::EWT_Sniper,30);
 	CarriedAmmoMap.Add(EWeaponType::EWT_Rifle, 100);
+	CarriedAmmoMap.Add(EWeaponType::EWT_RocketLauncher, 5);
 }
 
 void UPlayerCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
@@ -162,14 +163,14 @@ void UPlayerCombatComponent::SetHUDCrosshairs(float DeltaTime)
 				CrosshairAimFactor = FMath::FInterpTo(CrosshairAimFactor, 0.f, DeltaTime, 30.f);
 			}
 			// 총을 쐈을 때 벌어지는 수치가 점점 0으로 줄어드는 방식
-			CrosshairShootingFactor = FMath::FInterpTo(CrosshairShootingFactor, 0.f, DeltaTime,40.f);
+			CrosshairShootingFactor = FMath::FInterpTo(CrosshairShootingFactor, 0.f, DeltaTime,CrosshairShootingFactor);
 
 			HUDPackage.CrosshairsSpread =
 				CrosshairBaseFactor	+ CrosshairVelocityFactor 
 				+ CrosshairinAirFactor
 				- CrosshairAimFactor
 				+ CrosshairShootingFactor;
-
+			CurrentWeaponSpread = HUDPackage.CrosshairsSpread;
 			PlayerCrosshairHUD->SetHUDPackage(HUDPackage);
 		}
 	
@@ -307,10 +308,10 @@ void UPlayerCombatComponent::ComponentFire()
 	{
 		bIsCanFireinRate = false;
 		PlayerCharacter->PlayFireMontage(bIsAiming);
-		EquippedWeapon->Fire(HitTargetPos);
+		EquippedWeapon->Fire(HitTargetPos,CurrentWeaponSpread);
 
 		// 총을 쐈을 떄 벌어질 조준선에 크기에 더해질 값
-		CrosshairShootingFactor = 0.75f;
+		CrosshairShootingFactor += 0.75f;
 
 		StartFireTimer();
 	}

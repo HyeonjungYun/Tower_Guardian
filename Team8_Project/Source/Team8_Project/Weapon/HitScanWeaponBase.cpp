@@ -21,9 +21,9 @@ void AHitScanWeaponBase::BeginPlay()
 	HitScanDamage = GetWeaponDamage();
 }
 
-void AHitScanWeaponBase::Fire(const FVector& HitTarget)
+void AHitScanWeaponBase::Fire(const FVector& HitTarget, float CurrentWeaponSpread)
 {
-	Super::Fire(HitTarget);
+	Super::Fire(HitTarget,CurrentWeaponSpread);
 
 	const USkeletalMeshSocket* MuzzleFlashSocket
 		= GetWeaponMesh()->GetSocketByName("MuzzleFlash");
