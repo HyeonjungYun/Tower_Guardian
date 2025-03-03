@@ -37,7 +37,8 @@ public:
 	void AddCombatOverlay();
 	//void AddHealthOverlay();
 	void CallCreateHPSeg(float _InitHP);
-
+	void SetReloadUIVisibility(bool bReloadVisible);
+	void UpdateReloadUIProgress(float _RemainTime, float _Duration);
 protected:
 	FHUDPackage HUDPackage;
 	float CrosshairSpreadMax = 16.f;

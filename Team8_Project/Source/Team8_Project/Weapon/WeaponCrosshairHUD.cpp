@@ -5,7 +5,8 @@
 #include "Kismet/GameplayStatics.h"//crosshair
 #include "PlayerCombatOverlay.h"
 #include "HealthImageWidget.h"
-
+#include "Components/ProgressBar.h"
+#include "Components/TextBlock.h"
 
 void AWeaponCrosshairHUD::DrawHUD()
 {
@@ -123,4 +124,43 @@ void AWeaponCrosshairHUD::AddCombatOverlay()
 void AWeaponCrosshairHUD::CallCreateHPSeg(float _InitHP)
 {
 	CombatOverlay->CreateHPSeg(_InitHP);
+}
+
+void AWeaponCrosshairHUD::SetReloadUIVisibility(bool bReloadVisible)
+{
+	if (bReloadVisible)
+	{
+		if (UTextBlock* ReloadText = Cast<UTextBlock>(CombatOverlay->GetWidgetFromName(TEXT("ReloadText"))))
+		{
+			ReloadText->SetVisibility(ESlateVisibility::Visible);
+		}
+		if (UProgressBar* ReloadPB = Cast<UProgressBar>(CombatOverlay->GetWidgetFromName(TEXT("ReloadPB"))))
+		{
+			ReloadPB->SetVisibility(ESlateVisibility::Visible);
+		}
+	}
+	else
+	{
+		if (UTextBlock* ReloadText = Cast<UTextBlock>(CombatOverlay->GetWidgetFromName(TEXT("ReloadText"))))
+		{
+			ReloadText->SetVisibility(ESlateVisibility::Hidden);
+		}
+		if (UProgressBar* ReloadPB = Cast<UProgressBar>(CombatOverlay->GetWidgetFromName(TEXT("ReloadPB"))))
+		{
+			ReloadPB->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+	
+}
+
+void AWeaponCrosshairHUD::UpdateReloadUIProgress(float _RemainTime, float _Duration)
+{
+	if (_RemainTime > 0.0f && _Duration>0.0f)
+	{
+		if (UProgressBar* ReloadPB = Cast<UProgressBar>(CombatOverlay->GetWidgetFromName(TEXT("ReloadPB"))))
+		{
+			float ReloadingPercentage = _RemainTime / _Duration;
+			ReloadPB->SetPercent(ReloadingPercentage);
+		}
+	}
 }

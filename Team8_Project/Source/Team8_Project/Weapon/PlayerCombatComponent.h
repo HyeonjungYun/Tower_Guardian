@@ -140,6 +140,13 @@ protected:
 public:
 
 
+	void UpdateReloadUI();
+
+	UFUNCTION()
+	void ApplyReloadUI();
+	UFUNCTION()
+	void DeApplyReloadUI();
+
 	void StartWeaponReload();
 	
 	void OnFinishWeaponReload();
@@ -147,7 +154,6 @@ protected:
 	bool bIsReloading = false;
 	
 	FTimerHandle FReloadTimerHandle;
-
 public:
 	bool IsPlayerDead();
 };

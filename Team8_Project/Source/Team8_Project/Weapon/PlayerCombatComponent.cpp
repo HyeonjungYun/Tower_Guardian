@@ -240,6 +240,12 @@ void UPlayerCombatComponent::EquipWeapon(AWeaponBase* WeaponToEquip)
 		UE_LOG(LogTemp, Warning, TEXT("캐릭터 또는 장비 nullptr"));
 		return;
 	}
+	if (bIsReloading)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("재장전 중에는 무기를 새로 장비할 수 없습니다."));
+		return;
+	}
+
 	// 소켓에 장비 장착
 	if (EquippedWeapon)
 	{
@@ -311,6 +317,28 @@ void UPlayerCombatComponent::ComponentFire()
 
 }
 
+void UPlayerCombatComponent::UpdateReloadUI()
+{
+	if (PlayerCharacter == nullptr|| PlayerController==nullptr || EquippedWeapon == nullptr) return;
+
+	float RemainingReloadTime = PlayerCharacter->GetWorldTimerManager().GetTimerRemaining
+	(FReloadTimerHandle);
+
+	PlayerController->GetWeaponCrosshairHUD()->UpdateReloadUIProgress(
+		RemainingReloadTime, EquippedWeapon->GetTimeToFinishReload());
+
+}
+
+void UPlayerCombatComponent::ApplyReloadUI()
+{
+	PlayerController->GetWeaponCrosshairHUD()->SetReloadUIVisibility(true);
+}
+
+void UPlayerCombatComponent::DeApplyReloadUI()
+{
+	PlayerController->GetWeaponCrosshairHUD()->SetReloadUIVisibility(false);
+}
+
 void UPlayerCombatComponent::StartWeaponReload()
 {
 	if (EquippedWeapon && !bIsReloading)
@@ -329,10 +357,10 @@ void UPlayerCombatComponent::StartWeaponReload()
 			}
 			else
 			{
-				bIsReloading = true;
-
 				if (PlayerCharacter)
 				{
+					bIsReloading = true;
+					ApplyReloadUI();
 					PlayerCharacter->GetWorldTimerManager().SetTimer(
 						FReloadTimerHandle,
 						this,
@@ -352,7 +380,9 @@ void UPlayerCombatComponent::OnFinishWeaponReload()
 {
 	if (EquippedWeapon)
 	{
+
 		EquippedWeapon->Reload();
+		DeApplyReloadUI();
 		bIsReloading = false;
 	}
 }
@@ -471,6 +501,7 @@ void UPlayerCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	
 	SetHUDCrosshairs(DeltaTime);
 	SetHUDHealth(PlayerCurrentHealth, PlayerMaxHealth);
+	UpdateReloadUI();
 	InterpFOV(DeltaTime);
 }
 
