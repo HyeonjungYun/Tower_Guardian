@@ -18,6 +18,7 @@ UENUM(BlueprintType)
 enum class EPlayerStateType : uint8
 {
 	EWT_Normal UMETA(DisplayName = "Normal"),
+	EWT_Punch UMETA(DisplayName = "Punch"),
 	EWT_Fire UMETA(DisplayName = "Fire"),
 	EWT_Reload UMETA(DisplayName = "Reload"),
 	EWT_ChangeWeapon UMETA(DisplayName = "ChangeWeapon"),
@@ -118,29 +119,32 @@ protected:
 
 
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player")
-	float HP = 100.0f;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player")
-	float MaxHP = 100.0f;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSpeed")
 	float WalkSpeed = 400.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSpeed")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSetting")
 	float SlowWalkSpeedMultiplier = 0.5f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSpeed")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSetting")
 	float SlowWalkSpeed;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSpeed")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSetting")
 	float SprintSpeedMultiplier = 1.5f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSpeed")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSetting")
 	float SprintSpeed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSetting")
 	float MouseSensitivity = 1.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSetting")
+	float RotationSpeed = 5.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSetting")
+	FRotator NewRotation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
+	EPlayerStateType PlayerStates = EPlayerStateType::EWT_Normal;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
 	bool bIsCrouching = false;
@@ -148,18 +152,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
 	bool bIsSlowWalking = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSetting")
-	float RotationSpeed = 5.f;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
-	EPlayerStateType PlayerStates = EPlayerStateType::EWT_Normal;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSetting")
-	FRotator NewRotation;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
 	bool bIsInventoryVisible = false;
-
 
 	ABaseItem* PickableItem;
 
@@ -239,10 +233,12 @@ protected:
 	TArray<class UAnimMontage*> PunchMontages;
 
 	int32 FunchAnimIndex = 0;
+	int32 CurrentFunchAnimIndex = 0;
 	int32 FunchAnimMaxIndex = 0;
 	FTimerHandle FunchComboTimerHandle;
 	void FunchCombo(int32 AnimIndex);
 	void ResetFunchCombo();
+	void StopPunch();//펀치중 wasd 움직임이 발생하면 멈춤
 
 
 	// 카메라가 벽에 겹쳐졌을 때 플레이어 모델링이 가리는 문제 해결하기

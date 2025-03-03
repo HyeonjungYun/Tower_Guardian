@@ -264,9 +264,16 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void AMyCharacter::Tick(float DeltaTime)
 {
+	//플레이어 테스트를 위한
+	if (GetHP() == 0)
+	{
+		PlayerStates = EPlayerStateType::EWT_Dead;
+	}
+	//
 	HideCameraIfCharacterClose();
 	CalculateRotation(DeltaTime);
-	OnPickupItem();}
+	OnPickupItem();
+}
 
 void AMyCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
@@ -374,17 +381,6 @@ void AMyCharacter::Move(const FInputActionValue& value)
 {
 	if (!Controller)
 		return;
-	if (!CombatComponent->GetEquippedWeapon() && PlayerStates == EPlayerStateType::EWT_Fire)
-	{
-		//조건을 그냥 Fire로 잡으면 무기 든 상태일 때랑 구분 불가
-		PlayerStates = EPlayerStateType::EWT_Normal;
-		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-		if (AnimInstance && PunchMontages.IsValidIndex(FunchAnimIndex))
-		{
-			AnimInstance->StopAllMontages(0.0f);
-		}
-	}
-	
 
 	//카메라 바라보는 방향 = 캐릭터 바라보는 방향
 	const FVector2D MoveInput = value.Get<FVector2D>();
@@ -403,15 +399,22 @@ void AMyCharacter::Move(const FInputActionValue& value)
 	{
 		AddMovementInput(RightDir, MoveInput.Y * MouseSensitivity);
 	}
+
+	//함수 안에서 조건 검사
+	StopPunch();
 }
 
 void AMyCharacter::StartJump(const FInputActionValue& value)
 {
+	//플레이어 테스트를 위한
+	CombatComponent->SetCurrentPlayerHealth(0);
+	//
+
 	if (value.Get<bool>())
 	{
 		Jump();
+		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	}
-	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }
 
 void AMyCharacter::StopJump(const FInputActionValue& value)
@@ -441,6 +444,12 @@ void AMyCharacter::Look(const FInputActionValue& value)
 
 void AMyCharacter::StartSprint(const FInputActionValue& value)
 {
+	//장전중 달리기 막음
+	if (PlayerStates == EPlayerStateType::EWT_Reload)
+	{
+		return;
+	}
+
 	if (value.Get<bool>())
 	{
 		if (GetCharacterMovement())
@@ -463,6 +472,12 @@ void AMyCharacter::StopSprint(const FInputActionValue& value)
 
 void AMyCharacter::StartPickUp(const FInputActionValue& value)
 {
+	//장전중 줍기 막음
+	if (PlayerStates == EPlayerStateType::EWT_Reload)
+	{
+		return;
+	}
+
 	// 개발용, 무기 주으면 바로 장착할 수 있도록 구현
 	if (value.Get<bool>())
 	{
@@ -557,6 +572,18 @@ void AMyCharacter::StopSlowWalking(const FInputActionValue& value)
 
 void AMyCharacter::StartReload(const FInputActionValue& value)
 {
+	//장착된 총알이 꽉 차있으면 return, 하나라도 소비한 상태면 실행
+	if (CombatComponent->GetEquippedWeapon())
+	{
+		int32 cur = CombatComponent->GetEquippedWeapon()->GetCurrrentWeaponAmmo();
+		int32 max = CombatComponent->GetEquippedWeapon()->GetMaxWeaponAmmo();
+		if (cur == max)
+		{
+			PlayerStates = EPlayerStateType::EWT_Normal;
+			return;
+		}
+	}
+
 	PlayerStates = EPlayerStateType::EWT_Reload;
 
 	if (value.Get<bool>())
@@ -568,31 +595,26 @@ void AMyCharacter::StartReload(const FInputActionValue& value)
 void AMyCharacter::StopReload(const FInputActionValue& value)
 {
 	PlayerStates = EPlayerStateType::EWT_Normal;
-
-	if (!value.Get<bool>())
-	{
-		if (GetCharacterMovement())
-		{
-			if (GEngine) //for debug
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StopReload!"));
-			}
-		}
-	}
 }
 
 void AMyCharacter::StartFire(const FInputActionValue& value)
 {
-	PlayerStates = EPlayerStateType::EWT_Fire;
+	//장전중 발사 막음
+	if (PlayerStates == EPlayerStateType::EWT_Reload)
+	{
+		return;
+	}
 
 	if (CombatComponent)
 	{
 		CombatComponent->FireButtonPressed(true);
+		PlayerStates = EPlayerStateType::EWT_Fire;
 	}
-	
+
 	//펀치 발동 조건
-	if (!CombatComponent->GetEquippedWeapon() && PlayerStates == EPlayerStateType::EWT_Fire)
+	if (!CombatComponent->GetEquippedWeapon())
 	{
+		PlayerStates = EPlayerStateType::EWT_Punch;
 		FunchCombo(FunchAnimIndex);
 	}
 }
@@ -715,6 +737,8 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 void AMyCharacter::OnDeath()
 {
 	// 사망관련 Character에서 해야할 것 수행
+	//상태만 바꿔주고 움직임까지 막을지는 GameState에 따라서
+	PlayerStates = EPlayerStateType::EWT_Dead;
 	UE_LOG(LogTemp, Warning, TEXT("플레이어 사망 확인"));
 }
 
@@ -875,6 +899,8 @@ void AMyCharacter::SortAmmoItems(bool bIsAscending)
 
 void AMyCharacter::FunchCombo(int32 AnimIndex)
 {
+	CurrentFunchAnimIndex = FunchAnimIndex;
+
 	//타이머 발동
 	GetWorldTimerManager().ClearTimer(FunchComboTimerHandle);
 	GetWorld()->GetTimerManager().SetTimer(FunchComboTimerHandle, this, &AMyCharacter::ResetFunchCombo, 1.0f, false);
@@ -898,4 +924,17 @@ void AMyCharacter::ResetFunchCombo()
 {
 	//1초 후 콤보 카운트 리셋
 	FunchAnimIndex = 0;
+}
+
+void AMyCharacter::StopPunch()
+{
+	if (PlayerStates == EPlayerStateType::EWT_Punch)
+	{
+		PlayerStates = EPlayerStateType::EWT_Normal;
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (AnimInstance && PunchMontages.IsValidIndex(CurrentFunchAnimIndex))
+		{
+			AnimInstance->Montage_Stop(0.0f, PunchMontages[CurrentFunchAnimIndex]);
+		}
+	}
 }
