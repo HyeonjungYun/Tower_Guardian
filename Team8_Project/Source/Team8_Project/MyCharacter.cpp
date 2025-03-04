@@ -3,7 +3,6 @@
 #include "EnhancedInputComponent.h"
 #include "MyPlayerController.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Engine/Engine.h" //뷰포트에 로그를 출력 위함
 #include "Weapon/PlayerCombatComponent.h"
 #include "Weapon/WeaponBase.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -15,6 +14,7 @@
 #include "Inventory/InventoryWidget.h"
 #include "Inventory/InventoryComponent.h"
 #include "Inventory/InventorySubsystem.h"
+#include "Team8_Project/Weapon/WeaponType.h"
 
 AMyCharacter::AMyCharacter()
 {
@@ -59,6 +59,7 @@ void AMyCharacter::BeginPlay()
 	SprintSpeed = WalkSpeed * SprintSpeedMultiplier;
 	SlowWalkSpeed = WalkSpeed * SlowWalkSpeedMultiplier;
 	FunchAnimMaxIndex = PunchMontages.Num();
+	PreWeaponType = EWeaponType::EWT_None;
 }
 
 void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -491,6 +492,12 @@ void AMyCharacter::StartPickUp(const FInputActionValue& value)
 			{
 				// 주울수있는 아이템이 무기 인경우 && 빈손인 경우
 				CombatComponent->EquipWeapon(WeaponToEquip);
+
+				//교체 애니메이션을 위한 추가
+				if (PreWeaponType != WeaponToEquip->GetWeaponType())
+				{
+					PlayerStates = EPlayerStateType::EWT_ChangeWeapon;
+				}
 			}
 			if (ABaseItem* ItemToPickUp =
 				Cast<ABaseItem>(PickableItem))
@@ -505,13 +512,6 @@ void AMyCharacter::StopPickUp(const FInputActionValue& value)
 {
 	if (!value.Get<bool>())
 	{
-		if (GetCharacterMovement())
-		{
-			if (GEngine) //for debug
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StopPickUp!"));
-			}
-		}
 	}
 }
 

@@ -13,6 +13,7 @@ struct FInputActionValue;
 class UCapsuleComponent;
 class UInventoryComponent;
 class ABaseItem;
+enum class EWeaponType : uint8;
 
 UENUM(BlueprintType)
 enum class EPlayerStateType : uint8
@@ -147,6 +148,9 @@ protected:
 	EPlayerStateType PlayerStates = EPlayerStateType::EWT_Normal;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
+	EWeaponType PreWeaponType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
 	bool bIsCrouching = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
@@ -208,7 +212,6 @@ protected:
 	UFUNCTION() //이동 시 캐릭터 보간 회전, turn in place 를 위한 
 	void CalculateRotation(float DeltaTime);
 
-
 	UFUNCTION()
 	void OnAiming();
 
@@ -229,7 +232,7 @@ protected:
 	FName AimSectionName;
 
 	//펀치
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Punch")
+	UPROPERTY()
 	TArray<class UAnimMontage*> PunchMontages;
 
 	int32 FunchAnimIndex = 0;
