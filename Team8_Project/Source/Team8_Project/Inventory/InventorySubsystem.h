@@ -9,7 +9,6 @@
 #include "ConsumableItemRow.h"  
 #include "WeaponAmmunitionRow.h"
 #include "OtherItemRow.h"
-#include "../Weapon/WeaponBase.h"
 #include "InventorySubsystem.generated.h"
 
 UCLASS()
@@ -52,7 +51,7 @@ public:
 	void SortAmmoItems(bool bIsAscending);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	bool UseItem(int32 SlotIndex, EItemType ItemType);
+	FName UseItem(int32 SlotIndex, EItemType ItemType);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void SwapItem(int32 PrevIndex,int32 CurrentIndex,EItemType PrevSlotType, EItemType CurrentSlotType);
@@ -85,10 +84,9 @@ public:
 
 	bool AddItem(const FName& ItemKey, int32 Quantity, EItemType ItemType, UDataTable* SelectedDataTable);
 
-	//int32 ReturnAmmo(int32 RequiredAmmo,EWeaponType WeaponType);
-	//FName ReturnAmmoName(EWeaponType WeaponType);
-	//SearchItemByNameAndType(FName findedName , EItemType :: Ammo)
-	//
+	//bool RemoveItemByNameAndType(const FName& ItemKey, int32 Quantity,EItemType ItemType);
+
+	
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
 	TArray<FInventoryConsumable> ConsumableItems;

@@ -754,35 +754,35 @@ void AMyCharacter::SortOthersItems(bool bIsAscending)
 }
 int32 AMyCharacter::GetGold() const
 {
-	if (Inventory && Inventory->InventorySubsystem)
+	if (Inventory)
 	{
-		return Inventory->InventorySubsystem->GetGold();
+		return Inventory->GetGold();
 	}
 	return 0;
 }
 const TArray<FInventoryConsumable>& AMyCharacter::GetConsumableItems() const
 {
-	if (Inventory && Inventory->InventorySubsystem)
+	if (Inventory)
 	{
-		return Inventory->InventorySubsystem->GetConsumableItems();
+		return Inventory->GetConsumableItems();
 	}
 	static TArray<FInventoryConsumable> EmptyConsumables;
 	return EmptyConsumables;
 }
 const TArray<FInventoryEquipment>& AMyCharacter::GetEquipmentItems() const
 {
-	if (Inventory && Inventory->InventorySubsystem)
+	if (Inventory)
 	{
-		return Inventory->InventorySubsystem->GetEquipmentItems();
+		return Inventory->GetEquipmentItems();
 	}
 	static TArray<FInventoryEquipment> EmptyEquipments;
 	return EmptyEquipments;
 }
 const TArray<FInventoryOthers>& AMyCharacter::GetOthersItems() const
 {
-	if (Inventory && Inventory->InventorySubsystem)
+	if (Inventory)
 	{
-		return Inventory->InventorySubsystem->GetOthersItems();
+		return Inventory->GetOthersItems();
 	}
 	static TArray<FInventoryOthers> EmptyOthers;
 	return EmptyOthers;
@@ -825,24 +825,30 @@ void AMyCharacter::SwapItem(int32 PrevIndex, int32 CurrentIndex, EItemType PrevS
 }
 const TArray<FInventoryAmmo>& AMyCharacter::GetAmmoItems() const
 {
-	if (Inventory && Inventory->InventorySubsystem)
+	if (Inventory)
 	{
-		return Inventory->InventorySubsystem->GetAmmoItems();
+		return Inventory->GetAmmoItems();
 	}
 	static TArray<FInventoryAmmo> EmptyAmmos;
 	return EmptyAmmos;
 }
 int32 AMyCharacter::SearchItemByNameAndType(const FName& ItemKey, const EItemType& ItemType) const
 {
-	check(Inventory);
-	int32 Result = Inventory->InventorySubsystem->SearchItemByNameAndType(ItemKey, ItemType);
-	return Result;
+	if (Inventory) 
+	{
+		int32 Result = Inventory->SearchItemByNameAndType(ItemKey, ItemType);
+		return Result;
+	}
+	return INDEX_NONE;
 }
 int32 AMyCharacter::SearchItemByName(const FName& ItemKey) const
 {
-	check(Inventory);
-	int32 Result = Inventory->InventorySubsystem->SearchItemByName(ItemKey);
-	return Result;
+	if (Inventory)
+	{
+		int32 Result = Inventory->SearchItemByName(ItemKey);
+		return Result;
+	}
+	return INDEX_NONE;
 }
 void AMyCharacter::SortAmmoItems(bool bIsAscending)
 {
@@ -850,4 +856,55 @@ void AMyCharacter::SortAmmoItems(bool bIsAscending)
 	{
 		Inventory->SortAmmoItems(bIsAscending);
 	}
+}
+float AMyCharacter::GetHP()
+{
+	return CombatComponent->PlayerCurrentHealth;
+}
+void AMyCharacter::SetHP(float setHP)
+{
+	CombatComponent->PlayerCurrentHealth = setHP;
+}
+float AMyCharacter::GetMaxHP()
+{
+	return CombatComponent->PlayerMaxHealth;
+}
+void AMyCharacter::ApplySpeedBoost(float BoostPercent, float Duration)
+{
+	if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
+	{
+		if (GetWorldTimerManager().IsTimerActive(SpeedBoostTimerHandle))
+		{
+			GetWorldTimerManager().ClearTimer(SpeedBoostTimerHandle);
+		}
+
+		//Tick등에서 MoveComp->MaxWalkSpeed를 항상 업데이트를 해주는 방식이 아니기때문에 
+		//직접 값을 변경해줘야 한다.
+		float OriginalWalkSpeed = WalkSpeed;
+		float OriginalComponentWalkSpeed = MoveComp->MaxWalkSpeed;
+		float OriginalSprintSpeed = SprintSpeed;  
+
+		MoveComp->MaxWalkSpeed *= (1.0f + BoostPercent / 100.0f);
+		WalkSpeed *= (1.0f + BoostPercent / 100.0f);
+		SprintSpeed *= (1.0f + BoostPercent / 100.0f);
+
+		// 타이머 설정: 지속시간 후에 원래 속도로 복원
+		GetWorldTimerManager().SetTimer(SpeedBoostTimerHandle, FTimerDelegate::CreateLambda([this, OriginalComponentWalkSpeed, OriginalWalkSpeed, OriginalSprintSpeed]()
+			{
+				if (UCharacterMovementComponent* MoveCompInner = GetCharacterMovement())
+				{
+					MoveCompInner->MaxWalkSpeed = OriginalComponentWalkSpeed;
+					WalkSpeed = OriginalWalkSpeed;
+					SprintSpeed = OriginalSprintSpeed;
+				}
+			}), Duration, false);
+		
+	}
+}
+//블루 프린트 용
+float AMyCharacter::GetPlayerSpeed()
+{
+	UCharacterMovementComponent* MoveComp = GetCharacterMovement();
+
+	return MoveComp->MaxWalkSpeed;
 }

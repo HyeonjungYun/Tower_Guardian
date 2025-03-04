@@ -4,6 +4,7 @@
 #include "Engine/DataTable.h"
 #include "../Inventory/InventoryType.h" 
 #include "../BaseItem.h"
+#include "ItemObject/ItemEffectBase.h"
 #include "ConsumableItemRow.generated.h"
 
 UENUM(BlueprintType)
@@ -30,6 +31,9 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
     UTexture2D* ItemImage = nullptr;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+    TSubclassOf<UItemEffectBase> ItemEffectClass;
 
     UPROPERTY(EditAnywhere, Category = "Item")
     EBuffType BuffType;
