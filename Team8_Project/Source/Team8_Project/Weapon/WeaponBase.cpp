@@ -143,6 +143,13 @@ void AWeaponBase::SetWeaponDamage(float NewDamage)
 	WeaponDamage = NewDamage;
 }
 
+void AWeaponBase::OnWeaponEquipped(AMyCharacter* _OwnerPlayerCharacter
+	, AMyPlayerController* _OwnerPlayerController)
+{
+	OwnerPlayerCharacter = _OwnerPlayerCharacter;
+	OwnerPlayerController = _OwnerPlayerController;
+}
+
 void AWeaponBase::Dropped()
 {
 	SetWeaponState(EWeaponState::EWT_Dropped);

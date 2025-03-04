@@ -24,6 +24,8 @@ public:
 
 protected:
 	FVector TraceEndWithScatter(const FVector& TraceStart, const FVector& HitTarget);
+	// 분산유무+충돌결과를 돌려주는 함수
+	void WeaponTraceHit(const FVector& TraceStart, const FVector& HitTarget, FHitResult& OutHit);
 
 public:
 	float GetDistanceToSphere();
@@ -33,6 +35,8 @@ public:
 	void SetSphereRadius(float _SR);
 protected:
 	float HitScanDamage;
+	UPROPERTY(EditAnywhere)
+	class USoundCue* HitSound;
 
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* ImpactParticles;

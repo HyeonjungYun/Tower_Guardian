@@ -42,10 +42,61 @@ void AShotgunBase::Fire(const FVector& HitTarget, float CurrentWeaponSpread)
 		FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
 		FVector Start = SocketTransform.GetLocation();
 		
-
+		TMap<AActor*, uint32> HitMap;
 		for (int32 i = 0; i < NumberOfPellets; i++)
 		{
-			FVector End = TraceEndWithScatter(Start, HitTarget);
+			//FVector End = TraceEndWithScatter(Start, HitTarget);
+
+			FHitResult FireHit;
+			WeaponTraceHit(Start, HitTarget, FireHit);
+			AActor* HitActor = FireHit.GetActor();
+			if (HitActor)
+			{
+				if (HitActor->GetClass()->ImplementsInterface(UDamageable::StaticClass()) && OwnerPlayerController)
+				{
+					if (HitMap.Contains(HitActor))
+					{
+						HitMap[HitActor]++;
+					}
+					else
+					{
+						HitMap.Emplace(HitActor, 1);
+					}
+				}
+			}
+
+			if (ImpactParticles)
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(
+					GetWorld(),
+					ImpactParticles,
+					FireHit.ImpactPoint,
+					FireHit.ImpactNormal.Rotation()
+				);
+			}
+			if (HitSound)
+			{
+				UGameplayStatics::PlaySoundAtLocation(
+					this,
+					HitSound,
+					FireHit.ImpactPoint,
+					.5f,
+					FMath::FRandRange(-.5f, .5f)
+				);
+			}
+		}
+		for (auto HitPair : HitMap)
+		{
+			if (HitPair.Key && OwnerPlayerController)
+			{ // 펠릿 처리중 이미 죽으면 null이 되는 key에 대한 검증
+				UGameplayStatics::ApplyDamage(
+					HitPair.Key,
+					HitScanDamage * HitPair.Value,
+					OwnerPlayerController,
+					this,
+					UDamageType::StaticClass()
+				);
+			}
 		}
 		
 	}

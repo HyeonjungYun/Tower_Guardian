@@ -266,7 +266,7 @@ void UPlayerCombatComponent::EquipWeapon(AWeaponBase* WeaponToEquip)
 		HandSocket->AttachActor(EquippedWeapon, PlayerCharacter->GetMesh());
 	}
 	EquippedWeapon->SetOwner(PlayerCharacter);
-	
+	EquippedWeapon->OnWeaponEquipped(PlayerCharacter,PlayerController);
 	// 새로운 무기에 대한 HUD 출력
 
 	if (PlayerController->GetWeaponCrosshairHUD())
