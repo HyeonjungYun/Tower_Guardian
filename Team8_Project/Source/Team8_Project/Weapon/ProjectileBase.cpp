@@ -52,7 +52,7 @@ void AProjectileBase::BeginPlay()
 	{
 		ProjectileDamage =
 		OwnerPlayer->GetCombatComponent()->GetEquippedWeapon()->GetWeaponDamage();
-	}
+	}// 몬스터는 직접 투사체 데미지 설정
 
 	// 총알 발사 후 총알 표현
 	if (Tracer)
@@ -72,6 +72,8 @@ void AProjectileBase::BeginPlay()
 	
 	// Onhit의 시그니처는 OnComponentHit의 정의에 나오는 구조체
 	CollisionBox->OnComponentHit.AddDynamic(this, &AProjectileBase::OnHit);
+	CollisionBox->IgnoreActorWhenMoving(Owner, true);
+
 }
 
 void AProjectileBase::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
