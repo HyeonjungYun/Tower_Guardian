@@ -291,6 +291,7 @@ public:
 
 private:
 		FTimerHandle SpeedBoostTimerHandle;
+		float BaseWalkSpeed = 400.f;
 public:
 	UFUNCTION(BlueprintCallable, Category = "Speed")
 	void ApplySpeedBoost(float Percent, float Duration);

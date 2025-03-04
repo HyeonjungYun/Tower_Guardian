@@ -358,6 +358,7 @@ void AMyCharacter::ToggleInventory(const FInputActionValue& Value = FInputAction
 		/*InputMode.SetWidgetToFocus(Inventory->InventoryWidget->TakeWidget());*/
 		PC->SetInputMode(InputMode);
 		PC->bShowMouseCursor = true;
+		//뷰포트에 붙였을 때 
 	}
 
 }
@@ -942,26 +943,29 @@ void AMyCharacter::ApplySpeedBoost(float BoostPercent, float Duration)
 		if (GetWorldTimerManager().IsTimerActive(SpeedBoostTimerHandle))
 		{
 			GetWorldTimerManager().ClearTimer(SpeedBoostTimerHandle);
+			MoveComp->MaxWalkSpeed = BaseWalkSpeed;
+			SprintSpeed = BaseWalkSpeed * SprintSpeedMultiplier;
 		}
 
 		//Tick등에서 MoveComp->MaxWalkSpeed를 항상 업데이트를 해주는 방식이 아니기때문에 
 		//직접 값을 변경해줘야 한다.
-		float OriginalWalkSpeed = WalkSpeed;
+		/*float OriginalWalkSpeed = WalkSpeed;
 		float OriginalComponentWalkSpeed = MoveComp->MaxWalkSpeed;
-		float OriginalSprintSpeed = SprintSpeed;
+		float OriginalSprintSpeed = SprintSpeed;*/
 
 		MoveComp->MaxWalkSpeed *= (1.0f + BoostPercent / 100.0f);
 		WalkSpeed *= (1.0f + BoostPercent / 100.0f);
 		SprintSpeed *= (1.0f + BoostPercent / 100.0f);
 
 		// 타이머 설정: 지속시간 후에 원래 속도로 복원
-		GetWorldTimerManager().SetTimer(SpeedBoostTimerHandle, FTimerDelegate::CreateLambda([this, OriginalComponentWalkSpeed, OriginalWalkSpeed, OriginalSprintSpeed]()
+		//, OriginalComponentWalkSpeed, OriginalWalkSpeed, OriginalSprintSpeed
+		GetWorldTimerManager().SetTimer(SpeedBoostTimerHandle, FTimerDelegate::CreateLambda([this]()
 			{
 				if (UCharacterMovementComponent* MoveCompInner = GetCharacterMovement())
 				{
-					MoveCompInner->MaxWalkSpeed = OriginalComponentWalkSpeed;
-					WalkSpeed = OriginalWalkSpeed;
-					SprintSpeed = OriginalSprintSpeed;
+					MoveCompInner->MaxWalkSpeed = BaseWalkSpeed;
+					WalkSpeed = BaseWalkSpeed;
+					SprintSpeed = BaseWalkSpeed * SprintSpeedMultiplier;
 				}
 			}), Duration, false);
 

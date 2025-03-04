@@ -3,8 +3,8 @@
 
 ABananaItem::ABananaItem()
 {
-    FItemType = "Banana";
-    SlotType = EItemType::Others;
+    FItemType = "SpeedUp";
+    SlotType = EItemType::Consumable;
 }
 
 void ABananaItem::ActivateItem(AActor* Activator)

@@ -104,7 +104,7 @@ FReply USlotWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const F
 		bool bIsSuccess = false;
 		if (InventoryInterface)
 		{
-			
+			//
 			switch (SlotType)
 			{
 
@@ -265,6 +265,7 @@ void USlotWidget::QuantityInputHUD()
 
 	/*check(!QuantityInputWidget)*/;
 	if (QuantityInputWidget) 
+
 	{
 		QuantityInputWidget->AddToViewport();
 		UE_LOG(LogTemp, Log, TEXT("InputQuantityHUD displayed."));
