@@ -3,7 +3,6 @@
 #include "EnhancedInputComponent.h"
 #include "MyPlayerController.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Engine/Engine.h" //뷰포트에 로그를 출력 위함
 #include "Weapon/PlayerCombatComponent.h"
 #include "Weapon/WeaponBase.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -15,6 +14,7 @@
 #include "Inventory/InventoryWidget.h"
 #include "Inventory/InventoryComponent.h"
 #include "Inventory/InventorySubsystem.h"
+#include "Team8_Project/Weapon/WeaponType.h"
 
 AMyCharacter::AMyCharacter()
 {
@@ -58,7 +58,10 @@ void AMyCharacter::BeginPlay()
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	SprintSpeed = WalkSpeed * SprintSpeedMultiplier;
 	SlowWalkSpeed = WalkSpeed * SlowWalkSpeedMultiplier;
+	FunchAnimMaxIndex = PunchMontages.Num();
+	PreWeaponType = EWeaponType::EWT_None;
 }
+
 void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -148,26 +151,7 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 					&AMyCharacter::StopPickUp
 				);
 			}
-			//
-			if (PlayerController->ProneAction)
-			{
-				EnhancedInput->BindAction(
-					PlayerController->ProneAction,
-					ETriggerEvent::Triggered,
-					this,
-					&AMyCharacter::StartProne
-				);
-			}
 
-			if (PlayerController->ProneAction)
-			{
-				EnhancedInput->BindAction(
-					PlayerController->ProneAction,
-					ETriggerEvent::Completed,
-					this,
-					&AMyCharacter::StopProne
-				);
-			}
 			//
 			if (PlayerController->CrouchAction)
 			{
@@ -282,6 +266,8 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 void AMyCharacter::Tick(float DeltaTime)
 {
 	HideCameraIfCharacterClose();
+	CalculateRotation(DeltaTime);
+	OnPickupItem();
 }
 
 void AMyCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
@@ -327,7 +313,7 @@ void AMyCharacter::OnPickupItem()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No overlapping item to pick up."));
+		//UE_LOG(LogTemp, Warning, TEXT("No overlapping item to pick up."));
 	}
 
 
@@ -391,11 +377,13 @@ void AMyCharacter::Move(const FInputActionValue& value)
 	if (!Controller)
 		return;
 
+	//카메라 바라보는 방향 = 캐릭터 바라보는 방향
 	const FVector2D MoveInput = value.Get<FVector2D>();
 	const FRotator Rotation = Controller->GetControlRotation();
-	const FRotator YawRatotion = FRotator(0, Rotation.Yaw, 0);
-	const FVector ForwardDir = FRotationMatrix(YawRatotion).GetUnitAxis(EAxis::X);
-	const FVector RightDir = FRotationMatrix(YawRatotion).GetUnitAxis(EAxis::Y);
+	const FRotator YawRotation = FRotator(0, Rotation.Yaw, 0);
+	const FVector ForwardDir = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+	const FVector RightDir = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+	SetActorRotation(NewRotation);
 
 	if (!FMath::IsNearlyZero(MoveInput.X))
 	{
@@ -407,7 +395,8 @@ void AMyCharacter::Move(const FInputActionValue& value)
 		AddMovementInput(RightDir, MoveInput.Y * MouseSensitivity);
 	}
 
-
+	//함수 안에서 조건 검사
+	StopPunch();
 }
 
 void AMyCharacter::StartJump(const FInputActionValue& value)
@@ -415,8 +404,8 @@ void AMyCharacter::StartJump(const FInputActionValue& value)
 	if (value.Get<bool>())
 	{
 		Jump();
+		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	}
-	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }
 
 void AMyCharacter::StopJump(const FInputActionValue& value)
@@ -440,10 +429,18 @@ void AMyCharacter::Look(const FInputActionValue& value)
 	{
 		AddControllerPitchInput(LookInput.Y * MouseSensitivity);
 	}
+
+
 }
 
 void AMyCharacter::StartSprint(const FInputActionValue& value)
 {
+	//장전중 달리기 막음
+	if (PlayerStates == EPlayerStateType::EWT_Reload)
+	{
+		return;
+	}
+
 	if (value.Get<bool>())
 	{
 		if (GetCharacterMovement())
@@ -466,6 +463,12 @@ void AMyCharacter::StopSprint(const FInputActionValue& value)
 
 void AMyCharacter::StartPickUp(const FInputActionValue& value)
 {
+	//장전중 줍기 막음
+	if (PlayerStates == EPlayerStateType::EWT_Reload)
+	{
+		return;
+	}
+
 	// 개발용, 무기 주으면 바로 장착할 수 있도록 구현
 	if (value.Get<bool>())
 	{
@@ -480,8 +483,11 @@ void AMyCharacter::StartPickUp(const FInputActionValue& value)
 				// 주울수있는 아이템이 무기 인경우 && 빈손인 경우
 				CombatComponent->EquipWeapon(WeaponToEquip);
 
-				//임시 추가:전지현
-				bHasWeapon = true;
+				//교체 애니메이션을 위한 추가
+				if (PreWeaponType != WeaponToEquip->GetWeaponType())
+				{
+					PlayerStates = EPlayerStateType::EWT_ChangeWeapon;
+				}
 			}
 			if (ABaseItem* ItemToPickUp =
 				Cast<ABaseItem>(PickableItem))
@@ -496,41 +502,6 @@ void AMyCharacter::StopPickUp(const FInputActionValue& value)
 {
 	if (!value.Get<bool>())
 	{
-		if (GetCharacterMovement())
-		{
-			if (GEngine) //for debug
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StopPickUp!"));
-			}
-		}
-	}
-}
-
-void AMyCharacter::StartProne(const FInputActionValue& value)
-{
-	if (value.Get<bool>())
-	{
-		if (GetCharacterMovement())
-		{
-			if (GEngine) //for debug
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StartProne!"));
-			}
-		}
-	}
-}
-
-void AMyCharacter::StopProne(const FInputActionValue& value)
-{
-	if (!value.Get<bool>())
-	{
-		if (GetCharacterMovement())
-		{
-			if (GEngine) //for debug
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StopProne!"));
-			}
-		}
 	}
 }
 
@@ -542,12 +513,8 @@ void AMyCharacter::StartCrouch(const FInputActionValue& value)
 
 		if (GetCharacterMovement())
 		{
-			if (GEngine) //for debug
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StartCrouch!"));
-			}
+			GetCharacterMovement()->MaxWalkSpeed = SlowWalkSpeed;
 		}
-		GetCharacterMovement()->MaxWalkSpeed = SlowWalkSpeed;
 		Crouch(bIsCrouching);
 	}
 
@@ -561,12 +528,8 @@ void AMyCharacter::StopCrouch(const FInputActionValue& value)
 
 		if (GetCharacterMovement())
 		{
-			if (GEngine) //for debug
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StopCrouch!"));
-			}
+			GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 		}
-		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 		UnCrouch(bIsCrouching);
 	}
 }
@@ -579,12 +542,8 @@ void AMyCharacter::StartSlowWalking(const FInputActionValue& value)
 
 		if (GetCharacterMovement())
 		{
-			if (GEngine) //for debug
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StartSlowWalking!"));
-			}
+			GetCharacterMovement()->MaxWalkSpeed = SlowWalkSpeed;
 		}
-		GetCharacterMovement()->MaxWalkSpeed = SlowWalkSpeed;
 	}
 }
 
@@ -596,58 +555,80 @@ void AMyCharacter::StopSlowWalking(const FInputActionValue& value)
 
 		if (GetCharacterMovement())
 		{
-			if (GEngine) //for debug
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StopSlowWalking!"));
-			}
+			GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 		}
-		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	}
 }
 
 void AMyCharacter::StartReload(const FInputActionValue& value)
 {
+	//장착된 총알이 꽉 차있으면 return, 하나라도 소비한 상태면 실행
+	if (CombatComponent->GetEquippedWeapon())
+	{
+		int32 cur = CombatComponent->GetEquippedWeapon()->GetCurrrentWeaponAmmo();
+		int32 max = CombatComponent->GetEquippedWeapon()->GetMaxWeaponAmmo();
+		if (cur == max)
+		{
+			PlayerStates = EPlayerStateType::EWT_Normal;
+			return;
+		}
+	}
+
+	PlayerStates = EPlayerStateType::EWT_Reload;
+
 	if (value.Get<bool>())
 	{
-		if (GetCharacterMovement())
-		{
-			if (GEngine) //for debug
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StartReload!"));
-			}
-		}
+		CombatComponent->StartWeaponReload();
 	}
 }
 
 void AMyCharacter::StopReload(const FInputActionValue& value)
 {
-	if (!value.Get<bool>())
-	{
-		if (GetCharacterMovement())
-		{
-			if (GEngine) //for debug
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StopReload!"));
-			}
-		}
-	}
+	PlayerStates = EPlayerStateType::EWT_Normal;
 }
 
 void AMyCharacter::StartFire(const FInputActionValue& value)
 {
+	//장전중 발사 막음
+	if (PlayerStates == EPlayerStateType::EWT_Reload)
+	{
+		return;
+	}
+
 	if (CombatComponent)
 	{
 		CombatComponent->FireButtonPressed(true);
+		PlayerStates = EPlayerStateType::EWT_Fire;
+	}
+
+	//펀치 발동 조건
+	if (!CombatComponent->GetEquippedWeapon())
+	{
+		PlayerStates = EPlayerStateType::EWT_Punch;
+		FunchCombo(FunchAnimIndex);
 	}
 }
 
 void AMyCharacter::StopFire(const FInputActionValue& value)
 {
+	PlayerStates = EPlayerStateType::EWT_Normal;
+
 	if (CombatComponent)
 	{
 		CombatComponent->FireButtonPressed(false);
 	}
 }
+
+void AMyCharacter::CalculateRotation(float DeltaTime)
+{
+	const FRotator Rotation = Controller->GetControlRotation();
+	FRotator ActorRot = GetActorRotation();
+	FRotator InterpRotation = FMath::RInterpTo(ActorRot, Rotation, DeltaTime, RotationSpeed);
+	InterpRotation.Pitch = 0.f;
+	InterpRotation.Roll = 0.f;
+	NewRotation = InterpRotation;
+}
+
 void AMyCharacter::OnAiming()
 {
 	if (CombatComponent == nullptr)
@@ -714,6 +695,41 @@ void AMyCharacter::PlayFireMontage(bool bAiming)
 		SectionName = bAiming ? FName("RifleAim") : FName("RifleHip");
 		AnimInstance->Montage_JumpToSection(SectionName);
 	}
+}
+
+UPlayerCombatComponent* AMyCharacter::GetCombatComponent()
+{
+	return CombatComponent;
+}
+
+float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	float CurrentHealth =  FMath::Clamp(
+		CombatComponent->GetCurrentPlayerHealth() - DamageAmount
+		,0
+		,CombatComponent->GetMaxPlayerHealth());
+	
+	SetHP(CurrentHealth);
+
+	// HUD 갱신
+	CombatComponent->UpdateHealth();
+
+	// 사망 확인
+	if (CombatComponent->IsPlayerDead())
+	{
+		// 사망 처리 애니메이션 재생, UI 출력, GameState 호출 등등 처리 해주세요
+		OnDeath();
+	}
+	
+	return DamageAmount;
+}
+
+void AMyCharacter::OnDeath()
+{
+	// 사망관련 Character에서 해야할 것 수행
+	//상태만 바꿔주고 움직임까지 막을지는 GameState에 따라서
+	PlayerStates = EPlayerStateType::EWT_Dead;
+	UE_LOG(LogTemp, Warning, TEXT("플레이어 사망 확인"));
 }
 
 
@@ -787,6 +803,25 @@ const TArray<FInventoryOthers>& AMyCharacter::GetOthersItems() const
 	static TArray<FInventoryOthers> EmptyOthers;
 	return EmptyOthers;
 }
+
+float AMyCharacter::GetHP() const
+{
+	if (CombatComponent)
+	{
+		return CombatComponent->GetCurrentPlayerHealth();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("컴뱃 컴포넌트 없음"));
+		return -1;
+	}
+
+}
+void AMyCharacter::SetHP(float Value)
+{
+	CombatComponent->SetCurrentPlayerHealth(Value);
+}
+
 bool AMyCharacter::AddItem(const FName& ItemKey, int32 Quantity,EItemType ItemType)
 {
 	if (Inventory)
@@ -857,18 +892,49 @@ void AMyCharacter::SortAmmoItems(bool bIsAscending)
 		Inventory->SortAmmoItems(bIsAscending);
 	}
 }
-float AMyCharacter::GetHP()
+
+void AMyCharacter::FunchCombo(int32 AnimIndex)
 {
-	return CombatComponent->PlayerCurrentHealth;
+	CurrentFunchAnimIndex = FunchAnimIndex;
+
+	//타이머 발동
+	GetWorldTimerManager().ClearTimer(FunchComboTimerHandle);
+	GetWorld()->GetTimerManager().SetTimer(FunchComboTimerHandle, this, &AMyCharacter::ResetFunchCombo, 1.0f, false);
+
+	//플레이 애님몽타주
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && PunchMontages.IsValidIndex(FunchAnimIndex))
+	{
+		AnimInstance->Montage_Play(PunchMontages[FunchAnimIndex]);
+	}
+	
+	//1초 안에 누르면 카운트 증가
+	FunchAnimIndex++;
+	if (FunchAnimIndex >= FunchAnimMaxIndex)
+	{
+		FunchAnimIndex = 0;
+	}
 }
-void AMyCharacter::SetHP(float setHP)
+
+void AMyCharacter::ResetFunchCombo()
 {
-	CombatComponent->PlayerCurrentHealth = setHP;
+	//1초 후 콤보 카운트 리셋
+	FunchAnimIndex = 0;
 }
-float AMyCharacter::GetMaxHP()
+
+void AMyCharacter::StopPunch()
 {
-	return CombatComponent->PlayerMaxHealth;
+	if (PlayerStates == EPlayerStateType::EWT_Punch)
+	{
+		PlayerStates = EPlayerStateType::EWT_Normal;
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (AnimInstance && PunchMontages.IsValidIndex(CurrentFunchAnimIndex))
+		{
+			AnimInstance->Montage_Stop(0.0f, PunchMontages[CurrentFunchAnimIndex]);
+		}
+	}
 }
+
 void AMyCharacter::ApplySpeedBoost(float BoostPercent, float Duration)
 {
 	if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
@@ -882,7 +948,7 @@ void AMyCharacter::ApplySpeedBoost(float BoostPercent, float Duration)
 		//직접 값을 변경해줘야 한다.
 		float OriginalWalkSpeed = WalkSpeed;
 		float OriginalComponentWalkSpeed = MoveComp->MaxWalkSpeed;
-		float OriginalSprintSpeed = SprintSpeed;  
+		float OriginalSprintSpeed = SprintSpeed;
 
 		MoveComp->MaxWalkSpeed *= (1.0f + BoostPercent / 100.0f);
 		WalkSpeed *= (1.0f + BoostPercent / 100.0f);
@@ -898,7 +964,7 @@ void AMyCharacter::ApplySpeedBoost(float BoostPercent, float Duration)
 					SprintSpeed = OriginalSprintSpeed;
 				}
 			}), Duration, false);
-		
+
 	}
 }
 //블루 프린트 용
@@ -907,4 +973,9 @@ float AMyCharacter::GetPlayerSpeed()
 	UCharacterMovementComponent* MoveComp = GetCharacterMovement();
 
 	return MoveComp->MaxWalkSpeed;
+}
+
+float AMyCharacter::GetMaxHP()
+{
+	return CombatComponent->PlayerMaxHealth;
 }

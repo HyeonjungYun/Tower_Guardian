@@ -14,6 +14,8 @@
 
 #include "PlayerCombatOverlay.h"
 
+#include "TimerManager.h"
+
 UPlayerCombatComponent::UPlayerCombatComponent()
 {
 
@@ -21,6 +23,9 @@ UPlayerCombatComponent::UPlayerCombatComponent()
 	PlayerCharacter = nullptr;
 	EquippedWeapon = nullptr;
 
+
+	CarriedAmmoMap.Add(EWeaponType::EWT_Sniper,30);
+	CarriedAmmoMap.Add(EWeaponType::EWT_Rifle, 100);
 }
 
 void UPlayerCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
@@ -200,16 +205,13 @@ void UPlayerCombatComponent::SetHUDHealth(float CurrentHealth, float MaxHealth)
 			if (!bInitHpSeg)
 			{
 				PlayerCrosshairHUD->CombatOverlay->CreateHPSeg(PlayerMaxHealth);
+				PlayerCrosshairHUD->CombatOverlay->UpdateHPSeg(PlayerCurrentHealth,PlayerMaxHealth);
 				bInitHpSeg = true;
 			}
 
 		}
 		
 	}
-}
-
-void UPlayerCombatComponent::SetHUDWeaponAmmo(int32 CurrentAmmo, int32 maxAmmo)
-{
 }
 
 void UPlayerCombatComponent::BeginPlay()
@@ -257,6 +259,25 @@ void UPlayerCombatComponent::EquipWeapon(AWeaponBase* WeaponToEquip)
 	}
 	EquippedWeapon->SetOwner(PlayerCharacter);
 	
+	// 새로운 무기에 대한 HUD 출력
+
+	if (PlayerController->GetWeaponCrosshairHUD())
+	{
+		PlayerController->InitHUDWeaponAmmo(EquippedWeapon->GetCurrrentWeaponAmmo(),
+			EquippedWeapon->GetMaxWeaponAmmo());
+		PlayerController->SetHUDWeaponAmmo(EquippedWeapon->GetCurrrentWeaponAmmo());
+	}
+
+	// 새로운 무기에 맞는 탄종 UI 출력
+	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
+	{
+		CurWeaponInvenAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
+	}
+
+	if (PlayerController->GetWeaponCrosshairHUD())
+	{
+		PlayerController->SetHUDCarriedAmmo(CurWeaponInvenAmmo);
+	}
 }
 
 void UPlayerCombatComponent::FireButtonPressed(bool bPressed)
@@ -267,20 +288,81 @@ void UPlayerCombatComponent::FireButtonPressed(bool bPressed)
 	// 애니메이션 재생
 	if (PlayerCharacter&& bFireButtonPressed)
 	{
-
-		FHitResult HitResult;
-		TraceUnderCrosshairs(HitResult);
-
-		PlayerCharacter->PlayFireMontage(bIsAiming);
-		EquippedWeapon->Fire(HitTargetPos);
-	
-		// 총을 쐈을 떄 벌어질 조준선에 크기에 더해질 값
-		CrosshairShootingFactor = 0.75f;
+		ComponentFire();
 	}
 
 
 
 }
+
+void UPlayerCombatComponent::ComponentFire()
+{
+	if (WeaponCanFire())
+	{
+		bIsCanFireinRate = false;
+		PlayerCharacter->PlayFireMontage(bIsAiming);
+		EquippedWeapon->Fire(HitTargetPos);
+
+		// 총을 쐈을 떄 벌어질 조준선에 크기에 더해질 값
+		CrosshairShootingFactor = 0.75f;
+
+		StartFireTimer();
+	}
+
+}
+
+void UPlayerCombatComponent::StartWeaponReload()
+{
+	if (EquippedWeapon && !bIsReloading)
+	{
+		if (CarriedAmmoMap[EquippedWeapon->GetWeaponType()] <= 0)
+		{// 탄없음
+			UE_LOG(LogTemp, Warning, TEXT("탄없음 재장전 불가"));
+			return;
+		}
+		else
+		{
+			if (EquippedWeapon->GetCurrrentWeaponAmmo() == EquippedWeapon->GetMaxWeaponAmmo())
+			{
+				UE_LOG(LogTemp, Warning, TEXT("탄 꽉찼음., 재장전 불가"));
+				return;
+			}
+			else
+			{
+				bIsReloading = true;
+
+				if (PlayerCharacter)
+				{
+					PlayerCharacter->GetWorldTimerManager().SetTimer(
+						FReloadTimerHandle,
+						this,
+						&UPlayerCombatComponent::OnFinishWeaponReload,
+						EquippedWeapon->GetTimeToFinishReload());
+				}
+			}
+			
+		}
+
+	}
+	
+}
+
+
+void UPlayerCombatComponent::OnFinishWeaponReload()
+{
+	if (EquippedWeapon)
+	{
+		EquippedWeapon->Reload();
+		bIsReloading = false;
+	}
+}
+
+bool UPlayerCombatComponent::IsPlayerDead()
+{
+	return PlayerCurrentHealth <= 0;
+}
+
+
 
 void UPlayerCombatComponent::SetAiming(bool _bIsAiming)
 {
@@ -326,10 +408,67 @@ void UPlayerCombatComponent::InterpFOV(float DeltaTime)
 	}
 }
 
+AWeaponBase* UPlayerCombatComponent::GetEquippedWeapon()
+{
+	return EquippedWeapon != nullptr ? EquippedWeapon:nullptr;
+}
+
+float UPlayerCombatComponent::GetCurrentPlayerHealth()
+{
+	return PlayerCurrentHealth;
+}
+
+void UPlayerCombatComponent::SetCurrentPlayerHealth(float _HP)
+{
+	PlayerCurrentHealth = _HP;
+}
+
+float UPlayerCombatComponent::GetMaxPlayerHealth()
+{
+	return PlayerMaxHealth;
+}
+
+void UPlayerCombatComponent::SetMaxPlayerHealth(float _HP)
+{
+	PlayerMaxHealth = _HP;
+}
+
+bool UPlayerCombatComponent::WeaponCanFire()
+{
+	if (EquippedWeapon == nullptr) return false;
+
+	return !EquippedWeapon->IsWeaponMagEmpty() && bIsCanFireinRate && !bIsReloading;
+}
+
+void UPlayerCombatComponent::StartFireTimer()
+{
+	if (EquippedWeapon == nullptr || PlayerCharacter == nullptr)
+	{
+		return;
+	}
+	PlayerCharacter->GetWorldTimerManager().SetTimer(
+	FireTimer,
+		this,
+		&UPlayerCombatComponent::FireTimerFinished,
+		EquippedWeapon->WeaponFireRate);
+}
+
+void UPlayerCombatComponent::FireTimerFinished()
+{
+	bIsCanFireinRate = true;
+	if (bFireButtonPressed&&EquippedWeapon&&EquippedWeapon->bIsWeaponAutomatic)
+	{
+		ComponentFire();
+	}
+
+}
+
 void UPlayerCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
+	FHitResult HitResult;
+	TraceUnderCrosshairs(HitResult);
+	
 	SetHUDCrosshairs(DeltaTime);
 	SetHUDHealth(PlayerCurrentHealth, PlayerMaxHealth);
 	InterpFOV(DeltaTime);

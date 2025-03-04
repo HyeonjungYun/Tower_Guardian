@@ -10,11 +10,12 @@
 #include "../MyCharacter.h"
 #include "../MyPlayerController.h"
 #include "Kismet/GameplayStatics.h"
+#include "PlayerCombatComponent.h"
 
 AWeaponBase::AWeaponBase() :
 	WeaponState(EWeaponState::EWT_Dropped),
-	PlayerCharacter(nullptr),
-	PlayerController(nullptr)
+	OwnerPlayerCharacter(nullptr),
+	OwnerPlayerController(nullptr)
 {
 	WeaponType = EWeaponType::EWT_None;// 무기 없음초기화
 
@@ -77,19 +78,19 @@ void AWeaponBase::SetWeaponState(EWeaponState CurWeaponState)
 
 void AWeaponBase::OnItemOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	PlayerCharacter = Cast<AMyCharacter>(OtherActor);
-	if (PlayerCharacter)
+	OwnerPlayerCharacter = Cast<AMyCharacter>(OtherActor);
+	if (OwnerPlayerCharacter)
 	{
-		PlayerCharacter->SetPickableWeapon(this);
+		OwnerPlayerCharacter->SetPickableWeapon(this);
 	}
 }
 
 void AWeaponBase::OnItemEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	PlayerCharacter = Cast<AMyCharacter>(OtherActor);
-	if (PlayerCharacter)
+	OwnerPlayerCharacter = Cast<AMyCharacter>(OtherActor);
+	if (OwnerPlayerCharacter)
 	{
-		PlayerCharacter->SetPickableWeapon(nullptr);
+		OwnerPlayerCharacter->SetPickableWeapon(nullptr);
 	}
 }
 
@@ -106,7 +107,33 @@ void AWeaponBase::ActivateItem(AActor* Activator)
 
 void AWeaponBase::SpendRound()
 {
-	--CurrentAmmo;
+	CurrentWeaponAmmo = FMath::Clamp(CurrentWeaponAmmo - 1, 0, MaxWeaponAmmo);
+	OwnerPlayerCharacter = OwnerPlayerCharacter == nullptr ? Cast<AMyCharacter>(GetOwner()) : OwnerPlayerCharacter;
+
+	if (OwnerPlayerCharacter)
+	{
+		OwnerPlayerController =
+			OwnerPlayerController == nullptr ? Cast<AMyPlayerController>(OwnerPlayerCharacter->Controller) : OwnerPlayerController;
+		if (OwnerPlayerController)
+		{
+			OwnerPlayerController->SetHUDWeaponAmmo(CurrentWeaponAmmo);
+		}
+	}
+}
+
+bool AWeaponBase::IsWeaponMagEmpty()
+{
+	return CurrentWeaponAmmo <= 0;
+}
+
+float AWeaponBase::GetWeaponDamage()
+{
+	return WeaponDamage;
+}
+
+void AWeaponBase::SetWeaponDamage(float NewDamage)
+{
+	WeaponDamage = NewDamage;
 }
 
 void AWeaponBase::Dropped()
@@ -115,8 +142,8 @@ void AWeaponBase::Dropped()
 	FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
 	WeaponSkeletalMesh->DetachFromComponent(DetachRules);
 	SetOwner(nullptr);
-	PlayerCharacter = nullptr	;
-	PlayerController = nullptr;
+	OwnerPlayerCharacter = nullptr	;
+	OwnerPlayerController = nullptr;
 }
 
 FName AWeaponBase::GetItemType() const
@@ -134,8 +161,19 @@ int32 AWeaponBase::GetCurrrentWeaponAmmo() const
 	return CurrentWeaponAmmo;
 }
 
-void AWeaponBase::SetCurrentWeaponAmmo(int32 _ammo)
+void AWeaponBase::SetCurrentWeaponAmmo(int32 _Ammo)
 {
+	CurrentWeaponAmmo = _Ammo;
+}
+
+int32 AWeaponBase::GetMaxWeaponAmmo() const
+{
+	return MaxWeaponAmmo;
+}
+
+void AWeaponBase::SetMaxWeaponAmmo(int32 _Ammo)
+{
+	MaxWeaponAmmo = _Ammo;
 }
 
 void AWeaponBase::Fire(const FVector& HitTarget)
@@ -185,4 +223,59 @@ float AWeaponBase::GetWeaponZoomInterpSpeed() const
 
 void AWeaponBase::Reload()
 {
+	// 재장전 완료=>시스템적으로 탄이 바뀌기 시작해야하는 시점
+	if (OwnerPlayerCharacter && OwnerPlayerController)
+	{	// 도중에 무기가 바뀌면 재장전완료가 안되어야함
+		// 테스트 인벤토리에서 재장전처리하기
+		UPlayerCombatComponent* PlayerCombatComponent = OwnerPlayerCharacter->GetCombatComponent();
+		
+		if (PlayerCombatComponent->CarriedAmmoMap[WeaponType] >= 1)
+		{
+			int32 AmmoForReload = MaxWeaponAmmo - CurrentWeaponAmmo;
+			if (PlayerCombatComponent->CarriedAmmoMap[WeaponType] < AmmoForReload)
+			{
+				// 재장전 조건
+				CurrentWeaponAmmo += (PlayerCombatComponent->CarriedAmmoMap[WeaponType]);
+				PlayerCombatComponent->CarriedAmmoMap[WeaponType] = 0;
+			}
+			else
+			{
+				CurrentWeaponAmmo += AmmoForReload;
+				PlayerCombatComponent->CarriedAmmoMap[WeaponType] -= AmmoForReload;
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("탄 없어서 재장전 불가"));
+		}
+		// HUD 갱신필요
+		// 인벤토리 탄 현황
+		
+
+		OwnerPlayerCharacter = OwnerPlayerCharacter == nullptr ? Cast<AMyCharacter>(GetOwner()) : OwnerPlayerCharacter;
+
+		if (OwnerPlayerCharacter)
+		{
+			OwnerPlayerController =
+				OwnerPlayerController == nullptr ? Cast<AMyPlayerController>(OwnerPlayerCharacter->Controller) : OwnerPlayerController;
+			if (OwnerPlayerController)
+			{
+				OwnerPlayerCharacter->GetCombatComponent()->CurWeaponInvenAmmo =OwnerPlayerCharacter->GetCombatComponent()->CarriedAmmoMap[WeaponType];
+				OwnerPlayerController->SetHUDCarriedAmmo(OwnerPlayerCharacter->GetCombatComponent()->CarriedAmmoMap[WeaponType]);
+				// 무기 탄 현황
+				OwnerPlayerController->SetHUDWeaponAmmo(CurrentWeaponAmmo);
+			}
+		}
+	}
+
+}
+
+float AWeaponBase::GetTimeToFinishReload()
+{
+	return TimeToFinishReload;
+}
+
+void AWeaponBase::SetTimeToFinishReload(float NewReloadTime)
+{
+	TimeToFinishReload = NewReloadTime;
 }

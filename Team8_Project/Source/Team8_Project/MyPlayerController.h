@@ -72,6 +72,12 @@ public:
 	UFUNCTION(BlueprintPure, Category = "HUD")
 	UUserWidget* GetHUDWidget() const;
 
+	void SetHUDWeaponAmmo(int32 Ammo);
+	void SetHUDCarriedAmmo(int32 Ammo);
+
+	void InitHUDWeaponAmmo(int32 CurrentAmmo,int32 MaxAmmo);
+
+	class AWeaponCrosshairHUD* GetWeaponCrosshairHUD();
 protected:
-	class AWeaponCrosshairHUD* WeaponCrosshairHUD;
+	 AWeaponCrosshairHUD* WeaponCrosshairHUD;
 };
