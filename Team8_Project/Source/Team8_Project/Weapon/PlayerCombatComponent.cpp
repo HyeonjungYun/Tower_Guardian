@@ -27,6 +27,7 @@ UPlayerCombatComponent::UPlayerCombatComponent()
 	CarriedAmmoMap.Add(EWeaponType::EWT_Sniper,30);
 	CarriedAmmoMap.Add(EWeaponType::EWT_Rifle, 100);
 	CarriedAmmoMap.Add(EWeaponType::EWT_RocketLauncher, 5);
+	CarriedAmmoMap.Add(EWeaponType::EWT_Shotgun,20);
 }
 
 void UPlayerCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)

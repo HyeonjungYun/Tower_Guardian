@@ -12,6 +12,11 @@
 #include "WeaponCrosshairHUD.h"
 #include "PlayerCombatOverlay.h"
 #include "PlayerCombatComponent.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "WeaponType.h"
+
+#include "DrawDebugHelpers.h"
+
 void AHitScanWeaponBase::BeginPlay()
 
 {
@@ -98,6 +103,46 @@ void AHitScanWeaponBase::Fire(const FVector& HitTarget, float CurrentWeaponSprea
 			}
 		}
 	}
+}
+
+FVector AHitScanWeaponBase::TraceEndWithScatter(const FVector& TraceStart, const FVector& HitTarget)
+{
+	FVector ToTargetNormalized = (HitTarget - TraceStart).GetSafeNormal();
+	FVector SphereCenter = TraceStart + ToTargetNormalized * DistanceToSphere;
+	FVector RandVec = UKismetMathLibrary::RandomUnitVector() * FMath::FRandRange(0.f, SphereRadius);
+	FVector EndLoc = SphereCenter + RandVec;
+	FVector ToEndLoc = EndLoc - TraceStart;
+
+	DrawDebugSphere(GetWorld(), SphereCenter, SphereRadius, 12, FColor::Red, true);
+	DrawDebugSphere(GetWorld(), EndLoc, 4.f, 12, FColor::Orange, true);
+	DrawDebugLine(
+		GetWorld(),
+		TraceStart,
+		FVector(TraceStart + ToEndLoc * TRACE_LENGTH / ToEndLoc.Size()), // 오버플로우 방지
+		FColor::Cyan,
+		true);
+
+	return FVector(TraceStart + ToEndLoc * TRACE_LENGTH / ToEndLoc.Size());  // 오버플로우 방지
+}
+
+float AHitScanWeaponBase::GetDistanceToSphere()
+{
+	return DistanceToSphere;
+}
+
+void AHitScanWeaponBase::SetDistanceToSphere(float _SDTS)
+{
+	DistanceToSphere = _SDTS;
+}
+
+float AHitScanWeaponBase::GetSphereRadius()
+{
+	return SphereRadius;
+}
+
+void AHitScanWeaponBase::SetSphereRadius(float _SR)
+{
+	SphereRadius = _SR;
 }
 
 
