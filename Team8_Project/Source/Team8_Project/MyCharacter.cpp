@@ -3,7 +3,6 @@
 #include "EnhancedInputComponent.h"
 #include "MyPlayerController.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Engine/Engine.h" //뷰포트에 로그를 출력 위함
 #include "Weapon/PlayerCombatComponent.h"
 #include "Weapon/WeaponBase.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -15,6 +14,7 @@
 #include "Inventory/InventoryWidget.h"
 #include "Inventory/InventoryComponent.h"
 #include "Inventory/InventorySubsystem.h"
+#include "Team8_Project/Weapon/WeaponType.h"
 
 AMyCharacter::AMyCharacter()
 {
@@ -58,6 +58,8 @@ void AMyCharacter::BeginPlay()
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	SprintSpeed = WalkSpeed * SprintSpeedMultiplier;
 	SlowWalkSpeed = WalkSpeed * SlowWalkSpeedMultiplier;
+	FunchAnimMaxIndex = PunchMontages.Num();
+	PreWeaponType = EWeaponType::EWT_None;
 }
 
 void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -265,7 +267,8 @@ void AMyCharacter::Tick(float DeltaTime)
 {
 	HideCameraIfCharacterClose();
 	CalculateRotation(DeltaTime);
-	OnPickupItem();}
+	OnPickupItem();
+}
 
 void AMyCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
@@ -324,7 +327,7 @@ void AMyCharacter::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Oth
 		OverlappingItem = nullptr;
 	}
 }
-void AMyCharacter::ToggleInventory(const FInputActionValue& Value)
+void AMyCharacter::ToggleInventory(const FInputActionValue& Value = FInputActionValue())
 {
 	APlayerController* PC = Cast<APlayerController>(GetController());
 	if (!PC || !Inventory || !Inventory->InventoryWidget)
@@ -391,6 +394,9 @@ void AMyCharacter::Move(const FInputActionValue& value)
 	{
 		AddMovementInput(RightDir, MoveInput.Y * MouseSensitivity);
 	}
+
+	//함수 안에서 조건 검사
+	StopPunch();
 }
 
 void AMyCharacter::StartJump(const FInputActionValue& value)
@@ -398,8 +404,8 @@ void AMyCharacter::StartJump(const FInputActionValue& value)
 	if (value.Get<bool>())
 	{
 		Jump();
+		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	}
-	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }
 
 void AMyCharacter::StopJump(const FInputActionValue& value)
@@ -429,6 +435,12 @@ void AMyCharacter::Look(const FInputActionValue& value)
 
 void AMyCharacter::StartSprint(const FInputActionValue& value)
 {
+	//장전중 달리기 막음
+	if (PlayerStates == EPlayerStateType::EWT_Reload)
+	{
+		return;
+	}
+
 	if (value.Get<bool>())
 	{
 		if (GetCharacterMovement())
@@ -451,6 +463,12 @@ void AMyCharacter::StopSprint(const FInputActionValue& value)
 
 void AMyCharacter::StartPickUp(const FInputActionValue& value)
 {
+	//장전중 줍기 막음
+	if (PlayerStates == EPlayerStateType::EWT_Reload)
+	{
+		return;
+	}
+
 	// 개발용, 무기 주으면 바로 장착할 수 있도록 구현
 	if (value.Get<bool>())
 	{
@@ -464,6 +482,12 @@ void AMyCharacter::StartPickUp(const FInputActionValue& value)
 			{
 				// 주울수있는 아이템이 무기 인경우 && 빈손인 경우
 				CombatComponent->EquipWeapon(WeaponToEquip);
+
+				//교체 애니메이션을 위한 추가
+				if (PreWeaponType != WeaponToEquip->GetWeaponType())
+				{
+					PlayerStates = EPlayerStateType::EWT_ChangeWeapon;
+				}
 			}
 			if (ABaseItem* ItemToPickUp =
 				Cast<ABaseItem>(PickableItem))
@@ -478,13 +502,6 @@ void AMyCharacter::StopPickUp(const FInputActionValue& value)
 {
 	if (!value.Get<bool>())
 	{
-		if (GetCharacterMovement())
-		{
-			if (GEngine) //for debug
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StopPickUp!"));
-			}
-		}
 	}
 }
 
@@ -545,6 +562,18 @@ void AMyCharacter::StopSlowWalking(const FInputActionValue& value)
 
 void AMyCharacter::StartReload(const FInputActionValue& value)
 {
+	//장착된 총알이 꽉 차있으면 return, 하나라도 소비한 상태면 실행
+	if (CombatComponent->GetEquippedWeapon())
+	{
+		int32 cur = CombatComponent->GetEquippedWeapon()->GetCurrrentWeaponAmmo();
+		int32 max = CombatComponent->GetEquippedWeapon()->GetMaxWeaponAmmo();
+		if (cur == max)
+		{
+			PlayerStates = EPlayerStateType::EWT_Normal;
+			return;
+		}
+	}
+
 	PlayerStates = EPlayerStateType::EWT_Reload;
 
 	if (value.Get<bool>())
@@ -556,26 +585,27 @@ void AMyCharacter::StartReload(const FInputActionValue& value)
 void AMyCharacter::StopReload(const FInputActionValue& value)
 {
 	PlayerStates = EPlayerStateType::EWT_Normal;
-
-	if (!value.Get<bool>())
-	{
-		if (GetCharacterMovement())
-		{
-			if (GEngine) //for debug
-			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("StopReload!"));
-			}
-		}
-	}
 }
 
 void AMyCharacter::StartFire(const FInputActionValue& value)
 {
-	PlayerStates = EPlayerStateType::EWT_Fire;
+	//장전중 발사 막음
+	if (PlayerStates == EPlayerStateType::EWT_Reload)
+	{
+		return;
+	}
 
 	if (CombatComponent)
 	{
 		CombatComponent->FireButtonPressed(true);
+		PlayerStates = EPlayerStateType::EWT_Fire;
+	}
+
+	//펀치 발동 조건
+	if (!CombatComponent->GetEquippedWeapon())
+	{
+		PlayerStates = EPlayerStateType::EWT_Punch;
+		FunchCombo(FunchAnimIndex);
 	}
 }
 
@@ -697,6 +727,8 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 void AMyCharacter::OnDeath()
 {
 	// 사망관련 Character에서 해야할 것 수행
+	//상태만 바꿔주고 움직임까지 막을지는 GameState에 따라서
+	PlayerStates = EPlayerStateType::EWT_Dead;
 	UE_LOG(LogTemp, Warning, TEXT("플레이어 사망 확인"));
 }
 
@@ -738,35 +770,35 @@ void AMyCharacter::SortOthersItems(bool bIsAscending)
 }
 int32 AMyCharacter::GetGold() const
 {
-	if (Inventory && Inventory->InventorySubsystem)
+	if (Inventory)
 	{
-		return Inventory->InventorySubsystem->GetGold();
+		return Inventory->GetGold();
 	}
 	return 0;
 }
 const TArray<FInventoryConsumable>& AMyCharacter::GetConsumableItems() const
 {
-	if (Inventory && Inventory->InventorySubsystem)
+	if (Inventory)
 	{
-		return Inventory->InventorySubsystem->GetConsumableItems();
+		return Inventory->GetConsumableItems();
 	}
 	static TArray<FInventoryConsumable> EmptyConsumables;
 	return EmptyConsumables;
 }
 const TArray<FInventoryEquipment>& AMyCharacter::GetEquipmentItems() const
 {
-	if (Inventory && Inventory->InventorySubsystem)
+	if (Inventory)
 	{
-		return Inventory->InventorySubsystem->GetEquipmentItems();
+		return Inventory->GetEquipmentItems();
 	}
 	static TArray<FInventoryEquipment> EmptyEquipments;
 	return EmptyEquipments;
 }
 const TArray<FInventoryOthers>& AMyCharacter::GetOthersItems() const
 {
-	if (Inventory && Inventory->InventorySubsystem)
+	if (Inventory)
 	{
-		return Inventory->InventorySubsystem->GetOthersItems();
+		return Inventory->GetOthersItems();
 	}
 	static TArray<FInventoryOthers> EmptyOthers;
 	return EmptyOthers;
@@ -828,24 +860,30 @@ void AMyCharacter::SwapItem(int32 PrevIndex, int32 CurrentIndex, EItemType PrevS
 }
 const TArray<FInventoryAmmo>& AMyCharacter::GetAmmoItems() const
 {
-	if (Inventory && Inventory->InventorySubsystem)
+	if (Inventory)
 	{
-		return Inventory->InventorySubsystem->GetAmmoItems();
+		return Inventory->GetAmmoItems();
 	}
 	static TArray<FInventoryAmmo> EmptyAmmos;
 	return EmptyAmmos;
 }
 int32 AMyCharacter::SearchItemByNameAndType(const FName& ItemKey, const EItemType& ItemType) const
 {
-	check(Inventory);
-	int32 Result = Inventory->InventorySubsystem->SearchItemByNameAndType(ItemKey, ItemType);
-	return Result;
+	if (Inventory) 
+	{
+		int32 Result = Inventory->SearchItemByNameAndType(ItemKey, ItemType);
+		return Result;
+	}
+	return INDEX_NONE;
 }
 int32 AMyCharacter::SearchItemByName(const FName& ItemKey) const
 {
-	check(Inventory);
-	int32 Result = Inventory->InventorySubsystem->SearchItemByName(ItemKey);
-	return Result;
+	if (Inventory)
+	{
+		int32 Result = Inventory->SearchItemByName(ItemKey);
+		return Result;
+	}
+	return INDEX_NONE;
 }
 void AMyCharacter::SortAmmoItems(bool bIsAscending)
 {
@@ -853,4 +891,91 @@ void AMyCharacter::SortAmmoItems(bool bIsAscending)
 	{
 		Inventory->SortAmmoItems(bIsAscending);
 	}
+}
+
+void AMyCharacter::FunchCombo(int32 AnimIndex)
+{
+	CurrentFunchAnimIndex = FunchAnimIndex;
+
+	//타이머 발동
+	GetWorldTimerManager().ClearTimer(FunchComboTimerHandle);
+	GetWorld()->GetTimerManager().SetTimer(FunchComboTimerHandle, this, &AMyCharacter::ResetFunchCombo, 1.0f, false);
+
+	//플레이 애님몽타주
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && PunchMontages.IsValidIndex(FunchAnimIndex))
+	{
+		AnimInstance->Montage_Play(PunchMontages[FunchAnimIndex]);
+	}
+	
+	//1초 안에 누르면 카운트 증가
+	FunchAnimIndex++;
+	if (FunchAnimIndex >= FunchAnimMaxIndex)
+	{
+		FunchAnimIndex = 0;
+	}
+}
+
+void AMyCharacter::ResetFunchCombo()
+{
+	//1초 후 콤보 카운트 리셋
+	FunchAnimIndex = 0;
+}
+
+void AMyCharacter::StopPunch()
+{
+	if (PlayerStates == EPlayerStateType::EWT_Punch)
+	{
+		PlayerStates = EPlayerStateType::EWT_Normal;
+		UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+		if (AnimInstance && PunchMontages.IsValidIndex(CurrentFunchAnimIndex))
+		{
+			AnimInstance->Montage_Stop(0.0f, PunchMontages[CurrentFunchAnimIndex]);
+		}
+	}
+}
+
+void AMyCharacter::ApplySpeedBoost(float BoostPercent, float Duration)
+{
+	if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
+	{
+		if (GetWorldTimerManager().IsTimerActive(SpeedBoostTimerHandle))
+		{
+			GetWorldTimerManager().ClearTimer(SpeedBoostTimerHandle);
+		}
+
+		//Tick등에서 MoveComp->MaxWalkSpeed를 항상 업데이트를 해주는 방식이 아니기때문에 
+		//직접 값을 변경해줘야 한다.
+		float OriginalWalkSpeed = WalkSpeed;
+		float OriginalComponentWalkSpeed = MoveComp->MaxWalkSpeed;
+		float OriginalSprintSpeed = SprintSpeed;
+
+		MoveComp->MaxWalkSpeed *= (1.0f + BoostPercent / 100.0f);
+		WalkSpeed *= (1.0f + BoostPercent / 100.0f);
+		SprintSpeed *= (1.0f + BoostPercent / 100.0f);
+
+		// 타이머 설정: 지속시간 후에 원래 속도로 복원
+		GetWorldTimerManager().SetTimer(SpeedBoostTimerHandle, FTimerDelegate::CreateLambda([this, OriginalComponentWalkSpeed, OriginalWalkSpeed, OriginalSprintSpeed]()
+			{
+				if (UCharacterMovementComponent* MoveCompInner = GetCharacterMovement())
+				{
+					MoveCompInner->MaxWalkSpeed = OriginalComponentWalkSpeed;
+					WalkSpeed = OriginalWalkSpeed;
+					SprintSpeed = OriginalSprintSpeed;
+				}
+			}), Duration, false);
+
+	}
+}
+//블루 프린트 용
+float AMyCharacter::GetPlayerSpeed()
+{
+	UCharacterMovementComponent* MoveComp = GetCharacterMovement();
+
+	return MoveComp->MaxWalkSpeed;
+}
+
+float AMyCharacter::GetMaxHP()
+{
+	return CombatComponent->PlayerMaxHealth;
 }

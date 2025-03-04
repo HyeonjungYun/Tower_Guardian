@@ -383,8 +383,8 @@ void UInventorySubsystem::SortAmmoItems(bool bIsAscending)
 			return bIsAscending ? (A.ItemName < B.ItemName) : (A.ItemName > B.ItemName);
 		});
 }
-//return item ?
-bool UInventorySubsystem::UseItem(int32 SlotIndex, EItemType ItemType)
+
+FName UInventorySubsystem::UseItem(int32 SlotIndex, EItemType ItemType)
 {
 	switch (ItemType)
 	{
@@ -393,34 +393,25 @@ bool UInventorySubsystem::UseItem(int32 SlotIndex, EItemType ItemType)
 		if (ConsumableItems.IsValidIndex(SlotIndex))
 		{
 			FInventoryConsumable& Item = ConsumableItems[SlotIndex];
-			if (Item.Quantity > 0)
-			{
-				Item.Quantity--;
-				if (Item.Quantity <= 0)
-				{
-					RemoveItemAt(SlotIndex, EItemType::Consumable);
-				}
-				return true;
-			}
+			return Item.ItemID;
 		}
 		break;
 	}
-	//incomplete
 	case EItemType::Others:
 	{
 		if (OthersItems.IsValidIndex(SlotIndex))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Can not Use Item , You can Sell this"));
-
+			FInventoryOthers& Item = OthersItems[SlotIndex];
+			return Item.ItemID;
 		}
 		break;
 	}
-	//incomplete
 	case EItemType::Equipment:
 	{
 		if (OthersItems.IsValidIndex(SlotIndex))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Equipment item usage is not supported via UseItem."));
+			FInventoryEquipment& Item = EquipmentItems[SlotIndex];
+			return Item.ItemID;
 		}
 		break;
 	}
@@ -428,7 +419,8 @@ bool UInventorySubsystem::UseItem(int32 SlotIndex, EItemType ItemType)
 	{
 		if (OthersItems.IsValidIndex(SlotIndex))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Ammo dont Use"));
+			FInventoryAmmo& Item = AmmoItems[SlotIndex];
+			return Item.ItemID;
 		}
 		break;
 	}
@@ -437,7 +429,7 @@ bool UInventorySubsystem::UseItem(int32 SlotIndex, EItemType ItemType)
 	default:
 		break;
 	}
-	return false;
+	return NAME_None;
 }
 const TArray<FInventoryConsumable>& UInventorySubsystem::GetConsumableItems() const
 {
@@ -533,7 +525,6 @@ int32 UInventorySubsystem::SearchItemByNameAndType(const FName& ItemKey, const E
 			return EquipmentItems[Index].Quantity;
 		}
 		return INDEX_NONE;
-		break;
 	}
 	case EItemType::Consumable:
 	{
@@ -543,7 +534,6 @@ int32 UInventorySubsystem::SearchItemByNameAndType(const FName& ItemKey, const E
 			return ConsumableItems[Index].Quantity;
 		}
 		return INDEX_NONE;
-		break;
 	}
 	case EItemType::Others:
 	{
@@ -553,7 +543,6 @@ int32 UInventorySubsystem::SearchItemByNameAndType(const FName& ItemKey, const E
 			return OthersItems[Index].Quantity;
 		}
 		return INDEX_NONE;
-		break;
 	}
 	case EItemType::Ammo:
 	{
@@ -563,11 +552,9 @@ int32 UInventorySubsystem::SearchItemByNameAndType(const FName& ItemKey, const E
 			return AmmoItems[Index].Quantity;
 		}
 		return INDEX_NONE;
-		break;
 	}
 	default:
 		return INDEX_NONE;
-		break;
 	}
 }
 bool UInventorySubsystem::AddOthersItem(const FName& ItemKey, int32 Quantity, UDataTable* SelectedDataTable)
@@ -631,3 +618,34 @@ bool UInventorySubsystem::AddOthersItem(const FName& ItemKey, int32 Quantity, UD
 	}
 	return true;
 }
+bool UInventorySubsystem::AddItem(const FName& ItemKey, int32 Quantity, EItemType ItemType, UDataTable* SelectedDataTable)
+{
+	switch (ItemType)
+	{
+	case EItemType::Consumable:
+	{
+		return AddConsumableItem(ItemKey, Quantity, SelectedDataTable);
+	}
+	case EItemType::Others:
+	{
+		return AddOthersItem(ItemKey, Quantity, SelectedDataTable);
+	}
+	case EItemType::Ammo:
+	{
+		return AddAmmoItem(ItemKey, Quantity, SelectedDataTable);
+	}
+	case EItemType::Equipment:
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Equipment item addition is not supported yet."));
+		return false;
+	}
+	default:
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Unknown item type!"));
+		return false;
+	}
+	}
+}
+//bool UInventorySubsystem::RemoveItemByNameAndType(const FName& ItemKey, int32 Quantity,EItemType ItemType)
+// {}
+

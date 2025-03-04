@@ -51,7 +51,7 @@ public:
 	void SortAmmoItems(bool bIsAscending);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	bool UseItem(int32 SlotIndex, EItemType ItemType);
+	FName UseItem(int32 SlotIndex, EItemType ItemType);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void SwapItem(int32 PrevIndex,int32 CurrentIndex,EItemType PrevSlotType, EItemType CurrentSlotType);
@@ -82,7 +82,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	int32 SearchItemByNameAndType(const FName& ItemKey, const EItemType& ItemType) const;
 
-	 
+	bool AddItem(const FName& ItemKey, int32 Quantity, EItemType ItemType, UDataTable* SelectedDataTable);
+
+	//bool RemoveItemByNameAndType(const FName& ItemKey, int32 Quantity,EItemType ItemType);
+
+	
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
 	TArray<FInventoryConsumable> ConsumableItems;

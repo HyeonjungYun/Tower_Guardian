@@ -13,11 +13,13 @@ struct FInputActionValue;
 class UCapsuleComponent;
 class UInventoryComponent;
 class ABaseItem;
+enum class EWeaponType : uint8;
 
 UENUM(BlueprintType)
 enum class EPlayerStateType : uint8
 {
 	EWT_Normal UMETA(DisplayName = "Normal"),
+	EWT_Punch UMETA(DisplayName = "Punch"),
 	EWT_Fire UMETA(DisplayName = "Fire"),
 	EWT_Reload UMETA(DisplayName = "Reload"),
 	EWT_ChangeWeapon UMETA(DisplayName = "ChangeWeapon"),
@@ -71,6 +73,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "inventory")
 	UInventoryComponent* Inventory;
+
+	UFUNCTION(BlueprintCallable, Category = "inventory")
+	void ToggleInventory(const FInputActionValue& Value);
+
 	void SetPickableItem(class ABaseItem* OverlappedItem);
 
 	void SetPickableWeapon(class AWeaponBase* OverlappedWeapon);
@@ -78,10 +84,8 @@ public:
 	AWeaponBase* PickableWeapon = nullptr;
 protected:
 	float NormalSpeed = 600.f;
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	UFUNCTION()
-	void ToggleInventory(const FInputActionValue& Value);
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	
 	UFUNCTION()
 	void OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
@@ -118,29 +122,35 @@ protected:
 
 
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player")
-	float HP = 100.0f;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player")
-	float MaxHP = 100.0f;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSpeed")
 	float WalkSpeed = 400.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSpeed")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSetting")
 	float SlowWalkSpeedMultiplier = 0.5f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSpeed")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSetting")
 	float SlowWalkSpeed;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSpeed")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSetting")
 	float SprintSpeedMultiplier = 1.5f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSpeed")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSetting")
 	float SprintSpeed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSetting")
 	float MouseSensitivity = 1.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSetting")
+	float RotationSpeed = 5.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSetting")
+	FRotator NewRotation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
+	EPlayerStateType PlayerStates = EPlayerStateType::EWT_Normal;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
+	EWeaponType PreWeaponType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
 	bool bIsCrouching = false;
@@ -148,18 +158,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
 	bool bIsSlowWalking = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSetting")
-	float RotationSpeed = 5.f;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
-	EPlayerStateType PlayerStates = EPlayerStateType::EWT_Normal;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSetting")
-	FRotator NewRotation;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
 	bool bIsInventoryVisible = false;
-
 
 	ABaseItem* PickableItem;
 
@@ -214,7 +214,6 @@ protected:
 	UFUNCTION() //이동 시 캐릭터 보간 회전, turn in place 를 위한 
 	void CalculateRotation(float DeltaTime);
 
-
 	UFUNCTION()
 	void OnAiming();
 
@@ -234,11 +233,18 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	FName AimSectionName;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
-	float PitchInput;
+	//펀치
+	UPROPERTY()
+	TArray<class UAnimMontage*> PunchMontages;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
-	float YawInput;
+	int32 FunchAnimIndex = 0;
+	int32 CurrentFunchAnimIndex = 0;
+	int32 FunchAnimMaxIndex = 0;
+	FTimerHandle FunchComboTimerHandle;
+	void FunchCombo(int32 AnimIndex);
+	void ResetFunchCombo();
+	void StopPunch();//펀치중 wasd 움직임이 발생하면 멈춤
+
 
 	// 카메라가 벽에 겹쳐졌을 때 플레이어 모델링이 가리는 문제 해결하기
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
@@ -277,4 +283,18 @@ public:
 
 		UFUNCTION(BlueprintCallable)
 		virtual void OnDeath();
+	UFUNCTION(BlueprintCallable)
+	float GetHP();
+	UFUNCTION(BlueprintCallable)
+	void SetHP(float setHp);
+	float GetMaxHP();
+
+private:
+		FTimerHandle SpeedBoostTimerHandle;
+public:
+	UFUNCTION(BlueprintCallable, Category = "Speed")
+	void ApplySpeedBoost(float Percent, float Duration);
+
+	UFUNCTION(BlueprintCallable, Category = "Speed")
+	float GetPlayerSpeed();
 };
