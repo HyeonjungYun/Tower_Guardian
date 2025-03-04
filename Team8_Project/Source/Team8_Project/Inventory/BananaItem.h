@@ -6,9 +6,7 @@
 #include "OtherItem.h"
 #include "BananaItem.generated.h"
 
-/**
- * 
- */
+
 UCLASS()
 class TEAM8_PROJECT_API ABananaItem : public AOtherItem
 {

@@ -25,6 +25,7 @@ protected:
 		UPrimitiveComponent* OtherComp,
 		FVector NormalImpulse,
 		const FHitResult& Hit);
+
 public:	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UBoxComponent* CollisionBox;
@@ -45,4 +46,7 @@ public:
 	class USoundCue* ImpactSound;
 
 	FTimerHandle ProjectileTimerHandle;
+
+protected:
+	float ProjectileDamage;
 };

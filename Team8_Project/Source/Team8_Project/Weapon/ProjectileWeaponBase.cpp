@@ -10,9 +10,9 @@ AProjectileWeaponBase::AProjectileWeaponBase()
 
 }
 
-void AProjectileWeaponBase::Fire(const FVector& HitTarget)
+void AProjectileWeaponBase::Fire(const FVector& HitTarget, float CurrentWeaponSpread)
 {
-	Super::Fire(HitTarget);
+	Super::Fire(HitTarget, CurrentWeaponSpread);
 	APawn* InstigatorPawn = Cast<APawn>(GetOwner());
 	//투사체 발사무기의 Fire 함수 재정의 =>
 	// 투사체(ProjectileBase) SpawnActor하기
