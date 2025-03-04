@@ -104,14 +104,14 @@ FVector AHitScanWeaponBase::TraceEndWithScatter(const FVector& TraceStart, const
 	FVector ToEndLoc = EndLoc - TraceStart;
 
 	// 분산도 디버깅 코드
-	DrawDebugSphere(GetWorld(), SphereCenter, SphereRadius, 12, FColor::Red, true);
-	DrawDebugSphere(GetWorld(), EndLoc, 4.f, 12, FColor::Orange, true);
-	DrawDebugLine(
-		GetWorld(),
-		TraceStart,
-		FVector(TraceStart + ToEndLoc * TRACE_LENGTH / ToEndLoc.Size()), // 오버플로우 방지
-		FColor::Cyan,
-		true);
+	//DrawDebugSphere(GetWorld(), SphereCenter, SphereRadius, 12, FColor::Red, true);
+	//DrawDebugSphere(GetWorld(), EndLoc, 4.f, 12, FColor::Orange, true);
+	//DrawDebugLine(
+	//	GetWorld(),
+	//	TraceStart,
+	//	FVector(TraceStart + ToEndLoc * TRACE_LENGTH / ToEndLoc.Size()), // 오버플로우 방지
+	//	FColor::Cyan,
+	//	true);
 
 	return FVector(TraceStart + ToEndLoc * TRACE_LENGTH / ToEndLoc.Size());  // 오버플로우 방지
 }

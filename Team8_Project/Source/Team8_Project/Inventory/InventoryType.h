@@ -12,6 +12,7 @@ enum class EItemType : uint8
 	Consumable  UMETA(DisplayName = "Consumable"),
 	Others		UMETA(DisplayName = "Others"),
 	Ammo		UMETA(DisplayName = "Ammo"),
+	Weaponparts UMETA(DisplayName = "WeaponParts"),
 };
 
 USTRUCT(BlueprintType)
