@@ -6,6 +6,7 @@
 #include "WeaponBase.h"
 #include "HitScanWeaponBase.generated.h"
 
+#define TRACE_LENGTH 80000.f
 /**
  * 
  */
@@ -19,11 +20,34 @@ public:
 
 	virtual void Fire(const FVector& HitTarget, float CurrentWeaponSpread); // 히트스캔 무기 발사 재정의
 
+	// 히트스캔 무기 분산 적용
+
+protected:
+	FVector TraceEndWithScatter(const FVector& TraceStart, const FVector& HitTarget);
+	// 분산유무+충돌결과를 돌려주는 함수
+	void WeaponTraceHit(const FVector& TraceStart, const FVector& HitTarget, FHitResult& OutHit);
+
+public:
+	float GetDistanceToSphere();
+	void SetDistanceToSphere(float _SDTS);
+
+	float GetSphereRadius();
+	void SetSphereRadius(float _SR);
 protected:
 	float HitScanDamage;
+	UPROPERTY(EditAnywhere)
+	class USoundCue* HitSound;
 
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* ImpactParticles;
 	UPROPERTY(EditAnywhere)
 	UParticleSystem* BeamParticles;
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+	float DistanceToSphere = 800.f; // 분산 거리
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+	float SphereRadius = 150.f; // 분산 범위
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
+	bool bUseScatter = false;
 };
