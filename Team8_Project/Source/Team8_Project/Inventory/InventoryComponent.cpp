@@ -1,6 +1,7 @@
 ﻿#include "InventoryComponent.h"
 #include "InventorySubsystem.h"
 #include "InventoryWidget.h"
+#include "ItemObject/ItemEffectBase.h"
 #include "Engine/GameInstance.h"
 #include "Blueprint/UserWidget.h"
 
@@ -33,27 +34,18 @@ void UInventoryComponent::BeginPlay()
 	}
 }
 
-bool UInventoryComponent::AddItem(const FName& ItemKey, int32 Quantity)
+bool UInventoryComponent::AddItem(const FName& ItemKey, int32 Quantity,EItemType ItemType)
 {
-	if (!ItemDataTable || Quantity <= 0)
+	if (!ConsumableItemDataTable|| !AmmoItemDataTable || Quantity <= 0)
 	{
 		return false;
 	}
-	//Add Something?
+	check(InventorySubsystem);
+	bool bIsResult = SelectDataTableAdd(ItemKey, Quantity, ItemType);
+	UpdateInventoryUI();
 
-	if (InventorySubsystem)
-	{
-		//DataTable Reference?
-		bool bResult = InventorySubsystem->AddItem(ItemKey, Quantity, ItemDataTable);
-		if (bResult)
-		{
-			UpdateInventoryUI();
-		}
-		return bResult;
-	}
-	return false;
+	return bIsResult;
 
-	
 }
 
 bool UInventoryComponent::RemoveItem(const FName& ItemKey, int32 Quantity)
@@ -63,12 +55,10 @@ bool UInventoryComponent::RemoveItem(const FName& ItemKey, int32 Quantity)
 		bool bResult = InventorySubsystem->RemoveItem(ItemKey, Quantity);
 		if (bResult)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("im in Component Take a Key"));
 			UpdateInventoryUI();
 		}
 		return bResult;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Im in Component , Fail to Remove"));
 	return false;
 }
 
@@ -102,41 +92,49 @@ void UInventoryComponent::SortEquipmentItems(bool bIsAscending)
 	if (InventorySubsystem)
 	{
 		InventorySubsystem->SortEquipmentItems(bIsAscending);
-		//UpdateInventoryUI();
 	}
 }
-
 void UInventoryComponent::SortConsumableItems(bool bIsAscending)
 {
 	if (InventorySubsystem)
 	{
 		InventorySubsystem->SortConsumableItems(bIsAscending);
-		//UpdateInventoryUI();
 	}
 }
-
 void UInventoryComponent::SortOthersItems(bool bIsAscending)
 {
 	if (InventorySubsystem)
 	{
 		InventorySubsystem->SortOthersItems(bIsAscending);
-		//UpdateInventoryUI();
 	}
 }
-
-bool UInventoryComponent::UseItem(int32 SlotIndex, EItemType ItemType)
+void UInventoryComponent::SortAmmoItems(bool bIsAscending)
 {
-	//character has InventoryComponent
 	if (InventorySubsystem)
 	{
-		bool bResult = InventorySubsystem->UseItem(SlotIndex, ItemType);
-		if (bResult)
-		{
-			//UpdateInventoryUI();
-		}
-		return bResult;
+		InventorySubsystem->SortAmmoItems(bIsAscending);
 	}
-	return false;
+}
+bool UInventoryComponent::UseItem(int32 SlotIndex, EItemType ItemType)
+{
+	if (!InventorySubsystem)
+	{
+		return false;
+	}
+
+	switch (ItemType)
+	{
+	case EItemType::Consumable:
+		return UseConsumableItem(SlotIndex);
+	case EItemType::Equipment:
+		return UseEquipmentItem(SlotIndex);
+	case EItemType::Others:
+		return UseOthersItem(SlotIndex);
+	case EItemType::Ammo:
+		return UseAmmoItem(SlotIndex);
+	default:
+		return false;
+	}
 }
 void UInventoryComponent::UpdateInventoryUI()
 {
@@ -149,8 +147,228 @@ void UInventoryComponent::SwapItem(int32 PrevIndex, int32 CurrentIndex, EItemTyp
 {
 	if (PrevSlotType == CurrentSlotType)
 	{
-		check(InventorySubsystem);
+		ensure(InventorySubsystem);
 		InventorySubsystem->SwapItem(PrevIndex, CurrentIndex, PrevSlotType, CurrentSlotType);
 		UpdateInventoryUI();
 	}
+}
+bool UInventoryComponent::SelectDataTableAdd(const FName& ItemKey, int32 Quantity,const EItemType ItemType) const
+{
+	UDataTable* SelectedDataTable = SelectDataTable(ItemType);
+	//ItemKey, Quantity,
+	bool bResult = InventorySubsystem->AddItem(ItemKey, Quantity, ItemType, SelectedDataTable);
+	return bResult;
+}
+UDataTable* UInventoryComponent::SelectDataTable(const EItemType ItemType) const
+{
+	//const FName& ItemKey, int32 Quantity,
+	UDataTable* SelectedDataTable = nullptr;
+	switch (ItemType)
+	{
+	case EItemType::Equipment:
+	{
+		//No Settings
+		return nullptr;
+	}
+	case EItemType::Consumable:
+	{
+		if (!ConsumableItemDataTable)
+		{
+			return nullptr;
+		}
+		SelectedDataTable = ConsumableItemDataTable;
+		break;
+	}
+	case EItemType::Others:
+	{
+		if (!OtherItemDataTable)
+		{
+			return nullptr;
+		}
+		SelectedDataTable = OtherItemDataTable;
+		break;
+	}
+	case EItemType::Ammo:
+	{
+		if (!AmmoItemDataTable)
+		{
+			return nullptr;
+		}
+		SelectedDataTable = AmmoItemDataTable;
+		break;
+	}
+	default:
+	{
+		return nullptr;
+	}
+	}
+	return SelectedDataTable;
+}
+int32 UInventoryComponent::ReturnAmmo(int32 RequiredAmmo, EWeaponType WeaponType)
+{
+	//인자하나 더 해서 함수 매개변수에 의한 값에의한 참조 깊은복사,얕은복사 
+	// 남은 총 탄창을 Max를 
+	FName AmmoName = ReturnAmmoName(WeaponType);
+	if (AmmoName.IsNone())
+	{
+		return -1;
+	}
+	if (InventorySubsystem) 
+	{
+		int32 RemainAmmo = InventorySubsystem->SearchItemByNameAndType(AmmoName, EItemType::Ammo);
+		if (RemainAmmo == INDEX_NONE)
+		{
+			return -1;
+		}
+		else if (RemainAmmo < RequiredAmmo)
+		{
+			RemoveItem(AmmoName, RemainAmmo);
+			return RemainAmmo;
+		}
+
+		else
+		{
+			RemoveItem(AmmoName, RequiredAmmo);
+			return RequiredAmmo;
+		}
+	}
+	return -1;
+}
+FName UInventoryComponent::ReturnAmmoName(EWeaponType WeaponType)
+{
+	if (!AmmoItemDataTable)
+	{
+		return NAME_None;
+	}
+	TArray<FName> RowNames = AmmoItemDataTable->GetRowNames();
+	for (const FName& RowName : RowNames)
+	{
+		const FWeaponAmmunitionRow* Row = AmmoItemDataTable->FindRow<FWeaponAmmunitionRow>(RowName, TEXT("LookupItemData"), true);
+		if (Row && Row->WeaponType == WeaponType)
+		{
+			UE_LOG(LogTemp, Display, TEXT("Row->ItemKey %s"),*Row->ItemName);
+			return Row->ItemKey;
+		}
+	}
+
+	return NAME_None;
+}
+const TArray<FInventoryEquipment>& UInventoryComponent::GetEquipmentItems() const
+{
+	if (InventorySubsystem)
+	{
+		return InventorySubsystem->GetEquipmentItems();
+	}
+	static TArray<FInventoryEquipment> EmptyEquipments;
+	return EmptyEquipments;
+}
+const TArray<FInventoryAmmo>& UInventoryComponent::GetAmmoItems() const
+{
+	if (InventorySubsystem)
+	{
+		return InventorySubsystem->GetAmmoItems();
+	}
+	static TArray<FInventoryAmmo> EmptyAmmos;
+	return EmptyAmmos;
+}
+const TArray<FInventoryConsumable>& UInventoryComponent::GetConsumableItems() const
+{
+	if (InventorySubsystem)
+	{
+		return InventorySubsystem->GetConsumableItems();
+	}
+	static TArray<FInventoryConsumable> EmptyConsumables;
+	return EmptyConsumables;
+}
+const TArray<FInventoryOthers>& UInventoryComponent::GetOthersItems() const
+{
+	if (InventorySubsystem)
+	{
+		return InventorySubsystem->GetOthersItems();
+	}
+	static TArray<FInventoryOthers> EmptyOthers;
+	return EmptyOthers;
+}
+int32 UInventoryComponent::SearchItemByNameAndType(const FName& ItemKey, const EItemType& ItemType) const
+{
+	if (InventorySubsystem)
+	{
+		int32 Result = InventorySubsystem->SearchItemByNameAndType(ItemKey, ItemType);
+		return Result;
+	}
+	return INDEX_NONE;
+}
+int32 UInventoryComponent::SearchItemByName(const FName& ItemKey) const
+{
+	if (InventorySubsystem)
+	{
+		int32 Result = InventorySubsystem->SearchItemByName(ItemKey);
+		return Result;
+	}
+	return INDEX_NONE;
+}
+int32 UInventoryComponent::ReturnCurrentAmmo(EWeaponType WeaponType) 
+{
+	const FName& AmmoName = ReturnAmmoName(WeaponType);
+	if (AmmoName.IsNone())
+	{
+		return INDEX_NONE;
+	}
+	if (InventorySubsystem) 
+	{
+		int32 RemainAmmo = InventorySubsystem->SearchItemByNameAndType(AmmoName, EItemType::Ammo);
+		return RemainAmmo;
+	}
+	
+	return INDEX_NONE;
+}
+bool UInventoryComponent::UseConsumableItem(int32 SlotIndex)
+{
+	FName NameKey = InventorySubsystem->UseItem(SlotIndex, EItemType::Consumable);
+	if (!NameKey.IsNone())
+	{
+		FConsumableItemRow* Row = ConsumableItemDataTable->FindRow<FConsumableItemRow>(NameKey, TEXT("LookupItemData"), true);
+		if (Row && Row->ItemEffectClass)
+		{
+			UItemEffectBase* Effect = NewObject<UItemEffectBase>(this, Row->ItemEffectClass);
+			if (Effect)
+			{
+				Effect->ApplyItemEffect(GetOwner());
+				UE_LOG(LogTemp, Warning, TEXT("Owner used Consumable Item: %s"), *NameKey.ToString());
+				return InventorySubsystem->RemoveItem(NameKey, 1);
+			}
+		}
+	}
+	return false;
+}
+bool UInventoryComponent::UseEquipmentItem(int32 SlotIndex)
+{
+	
+	FName NameKey = InventorySubsystem->UseItem(SlotIndex, EItemType::Equipment);
+	if (!NameKey.IsNone())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Dont Use"));
+		return true;
+	}
+	return false;
+}
+bool UInventoryComponent::UseOthersItem(int32 SlotIndex)
+{
+	FName NameKey = InventorySubsystem->UseItem(SlotIndex, EItemType::Others);
+	if (!NameKey.IsNone())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Dont Use"));
+		return true;
+	}
+	return false;
+}
+bool UInventoryComponent::UseAmmoItem(int32 SlotIndex)
+{
+	FName NameKey = InventorySubsystem->UseItem(SlotIndex, EItemType::Ammo);
+	if (!NameKey.IsNone())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Dont Use"));
+		return true;
+	}
+	return false;
 }

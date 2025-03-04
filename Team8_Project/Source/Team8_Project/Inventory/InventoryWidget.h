@@ -79,6 +79,9 @@ private:
 	TObjectPtr<UUniformGridPanel> OthersPanel;
 
 	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UUniformGridPanel> AmmoPanel;
+
+	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> EquimentItemButton;
 
 	UPROPERTY(meta = (BindWidget))
@@ -86,6 +89,9 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> OtherItemButton;
+
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UButton> AmmoItemButton;
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UButton> MainButton;
@@ -113,6 +119,12 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Inventory")
 	TArray<USlotWidget*> OthersSlots;
+
+	UPROPERTY(VisibleAnywhere, Category = "Inventory")
+	TArray<USlotWidget*> AmmoSlots;
+
+	UFUNCTION()
+	void OnAmmoTabClicked();
 };
 
 template<typename ItemType>
@@ -145,7 +157,10 @@ void UInventoryWidget::UpdatePanel(UUniformGridPanel* Panel, const TArray<ItemTy
 			{
 				NewSlot->SetType(EItemType::Others);
 			}
-
+			else if (Panel == AmmoPanel)
+			{
+				NewSlot->SetType(EItemType::Ammo);
+			}
 			NewSlot->OnSlotDoubleClicked.AddDynamic(this, &UInventoryWidget::OnSlotDoubleClicked);
 			NewSlot->InitializeSlot();
 

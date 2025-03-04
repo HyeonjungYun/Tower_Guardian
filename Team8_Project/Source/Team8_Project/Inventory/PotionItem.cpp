@@ -4,6 +4,7 @@
 APotionItem::APotionItem()
 {
     FItemType = "PotionSmall";
+    SlotType = EItemType::Consumable;
 }
 
 void APotionItem::ActivateItem(AActor* Activator)

@@ -5,10 +5,16 @@
 #include "Team8_Project/Damageable.h"
 #include "BaseEnemy.generated.h"
 
+class ASpawnVolume;
+struct FAIStimulus;
+class UBehaviorTree;
 class UAISenseConfig_Sight;
 class UAIPerceptionComponent;
 class UFloatingPawnMovement;
 class APatrolPath;
+class ABaseEnemy;
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FEnemyDeathDelegate, ABaseEnemy*)
 
 USTRUCT(BlueprintType)
 struct FAttackPattern
@@ -33,43 +39,48 @@ public:
 
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator,
 		AActor* DamageCauser) override;
+	virtual void Tick(float DeltaSeconds) override;
 
 	UFUNCTION(BlueprintCallable)
 	bool CanAttack();
 
 	UFUNCTION(BlueprintCallable)
-	bool CanAttackToType(TSubclassOf<AActor> AttackType);
-	bool CanAttackToType(TSubclassOf<AActor> AttackType, TArray<FOverlapResult>& OutOverlapResults);
+	bool CanAttackWithType(TSubclassOf<AActor> AttackType = nullptr);
+	bool CanAttackWithType(TArray<FOverlapResult>& OutOverlapResults, TSubclassOf<AActor> AttackType = nullptr);
 	
 	UFUNCTION(BlueprintCallable)
-	void Attack();
+	void Attack(TSubclassOf<AActor> AttackType = nullptr, bool Shortest = false);
 
 	UFUNCTION(BlueprintCallable)
 	bool IsAttacking();
 	
 	UFUNCTION(BlueprintCallable)
-	void SetPatrolLocationToNext();
+	void SetWaypointLocationToNext();
 
 	UFUNCTION(BlueprintCallable)
-	FVector GetPatrolLocation() const;
+	FVector GetWaypointLocation() const;
 
-	//임시로 달아줌. 스포너에서 달아주는 것으로 변경 후 삭제
-	UFUNCTION(BlueprintCallable)
-	void SetPatrolPath(APatrolPath* Value);
+	void SetSpawnVolume(ASpawnVolume* Value);
 	
 	virtual float GetHP() const override;
 	virtual void SetHP(float Value) override;
 
 protected:
 	virtual void BeginPlay() override;
-
+	
+	virtual void Death();
+	
 	UFUNCTION()
 	virtual void OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
-	
-	virtual void OnDeath();
+
+	UFUNCTION(BlueprintNativeEvent)
+	void OnDeathMontageEnd();
+	void OnDeathMontageEnd_Implementation();
 
 private:
 	float GetMaxAttackRange() const;
+	void RemoveUnattackableActor(TArray<FOverlapResult>& OutOverlapResults, TSubclassOf<AActor> AttackType);
+	int GetWeightRandomIndex(int ArraySize) const;
 	
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -80,17 +91,38 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AI")
 	TObjectPtr<UAISenseConfig_Sight> AI_Sight;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
+	TObjectPtr<UBehaviorTree> BehaviorTree;
+
+	FEnemyDeathDelegate OnDeath;
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Attack")
 	TArray<FAttackPattern> AttackPatterns;
-
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<UAnimMontage> HitReactionMontage;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 HitReactionCount;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UAnimMontage> DeathMontage;
-	
-	TObjectPtr<APatrolPath> PatrolPath;
-	int32 PatrolIndex;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float MaxHP = 100;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	float HP;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float RotationMul = 10.f;
+
+	TObjectPtr<ASpawnVolume> SpawnVolume;
+	int32 WaypointIndex;
 	
 private:
-	float HP;
+	int32 CurrentHitReactionCount = 0;
 };
+

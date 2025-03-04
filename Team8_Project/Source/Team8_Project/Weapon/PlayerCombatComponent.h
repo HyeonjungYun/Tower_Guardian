@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "WeaponCrosshairHUD.h"
+#include "WeaponType.h"
 #include "PlayerCombatComponent.generated.h"
 
 class AWeaponBase;
@@ -24,7 +25,17 @@ public:
 	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
 
 	void SetHUDCrosshairs(float DeltaTime); // 총 타입마다 달라질 크로스헤어조절
+	UFUNCTION(BlueprintCallable)
+	void UpdateHealth();
+	void SetHUDHealth(float CurrentHealth, float MaxHealth);
+	AWeaponBase* GetEquippedWeapon();
 
+	float GetCurrentPlayerHealth();
+	void SetCurrentPlayerHealth(float _HP);
+	float GetMaxPlayerHealth();
+	void SetMaxPlayerHealth(float _HP);
+
+	
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -33,11 +44,14 @@ protected:
 
 	void FireButtonPressed(bool bPressed);
 
+
 	void SetAiming(bool _bIsAiming);
 	
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction);
 
 	void InterpFOV(float DeltaTime);
+
+
 protected:
 	class AMyCharacter* PlayerCharacter;
 	class AMyPlayerController* PlayerController;
@@ -45,9 +59,11 @@ protected:
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
 	AWeaponBase* EquippedWeapon;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bIsAiming = false;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bFireButtonPressed = false;
 	
 	FVector HitTargetPos;
@@ -78,4 +94,71 @@ protected:
 	
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	float ZoomInterpSpeed = 20.f;
+
+
+	// Status
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	float PlayerCurrentHealth = 80.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float PlayerMaxHealth = 100.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 CurWeaponAmmo;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 MaxWeaponAmmo;
+	bool bInitHpSeg = false;
+
+
+public:
+	// 테스트용 더미 코드 인벤토리
+	TMap<EWeaponType, int32> CarriedAmmoMap;
+	// 현재 들고있는 무기에 맞는 탄이 더미 인벤토리에 몇개있는지 Map에서 빼올 변수
+	int32 CurWeaponInvenAmmo;
+	/*
+		발사, 발사 속도 조절
+	*/
+
+
+	// 분산도
+	float CurrentWeaponSpread = 0.0f;
+public:
+	
+	bool bIsCanFireinRate = true;// 무기 발사속도에따라 
+	void StartFireTimer();
+	void FireTimerFinished();
+	bool WeaponCanFire();
+	void ComponentFire();
+
+protected:
+	FTimerHandle FireTimer;
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	float FireDelay;
+
+
+	/***
+			재 장 전
+	***/
+
+public:
+
+	void UpdateReloadUI();
+
+	UFUNCTION()
+	void ApplyReloadUI();
+	UFUNCTION()
+	void DeApplyReloadUI();
+
+	void StartWeaponReload();
+	
+	void OnFinishWeaponReload();
+
+	void OnItemInfiniteAmmo(); // 무한탄 아이템
+protected:
+	bool bIsReloading = false;
+	
+	FTimerHandle FReloadTimerHandle;
+public:
+	bool IsPlayerDead();
 };

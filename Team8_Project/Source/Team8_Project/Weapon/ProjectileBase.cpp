@@ -7,6 +7,14 @@
 #include "Kismet/GameplayStatics.h" // Tracer
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundCue.h"
+#include "../Damageable.h"
+#include "SampleDamagableActor.h"
+#include "../MyPlayerController.h"
+#include "WeaponCrosshairHUD.h"
+#include "PlayerCombatOverlay.h"
+#include "../MyCharacter.h"
+#include "PlayerCombatComponent.h"
+#include "WeaponBase.h"
 
 // Sets default values
 AProjectileBase::AProjectileBase()
@@ -20,7 +28,8 @@ AProjectileBase::AProjectileBase()
 	// Set Collision
 	CollisionBox->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
 	CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
+	
 	CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility,ECollisionResponse::ECR_Block);
 	CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic,ECollisionResponse::ECR_Block);
 	
@@ -36,6 +45,15 @@ void AProjectileBase::BeginPlay()
 {
 	Super::BeginPlay();
 	
+
+	AMyCharacter* OwnerPlayer = Cast<AMyCharacter>(GetOwner());
+
+	if (OwnerPlayer)
+	{
+		ProjectileDamage =
+		OwnerPlayer->GetCombatComponent()->GetEquippedWeapon()->GetWeaponDamage();
+	}// 몬스터는 직접 투사체 데미지 설정
+
 	// 총알 발사 후 총알 표현
 	if (Tracer)
 	{
@@ -54,10 +72,37 @@ void AProjectileBase::BeginPlay()
 	
 	// Onhit의 시그니처는 OnComponentHit의 정의에 나오는 구조체
 	CollisionBox->OnComponentHit.AddDynamic(this, &AProjectileBase::OnHit);
+	CollisionBox->IgnoreActorWhenMoving(Owner, true);
+
 }
 
 void AProjectileBase::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	if (OtherActor && OtherActor->GetClass()->ImplementsInterface(UDamageable::StaticClass()))
+	{
+
+		AController* InstigatorController = nullptr;
+		AActor* OwnerActor = GetOwner();
+		if (APawn* OwnerPawn = Cast<APawn>(OwnerActor))
+		{
+			InstigatorController = OwnerPawn->GetController();
+			UGameplayStatics::ApplyDamage(OtherActor, ProjectileDamage, InstigatorController, this, UDamageType::StaticClass());
+
+			AMyPlayerController* PC = Cast<AMyPlayerController>(InstigatorController);
+			if (PC)
+			{
+				AWeaponCrosshairHUD* WCHUD = Cast<AWeaponCrosshairHUD>(PC->GetHUD());
+				if (WCHUD)
+				{
+					if (WCHUD->CombatOverlay)
+					{
+						WCHUD->CombatOverlay->PlayHitMarker();
+					}
+				}
+			}
+		}
+	}
+
 	Destroy();
 }
 

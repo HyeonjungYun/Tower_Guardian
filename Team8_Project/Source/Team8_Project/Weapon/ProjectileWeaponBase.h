@@ -16,7 +16,7 @@ class TEAM8_PROJECT_API AProjectileWeaponBase : public AWeaponBase
 	
 public:
 	AProjectileWeaponBase();
-	virtual void Fire(const FVector& HitTarget) override;
+	virtual void Fire(const FVector& HitTarget, float CurrentWeaponSpread) override;
 protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")

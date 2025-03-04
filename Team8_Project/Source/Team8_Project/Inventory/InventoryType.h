@@ -10,7 +10,8 @@ enum class EItemType : uint8
 {
 	Equipment   UMETA(DisplayName = "Equipment"),
 	Consumable  UMETA(DisplayName = "Consumable"),
-	Others		UMETA(DisplayName = "Others")
+	Others		UMETA(DisplayName = "Others"),
+	Ammo		UMETA(DisplayName = "Ammo"),
 };
 
 USTRUCT(BlueprintType)
@@ -69,7 +70,6 @@ struct FInventoryOthers
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 	FString ItemName;
 
-	// 일반적으로 장비는 1개지만 확장을 위해 수량을 둠
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 	int32 Quantity;
 
@@ -77,6 +77,31 @@ struct FInventoryOthers
 	UTexture2D* ItemImage;
 
 	FInventoryOthers()
+		: ItemID(NAME_None), ItemName(TEXT("")), Quantity(0), ItemImage(nullptr)
+	{
+	}
+};
+
+//Add Ammu
+
+USTRUCT(BlueprintType)
+struct FInventoryAmmo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	FName ItemID;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	FString ItemName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	int32 Quantity;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	UTexture2D* ItemImage;
+
+	FInventoryAmmo()
 		: ItemID(NAME_None), ItemName(TEXT("")), Quantity(0), ItemImage(nullptr)
 	{
 	}

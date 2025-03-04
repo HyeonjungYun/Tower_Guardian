@@ -4,6 +4,7 @@
 ABigPotionItem::ABigPotionItem()
 {
     FItemType = "PotionBig";
+    SlotType = EItemType::Consumable;
 }
 
 void ABigPotionItem::ActivateItem(AActor* Activator)
