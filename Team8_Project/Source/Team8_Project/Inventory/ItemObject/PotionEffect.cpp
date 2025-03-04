@@ -2,7 +2,7 @@
 
 
 #include "PotionEffect.h"
-#include "../MyCharacter.h"
+#include "Team8_Project/MyCharacter.h"
 
 void UPotionEffect::ApplyItemEffect(AActor* Target)
 {

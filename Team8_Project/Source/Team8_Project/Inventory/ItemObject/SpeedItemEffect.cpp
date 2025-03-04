@@ -2,7 +2,7 @@
 
 
 #include "SpeedItemEffect.h"
-#include "../MyCharacter.h"
+#include "Team8_Project/MyCharacter.h"
 
 void USpeedItemEffect::ApplyItemEffect(AActor* Target)
 {

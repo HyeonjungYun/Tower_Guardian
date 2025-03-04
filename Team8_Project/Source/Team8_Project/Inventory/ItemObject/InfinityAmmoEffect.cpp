@@ -2,7 +2,7 @@
 
 
 #include "InfinityAmmoEffect.h"
-#include "../MyCharacter.h"
+#include "Team8_Project/MyCharacter.h"
 
 void UInfinityAmmoEffect::ApplyItemEffect(AActor* Target)
 {
