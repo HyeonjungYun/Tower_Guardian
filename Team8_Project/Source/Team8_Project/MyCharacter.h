@@ -283,10 +283,10 @@ public:
 
 		UFUNCTION(BlueprintCallable)
 		virtual void OnDeath();
-	UFUNCTION(BlueprintCallable)
-	float GetHP();
-	UFUNCTION(BlueprintCallable)
-	void SetHP(float setHp);
+	//UFUNCTION(BlueprintCallable)
+	//float GetHP();
+	//UFUNCTION(BlueprintCallable)
+	//void SetHP(float setHp);
 	float GetMaxHP();
 
 private:
