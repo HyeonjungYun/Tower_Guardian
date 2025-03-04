@@ -1,5 +1,6 @@
 ﻿#include "BaseEnemy.h"
 
+#include "BrainComponent.h"
 #include "EnemyAIController.h"
 #include "SpawnVolume.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -84,13 +85,22 @@ void ABaseEnemy::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 float ABaseEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator,
                              AActor* DamageCauser)
 {
+	if (GetHP() <= 0)
+		return 0.f;
+
 	float RealDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	SetHP(HP - RealDamage);
 
 	if (HP > 0)
 		if (USkeletalMeshComponent* Mesh = GetComponentByClass<USkeletalMeshComponent>())
 			if (UAnimInstance* AnimInstance = Mesh->GetAnimInstance())
-				AnimInstance->Montage_Play(DamagedMontage);
+				if (AnimInstance->IsAnyMontagePlaying() == false && CurrentHitReactionCount <= 0)
+				{
+					CurrentHitReactionCount = HitReactionCount;
+					AnimInstance->Montage_Play(HitReactionMontage);
+				}
+				else
+					CurrentHitReactionCount--;
 
 	return RealDamage;
 }
@@ -99,6 +109,9 @@ void ABaseEnemy::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	if (GetHP() <= 0)
+		return;
+
 	if (USkeletalMeshComponent* Mesh = GetComponentByClass<USkeletalMeshComponent>())
 		if (UAnimInstance* AnimInstance = Mesh->GetAnimInstance())
 			if (!AnimInstance->IsAnyMontagePlaying() && PawnMovement->Velocity.SquaredLength() > 0.f)
@@ -106,7 +119,7 @@ void ABaseEnemy::Tick(float DeltaSeconds)
 				FRotator TargetRot = PawnMovement->Velocity.Rotation();
 				TargetRot.Roll = 0;
 				TargetRot.Pitch = 0;
-				
+
 				FRotator ViewRot = UKismetMathLibrary::RLerp(GetActorRotation(), TargetRot,
 				                                             DeltaSeconds * RotationMul, true);
 
@@ -116,16 +129,16 @@ void ABaseEnemy::Tick(float DeltaSeconds)
 
 bool ABaseEnemy::CanAttack()
 {
-	return CanAttackWithType(nullptr);
+	return CanAttackWithType();
 }
 
 bool ABaseEnemy::CanAttackWithType(TSubclassOf<AActor> AttackType)
 {
 	TArray<FOverlapResult> Array;
-	return CanAttackWithType(AttackType, Array);
+	return CanAttackWithType(Array, AttackType);
 }
 
-bool ABaseEnemy::CanAttackWithType(TSubclassOf<AActor> AttackType, TArray<FOverlapResult>& OutOverlapResults)
+bool ABaseEnemy::CanAttackWithType(TArray<FOverlapResult>& OutOverlapResults, TSubclassOf<AActor> AttackType)
 {
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(this);
@@ -139,7 +152,7 @@ bool ABaseEnemy::CanAttackWithType(TSubclassOf<AActor> AttackType, TArray<FOverl
 	                                                     Params);
 
 	// DrawDebugSphere(GetWorld(), GetActorLocation(), MaxAttackRange, 30, FColor::Red);
-	
+
 	if (bOverlap)
 	{
 		RemoveUnattackableActor(OutOverlapResults, AttackType);
@@ -149,10 +162,10 @@ bool ABaseEnemy::CanAttackWithType(TSubclassOf<AActor> AttackType, TArray<FOverl
 	return false;
 }
 
-void ABaseEnemy::Attack()
+void ABaseEnemy::Attack(TSubclassOf<AActor> AttackType, bool Shortest)
 {
 	TArray<FOverlapResult> OverlapResults;
-	if (!CanAttackWithType(nullptr, OverlapResults))
+	if (!CanAttackWithType(OverlapResults, AttackType))
 		return;
 
 	AActor* NearActor = nullptr;
@@ -164,7 +177,7 @@ void ABaseEnemy::Attack()
 		Element.GetComponent()->GetClosestPointOnCollision(GetActorLocation(), ClosetLocation);
 
 		// GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, Element.GetActor()->GetName());
-		DrawDebugSphere(GetWorld(), ClosetLocation, 30, 20, FColor::Green, false, 1);
+		// DrawDebugSphere(GetWorld(), ClosetLocation, 30, 20, FColor::Green, false, 1);
 
 		float Distance = FVector::Distance(ClosetLocation, GetActorLocation());
 		if (Distance < NearRange)
@@ -212,12 +225,33 @@ void ABaseEnemy::Attack()
 		if (UAnimInstance* AnimInstance = Mesh->GetAnimInstance())
 		{
 			FAttackPattern* PlayPattern = nullptr;
-			if (Patterns.Num() != 0)
+			if (Shortest)
 			{
-				// FMath::FRand();	//보류,가까운 공격마다 확률이 더 높게 만들기
-				
-				int PatternIndex = FMath::RandRange(0, Patterns.Num() - 1);
-				PlayPattern = &Patterns[PatternIndex];
+				//타워 공격용 제일 짧은 공격을 실행
+				Patterns.Sort([](const FAttackPattern& Ele, const FAttackPattern& Ele2)
+				{
+					return Ele.AttackRange < Ele2.AttackRange;
+				});
+
+				PlayPattern = &Patterns[0];
+			}
+			else if (Patterns.Num() > 1)
+			{
+				//사거리 짧은 공격이 더 많이 나올 수 있음
+				//사거리 순서로 오름차순 정렬
+				Patterns.Sort([](const FAttackPattern& Ele, const FAttackPattern& Ele2)
+				{
+					return Ele.AttackRange < Ele2.AttackRange;
+				});
+
+				int Index = GetWeightRandomIndex(Patterns.Num());
+				// GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Red, TEXT("Index ") + FString::FromInt(Index));
+
+				PlayPattern = &Patterns[Index];
+			}
+			else if (Patterns.Num() == 1)
+			{
+				PlayPattern = &Patterns[0];
 			}
 			else
 			{
@@ -258,7 +292,12 @@ FVector ABaseEnemy::GetWaypointLocation() const
 
 void ABaseEnemy::SetWaypointLocationToNext()
 {
-	check(SpawnVolume);
+	if (!SpawnVolume)
+	{
+		//없다면 본인 위치
+		UE_LOG(LogTemp, Warning, TEXT("SpawnVolume Not Setting!"));
+		return;
+	}
 
 	if (WaypointIndex < SpawnVolume->WaypointCount() - 1)
 		WaypointIndex++;
@@ -267,8 +306,34 @@ void ABaseEnemy::SetWaypointLocationToNext()
 void ABaseEnemy::Death()
 {
 	if (USkeletalMeshComponent* Mesh = GetComponentByClass<USkeletalMeshComponent>())
+	{
 		if (UAnimInstance* AnimInstance = Mesh->GetAnimInstance())
-			AnimInstance->Montage_Play(DeathMontage);
+		{
+			AnimInstance->Montage_Play(DeathMontage, 1);
+
+			FTimerHandle DeathTimer;
+			GetWorldTimerManager().SetTimer(DeathTimer, this, &ABaseEnemy::OnDeathMontageEnd, DeathMontage->GetPlayLength(),
+			                                false);
+
+			//사망 애니메이션 끝나면 마지막 프레임에서 멈추게 만들고 싶은데
+			//간단하게 애님 몽타주에서 설정하려고 했더니 그러면 이게 실행이 안되므로
+			//직접 타이머로 실행시킴
+			// FOnMontageEnded MontageEndDelegate;
+			// MontageEndDelegate.BindLambda([&](const UAnimMontage* Montage, bool bInterrupted)
+			// {
+			// 	OnDeathMontageEnd();
+			// });
+			// AnimInstance->Montage_SetEndDelegate(MontageEndDelegate);
+		}
+	}
+
+	if (AAIController* AIController = GetController<AAIController>())
+	{
+		AIController->StopMovement();
+		AIController->GetBrainComponent()->StopLogic(TEXT("Death Monster"));
+	}
+
+	AI_Perception->SetSenseEnabled(UAISenseConfig_Sight::StaticClass(), false);
 
 	OnDeath.Broadcast(this);
 }
@@ -298,6 +363,44 @@ void ABaseEnemy::RemoveUnattackableActor(TArray<FOverlapResult>& OutOverlapResul
 			i--;
 		}
 	}
+}
+
+int ABaseEnemy::GetWeightRandomIndex(int ArraySize) const
+{
+	TArray<float> Weights;
+	float TotalWeight = 0.0f;
+	int LastIndex = ArraySize - 1;
+
+	// 가중치 부여 (작은 인덱스일수록 확률이 높음)
+	for (int i = 0; i <= LastIndex; i++)
+	{
+		float Weight = (LastIndex - i) + 1; // 예: 5, 4, 3, 2, 1 식으로 줄어듦
+		Weights.Add(Weight * Weight);	// 제곱해서 낮은 숫자가 더 잘 걸리게 가중치를 설정
+		TotalWeight += Weight;
+	}
+	
+	// 랜덤 값 생성
+	float RandomValue = FMath::FRand() * TotalWeight;
+	float CumulativeWeight = 0.0f;
+
+	// 누적 가중치를 사용해 랜덤 인덱스 선택
+	for (int i = 0; i <= LastIndex; i++)
+	{
+		CumulativeWeight += Weights[i];
+		if (RandomValue <= CumulativeWeight)
+		{
+			return i;
+		}
+	}
+
+	// 예외 처리
+	return LastIndex;
+}
+
+void ABaseEnemy::OnDeathMontageEnd_Implementation()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Death_Default"));
+	Destroy();
 }
 
 float ABaseEnemy::GetHP() const
