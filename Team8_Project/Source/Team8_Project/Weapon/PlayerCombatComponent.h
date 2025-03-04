@@ -143,7 +143,6 @@ protected:
 
 public:
 
-
 	void UpdateReloadUI();
 
 	UFUNCTION()
@@ -154,6 +153,8 @@ public:
 	void StartWeaponReload();
 	
 	void OnFinishWeaponReload();
+
+	void OnItemInfiniteAmmo(); // 무한탄 아이템
 protected:
 	bool bIsReloading = false;
 	
