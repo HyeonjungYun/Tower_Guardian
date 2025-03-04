@@ -23,4 +23,10 @@ public:
 	
 	UPROPERTY(EditAnywhere)
 	float Damage;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AActor> IgnoreType;
+
+	UPROPERTY(EditAnywhere)
+	FVector Launch;
 };
