@@ -45,11 +45,11 @@ public:
 	bool CanAttack();
 
 	UFUNCTION(BlueprintCallable)
-	bool CanAttackWithType(TSubclassOf<AActor> AttackType);
-	bool CanAttackWithType(TSubclassOf<AActor> AttackType, TArray<FOverlapResult>& OutOverlapResults);
+	bool CanAttackWithType(TSubclassOf<AActor> AttackType = nullptr);
+	bool CanAttackWithType(TArray<FOverlapResult>& OutOverlapResults, TSubclassOf<AActor> AttackType = nullptr);
 	
 	UFUNCTION(BlueprintCallable)
-	void Attack();
+	void Attack(TSubclassOf<AActor> AttackType = nullptr, bool Shortest = false);
 
 	UFUNCTION(BlueprintCallable)
 	bool IsAttacking();
@@ -72,11 +72,15 @@ protected:
 	
 	UFUNCTION()
 	virtual void OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
-	
+
+	UFUNCTION(BlueprintNativeEvent)
+	void OnDeathMontageEnd();
+	void OnDeathMontageEnd_Implementation();
 
 private:
 	float GetMaxAttackRange() const;
 	void RemoveUnattackableActor(TArray<FOverlapResult>& OutOverlapResults, TSubclassOf<AActor> AttackType);
+	int GetWeightRandomIndex(int ArraySize) const;
 	
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -98,7 +102,10 @@ protected:
 	TArray<FAttackPattern> AttackPatterns;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TObjectPtr<UAnimMontage> DamagedMontage;
+	TObjectPtr<UAnimMontage> HitReactionMontage;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 HitReactionCount;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UAnimMontage> DeathMontage;
@@ -111,8 +118,11 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float RotationMul = 10.f;
-	
+
 	TObjectPtr<ASpawnVolume> SpawnVolume;
 	int32 WaypointIndex;
+	
+private:
+	int32 CurrentHitReactionCount = 0;
 };
 
