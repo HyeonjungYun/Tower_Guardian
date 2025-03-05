@@ -15,7 +15,7 @@
 #include "Inventory/InventoryComponent.h"
 #include "Inventory/InventorySubsystem.h"
 #include "Team8_Project/Weapon/WeaponType.h"
-#include "Kismet/KismetMathLibrary.h"
+#include "Team8_Project/WorldSpawnUISubSystem.h"
 
 AMyCharacter::AMyCharacter()
 {
@@ -710,6 +710,14 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 		,CombatComponent->GetMaxPlayerHealth());
 	
 	SetHP(CurrentHealth);
+
+	PlayerStates = EPlayerStateType::EWT_Damaged;
+
+	FVector DamageTextLoc = GetActorLocation();
+	DamageTextLoc.Z += GetComponentByClass<UShapeComponent>()->Bounds.BoxExtent.Z * 1.2f;
+	float RandomValue = FMath::RandRange(-2.f, 2.f);
+	DamageTextLoc.X += GetComponentByClass<UShapeComponent>()->Bounds.BoxExtent.X * RandomValue;
+	GetGameInstance()->GetSubsystem<UWorldSpawnUISubSystem>()->SpawnDamageText(GetWorld(), DamageAmount, DamageTextLoc);
 
 	// HUD 갱신
 	CombatComponent->UpdateHealth();
