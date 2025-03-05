@@ -114,6 +114,7 @@ void ACH8_GameState::BeginPlay()
 void ACH8_GameState::SetGold(int32 TempGold)
 {
 	Gold += TempGold;
+	OnGoldChanged.Broadcast();
 }
 
 void ACH8_GameState::StartGame()
