@@ -12,7 +12,10 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
+#include "Team8_Project/BaseItem.h"
+#include "Team8_Project/MyCharacter.h"
 #include "Team8_Project/WorldSpawnUISubSystem.h"
+#include "Team8_Project/Inventory/InventorySubsystem.h"
 
 
 ABaseEnemy::ABaseEnemy()
@@ -94,7 +97,7 @@ float ABaseEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& Dama
 
 	FVector DamageTextLoc = GetActorLocation();
 	DamageTextLoc.Z += GetComponentByClass<UShapeComponent>()->Bounds.BoxExtent.Z * 2;
-	
+
 	SetHP(HP - RealDamage);
 	GetGameInstance()->GetSubsystem<UWorldSpawnUISubSystem>()->SpawnDamageText(GetWorld(), RealDamage, DamageTextLoc);
 
@@ -132,8 +135,6 @@ void ABaseEnemy::Tick(float DeltaSeconds)
 
 				SetActorRotation(ViewRot);
 			}
-
-	
 }
 
 bool ABaseEnemy::CanAttack()
@@ -215,7 +216,7 @@ void ABaseEnemy::Attack(TSubclassOf<AActor> AttackType, bool Shortest)
 	FRotator ViewRot = ViewVec.Rotation();
 	ViewRot.Roll = 0;
 	ViewRot.Pitch = 0;
-	
+
 	SetActorRotation(ViewRot);
 
 	TArray<FAttackPattern> Patterns = AttackPatterns.FilterByPredicate([NearRange](const FAttackPattern& Pattern)
@@ -314,25 +315,28 @@ void ABaseEnemy::SetWaypointLocationToNext()
 
 void ABaseEnemy::Death()
 {
+	//골드 넣어줌
+	UInventorySubsystem* Inventory = GetGameInstance()->GetSubsystem<UInventorySubsystem>();
+	Inventory->SetGold(Inventory->GetGold() + DropGold);
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Death"));
+
+	//아이템 떨굼
+	FVector SpawnLo = GetActorLocation();
+	FRotator SpawnRot = GetActorRotation();
+	for (auto& DropItemClass : DropItemClasses)
+		GetWorld()->SpawnActor(DropItemClass.Get(), &SpawnLo, &SpawnRot);
+
+	//사망 모션 플레이
 	if (USkeletalMeshComponent* Mesh = GetComponentByClass<USkeletalMeshComponent>())
 	{
 		if (UAnimInstance* AnimInstance = Mesh->GetAnimInstance())
 		{
 			AnimInstance->Montage_Play(DeathMontage, 1);
 
+			//EndDelegate가 몽타주 설정 때문에 실행을 안해서 Timer로 만듦
 			FTimerHandle DeathTimer;
 			GetWorldTimerManager().SetTimer(DeathTimer, this, &ABaseEnemy::OnDeathMontageEnd, DeathMontage->GetPlayLength(),
 			                                false);
-
-			//사망 애니메이션 끝나면 마지막 프레임에서 멈추게 만들고 싶은데
-			//간단하게 애님 몽타주에서 설정하려고 했더니 그러면 이게 실행이 안되므로
-			//직접 타이머로 실행시킴
-			// FOnMontageEnded MontageEndDelegate;
-			// MontageEndDelegate.BindLambda([&](const UAnimMontage* Montage, bool bInterrupted)
-			// {
-			// 	OnDeathMontageEnd();
-			// });
-			// AnimInstance->Montage_SetEndDelegate(MontageEndDelegate);
 		}
 	}
 
@@ -340,6 +344,7 @@ void ABaseEnemy::Death()
 	{
 		AIController->StopMovement();
 		AIController->GetBrainComponent()->StopLogic(TEXT("Death Monster"));
+		AIController->UnPossess();
 	}
 
 	AI_Perception->SetSenseEnabled(UAISenseConfig_Sight::StaticClass(), false);
@@ -384,10 +389,10 @@ int ABaseEnemy::GetWeightRandomIndex(int ArraySize) const
 	for (int i = 0; i <= LastIndex; i++)
 	{
 		float Weight = (LastIndex - i) + 1; // 예: 5, 4, 3, 2, 1 식으로 줄어듦
-		Weights.Add(Weight * Weight);	// 제곱해서 낮은 숫자가 더 잘 걸리게 가중치를 설정
+		Weights.Add(Weight * Weight); // 제곱해서 낮은 숫자가 더 잘 걸리게 가중치를 설정
 		TotalWeight += Weight;
 	}
-	
+
 	// 랜덤 값 생성
 	float RandomValue = FMath::FRand() * TotalWeight;
 	float CumulativeWeight = 0.0f;

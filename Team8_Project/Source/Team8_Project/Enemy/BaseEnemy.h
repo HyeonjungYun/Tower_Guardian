@@ -5,6 +5,7 @@
 #include "Team8_Project/Damageable.h"
 #include "BaseEnemy.generated.h"
 
+class ABaseItem;
 class ASpawnVolume;
 struct FAIStimulus;
 class UBehaviorTree;
@@ -95,6 +96,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="AI")
 	TObjectPtr<UBehaviorTree> BehaviorTree;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float MaxHP = 100;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	float HP;
+
 	FEnemyDeathDelegate OnDeath;
 	
 protected:
@@ -111,14 +118,14 @@ protected:
 	TObjectPtr<UAnimMontage> DeathMontage;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	float MaxHP = 100;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	float HP;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	float RotationMul = 10.f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float DropGold = 300;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<TSubclassOf<ABaseItem>> DropItemClasses;
+	
 	TObjectPtr<ASpawnVolume> SpawnVolume;
 	int32 WaypointIndex;
 	
