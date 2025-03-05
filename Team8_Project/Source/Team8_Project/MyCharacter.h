@@ -220,6 +220,10 @@ protected:
 	UFUNCTION()
 	void ReleaseAiming();
 
+	UFUNCTION()
+	void OnWeaponModifyingInput();
+
+	bool bIsWMUIOpened = false;
 	/*
 	전투를 위한 기능들
 	*/

@@ -4,7 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "../Inventory/ItemInterface.h"
+
+#include "Components/SkeletalMeshComponent.h"
 #include "WeaponType.h"
+#include "WeaponpartsActor.h"
+#include "Engine/DataTable.h"
 #include "WeaponBase.generated.h"
 
 
@@ -238,4 +242,76 @@ public:
 
     bool bIsInfiniteAmmo = false;
     
-};
+
+    // 부착물 구현
+    // 모든 부착물 관련 데이터 가지고 있게하기
+    // WeaponPartsComponent라는 별도의 컴포넌트로 기능 분리를 하면 더 좋겠으나.
+    // 일단 만들자
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Parts")
+    UDataTable* OpticPartsDataTable;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Parts")
+    UDataTable* GripPartsDataTable;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Parts")
+    UDataTable* MagazinePartsDataTable;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Parts")
+    UDataTable* MuzzlePartsDataTable;
+
+    TMap<FName, AWeaponpartsActor*> OpticActorContainer;
+    TArray<struct FOpticWeaponPartsTable*> OpticWeaponpartsTableRows;
+
+    TMap<FName, AWeaponpartsActor*> GripActorContainer;
+    TArray<struct FGripWeaponPartsTable*> GripWeaponpartsTableRows;
+
+    TMap<FName, AWeaponpartsActor*> MagzineActorContainer;
+    TArray<struct FMagazineWeaponPartsTable*> MagzineWeaponpartsTableRows;
+
+    TMap<FName, AWeaponpartsActor*> MuzzleActorContainer;
+    TArray<struct FMuzzleWeaponPartsTable*> MuzzleWeaponpartsTableRows;
+
+    void InitializeWeaponParts();
+
+    // 현재 장착된 부착물 (각 부착물 유형별)
+    AWeaponpartsActor* EquippedOpticPart = nullptr;
+    AWeaponpartsActor* EquippedGripPart = nullptr;
+    AWeaponpartsActor* EquippedMagazinePart = nullptr;
+    AWeaponpartsActor* EquippedMuzzlePart = nullptr;
+
+    UFUNCTION(BlueprintCallable)
+    void DebugEnableWeaponParts(FName ItemKey);
+
+    template <typename T>
+    void SpawnAndStoreParts(const TArray<T*>& TableRows, TMap<FName, AWeaponpartsActor*>& PartContainer, FName SocketName)
+    {
+
+        UWorld* World = GetWorld();
+        if (!World) return;
+
+        for (T* Row : TableRows)
+        {
+            if (!Row || !Row->WeaponPartsActorClass) continue;
+
+            // 1. 부착물 액터 생성 (숨김 상태로)
+            AWeaponpartsActor* SpawnedPart = World->SpawnActor<AWeaponpartsActor>(Row->WeaponPartsActorClass);
+            if (SpawnedPart)
+            {
+                // 2. SkeletalMesh에 부착
+                SpawnedPart->AttachToComponent(WeaponSkeletalMesh,
+                    FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+                    SocketName);
+
+                // 3. 초기 숨김 처리 및 충돌 비활성화
+                SpawnedPart->SetActorHiddenInGame(true);
+                SpawnedPart->SetActorEnableCollision(false);
+                UE_LOG(LogTemp, Warning, TEXT("Weapon Part Class: %s"), *SpawnedPart->GetClass()->GetName());
+
+
+                // 4. TMap에 저장 (ItemKey를 키 값으로 사용)
+                PartContainer.Add(Row->ItemKey, SpawnedPart);
+            }
+        }
+    }
+  };

@@ -259,6 +259,15 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 					&AMyCharacter::ToggleInventory
 				);
 			}
+			if (PlayerController->WeaponModifyingAction)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->WeaponModifyingAction,
+					ETriggerEvent::Started,
+					this,
+					&AMyCharacter::OnWeaponModifyingInput
+				);
+			}
 		}
 	}
 }
@@ -657,6 +666,11 @@ void AMyCharacter::ReleaseAiming()
 		CombatComponent->SetAiming(false);
 
 	}
+}
+
+void AMyCharacter::OnWeaponModifyingInput()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Button WeaponModifying started"));
 }
 
 void AMyCharacter::HideCameraIfCharacterClose()

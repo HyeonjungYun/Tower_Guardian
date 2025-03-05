@@ -4,13 +4,17 @@
 #include "WeaponBase.h"
 #include "Components/SphereComponent.h"
 #include "Animation/AnimationAsset.h"
-#include "Components/SkeletalMeshComponent.h"
 #include "BulletCaseBase.h"
 #include "Engine/SkeletalMeshSocket.h" // 탄피배출(BulletCase)
 #include "../MyCharacter.h"
 #include "../MyPlayerController.h"
 #include "Kismet/GameplayStatics.h"
 #include "PlayerCombatComponent.h"
+
+#include "OpticWeaponPartsTable.h"
+#include "MuzzleWeaponPartsTable.h"
+#include "GripWeaponPartsTable.h"
+#include "MagazineWeaponPartsTable.h"
 
 AWeaponBase::AWeaponBase() :
 	WeaponState(EWeaponState::EWT_Dropped),
@@ -47,7 +51,7 @@ void AWeaponBase::BeginPlay()
 
 	AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	AreaSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
-
+	InitializeWeaponParts();
 	SetWeaponState(WeaponState);
 }
 
@@ -292,3 +296,62 @@ void AWeaponBase::SetTimeToFinishReload(float NewReloadTime)
 {
 	TimeToFinishReload = NewReloadTime;
 }
+
+void AWeaponBase::InitializeWeaponParts()
+{
+	if (!bIsWeaponCanModify) return;
+	// 조준경 테이블에서 조준경 관련 정보를 모두 저장 
+	if (!OpticPartsDataTable) return;
+	if (!GripPartsDataTable) return;
+	if (!MagazinePartsDataTable) return;
+	if (!MuzzlePartsDataTable) return;
+	OpticPartsDataTable->GetAllRows<FOpticWeaponPartsTable>(TEXT("GetAllRowsFromWeaponPartsTable"), OpticWeaponpartsTableRows);
+
+	// 손잡이 테이블에서 조준경 관련 정보를 모두 저장 
+	GripPartsDataTable->GetAllRows<FGripWeaponPartsTable>(TEXT("GetAllRowsFromWeaponPartsTable"), GripWeaponpartsTableRows);
+
+	// 탄창 테이블에서 조준경 관련 정보를 모두 저장 
+	MagazinePartsDataTable->GetAllRows<FMagazineWeaponPartsTable>(TEXT("GetAllRowsFromWeaponPartsTable"), MagzineWeaponpartsTableRows);
+
+	// 머즐 테이블에서 조준경 관련 정보를 모두 저장 
+	MuzzlePartsDataTable->GetAllRows<FMuzzleWeaponPartsTable>(TEXT("GetAllRowsFromWeaponPartsTable"), MuzzleWeaponpartsTableRows);
+
+	// 2. 각각의 부착물 Actor 생성 및 숨김 처리
+	SpawnAndStoreParts(OpticWeaponpartsTableRows, OpticActorContainer, TEXT("ModuleOpticSocket"));
+	SpawnAndStoreParts(GripWeaponpartsTableRows, GripActorContainer, TEXT("ModuleForeGripSocket"));
+	SpawnAndStoreParts(MagzineWeaponpartsTableRows, MagzineActorContainer, TEXT("ModuleMagazineSocket"));
+	SpawnAndStoreParts(MuzzleWeaponpartsTableRows, MuzzleActorContainer, TEXT("ModuleMuzzleSocket"));
+
+}
+
+void AWeaponBase::DebugEnableWeaponParts(FName ItemKey)
+{
+	// 부착물 타입별 컨테이너 배열
+	TArray<TMap<FName, AWeaponpartsActor*>*> PartContainers = {
+		&OpticActorContainer,
+		&GripActorContainer,
+		&MagzineActorContainer,
+		&MuzzleActorContainer
+	};
+
+	for (TMap<FName, AWeaponpartsActor*>* Container : PartContainers)
+	{
+		if (!Container) continue;
+
+		// ItemKey가 존재하는 경우
+		if (AWeaponpartsActor** FoundPart = Container->Find(ItemKey))
+		{
+			if (*FoundPart)
+			{
+				// 기존 부착물 비활성화
+				(*FoundPart)->SetActorHiddenInGame(false);
+				(*FoundPart)->SetActorEnableCollision(true);
+
+				// 로그 출력
+				UE_LOG(LogTemp, Warning, TEXT("Weapon Part %s is now visible"), *ItemKey.ToString());
+			}
+		}
+	}
+}
+
+
