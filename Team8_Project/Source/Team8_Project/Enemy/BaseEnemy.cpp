@@ -5,6 +5,7 @@
 #include "Team8_Project/Spawn/SpawnVolume.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Components/ShapeComponent.h"
+#include "Components/TimelineComponent.h"
 #include "Engine/OverlapResult.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/FloatingPawnMovement.h"
@@ -213,12 +214,26 @@ void ABaseEnemy::Attack(TSubclassOf<AActor> AttackType, bool Shortest)
 	}
 
 	//공격 대상으로 회전
-	FVector ViewVec = NearActor->GetActorLocation() - GetActorLocation();
-	FRotator ViewRot = ViewVec.Rotation();
-	ViewRot.Roll = 0;
-	ViewRot.Pitch = 0;
+	FVector NowLoc = GetActorLocation();
+	FVector TargetLoc = NearActor->GetActorLocation();
+	TargetLoc.Z = NowLoc.Z;
+	TargetLoc = TargetLoc - NowLoc;
+	
+	FRotator NowRot = GetActorRotation();
+	FRotator ViewRot = TargetLoc.Rotation();
 
-	SetActorRotation(ViewRot);
+	RotationTime = 0;
+	//자연스러운 회전
+	GetWorldTimerManager().SetTimer(RotationTimer, [&, NowRot, ViewRot]()
+	{
+		RotationTime += 0.01f;
+		
+		float EndTime = 1 / RotationMul;
+		if (RotationTime >= EndTime)
+			GetWorldTimerManager().ClearTimer(RotationTimer);
+
+		SetActorRotation(FMath::Lerp(NowRot, ViewRot, RotationTime / EndTime));
+	}, 0.01f, true);
 
 	TArray<FAttackPattern> Patterns = AttackPatterns.FilterByPredicate([NearRange](const FAttackPattern& Pattern)
 	{
@@ -294,7 +309,7 @@ void ABaseEnemy::SetSpawnVolume(ASpawnVolume* Value)
 FVector ABaseEnemy::GetWaypointLocation() const
 {
 	if (SpawnVolume)
-		return SpawnVolume->GetWaypoint(WaypointIndex);
+		return SpawnVolume->GetLocationNearWaypoint(WaypointIndex);
 
 	//없다면 본인 위치
 	UE_LOG(LogTemp, Warning, TEXT("PatrolPath Not Setting!"));
@@ -318,7 +333,7 @@ void ABaseEnemy::Death()
 {
 	//골드 넣어줌
 	if (ACH8_GameState* GameState = Cast<ACH8_GameState>(GetWorld()->GetGameState()))
-		GameState->SetGold(DropGold);	//더하는 거임
+		GameState->SetGold(DropGold); //더하는 거임
 
 	//아이템 떨굼
 	FRotator SpawnRot = FMath::VRand().Rotation();

@@ -56,6 +56,17 @@ FVector ASpawnVolume::GetWaypoint(int32 Index) const
 	return FVector::Zero();
 }
 
+FVector ASpawnVolume::GetLocationNearWaypoint(int32 Index) const
+{
+	FVector Result = GetWaypoint(Index);
+	Result += FVector(FMath::RandPointInCircle(WaypointRange), 0);
+
+	DrawDebugSphere(GetWorld(), Result, 40, 10, FColor::Red, false, 10);
+	
+	return Result;
+}
+
+
 int32 ASpawnVolume::WaypointCount() const
 {
 	return Waypoints.Num();

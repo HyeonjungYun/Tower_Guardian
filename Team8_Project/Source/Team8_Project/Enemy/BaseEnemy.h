@@ -118,7 +118,7 @@ protected:
 	TObjectPtr<UAnimMontage> DeathMontage;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	float RotationMul = 10.f;
+	float RotationMul = 5.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float DropGold = 300;
@@ -131,5 +131,7 @@ protected:
 	
 private:
 	int32 CurrentHitReactionCount = 0;
+	FTimerHandle RotationTimer;
+	float RotationTime;
 };
 
