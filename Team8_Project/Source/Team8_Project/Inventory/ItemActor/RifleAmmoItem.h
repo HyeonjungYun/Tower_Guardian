@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "../BaseItem.h"
+#include "Team8_Project/BaseItem.h"
 #include "RifleAmmoItem.generated.h"
 
 
