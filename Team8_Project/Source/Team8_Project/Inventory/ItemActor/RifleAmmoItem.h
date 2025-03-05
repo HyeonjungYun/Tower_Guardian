@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "../BaseItem.h"
+#include "Team8_Project/BaseItem.h"
 #include "RifleAmmoItem.generated.h"
 
 
@@ -14,8 +14,8 @@ class TEAM8_PROJECT_API ARifleAmmoItem : public ABaseItem
 public:
 	ARifleAmmoItem();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item|Component")
-	UStaticMeshComponent* StaticMesh;
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item|Component")
+	//UStaticMeshComponent* StaticMesh;
 	
 
 };

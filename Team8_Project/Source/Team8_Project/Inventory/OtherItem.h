@@ -13,6 +13,6 @@ class TEAM8_PROJECT_API AOtherItem : public ABaseItem
 public:
 	AOtherItem();
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item|Component")
-	UStaticMeshComponent* StaticMesh;
+	/*UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item|Component")
+	UStaticMeshComponent* StaticMesh;*/
 };

@@ -21,13 +21,15 @@ public:
 
 protected:
 	// 루트 컴포넌트 (씬)
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item|Component")
-	USceneComponent* Scene;
+	/*UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item|Component")
+	USceneComponent* Scene;*/
 
 	// 충돌 컴포넌트 (플레이어 진입 범위 감지용)
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item|Component")
 	USphereComponent* Collision;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item|Component")
+	UStaticMeshComponent* StaticMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item|Effects")
 	UParticleSystem* PickupParticle;
@@ -47,6 +49,8 @@ public:
 	EItemType GetSlotType() const;
 
 	int32 GetQuantity();
+
+	virtual void DestroyItem();
 protected:
 	virtual void OnItemOverlap(
 		UPrimitiveComponent* OverlappedComp,
@@ -65,6 +69,6 @@ protected:
 	
 	
 
-	virtual void DestroyItem();
+	
 };
 //TODO : 

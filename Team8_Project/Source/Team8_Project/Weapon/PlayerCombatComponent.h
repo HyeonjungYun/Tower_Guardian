@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "WeaponCrosshairHUD.h"
 #include "WeaponType.h"
+#include "WeaponPartsType.h"
 #include "PlayerCombatComponent.generated.h"
 
 class AWeaponBase;
@@ -160,4 +161,26 @@ protected:
 	FTimerHandle FReloadTimerHandle;
 public:
 	bool IsPlayerDead();
+
+	/***
+		무기 파츠 가능 여부 관리
+	***/
+
+public:
+	// 플레이어가 가지고 있을 웨폰 파츠들
+	// 해당 파츠에 대한 사용 여부를 가진다.
+	TMap<FName, bool> AvailableWeaponParts;
+	EWeaponPartsType GetWeaponPartsTypefromFName(FName ItemKey);
+	FName GetItemKeyFromWeaponPartsType(EWeaponPartsType WTP);
+
+	UFUNCTION(BlueprintCallable)
+	void UnlockWeaponParts(FName ItemKey);
+	// 무기 부착물 데이터 테이블
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Parts")
+	UDataTable* WeaponPartsDataTable;
+	// 부착물 정보 Row를 보관하기
+	TArray<struct FWeaponPartsTableRow*> WeaponpartsTableRows;
+
+	void InitializeWeaponParts();
+	bool IsWeaponPartsAvailable(FName ItemKey);
 };
