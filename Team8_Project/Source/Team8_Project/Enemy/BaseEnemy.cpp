@@ -15,6 +15,7 @@
 #include "Team8_Project/BaseItem.h"
 #include "Team8_Project/MyCharacter.h"
 #include "Team8_Project/WorldSpawnUISubSystem.h"
+#include "Team8_Project/GameState/CH8_GameState.h"
 #include "Team8_Project/Inventory/InventorySubsystem.h"
 
 
@@ -316,15 +317,16 @@ void ABaseEnemy::SetWaypointLocationToNext()
 void ABaseEnemy::Death()
 {
 	//골드 넣어줌
-	UInventorySubsystem* Inventory = GetGameInstance()->GetSubsystem<UInventorySubsystem>();
-	Inventory->SetGold(Inventory->GetGold() + DropGold);
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Death"));
+	if (ACH8_GameState* GameState = Cast<ACH8_GameState>(GetWorld()->GetGameState()))
+		GameState->SetGold(DropGold);	//더하는 거임
 
 	//아이템 떨굼
-	FVector SpawnLo = GetActorLocation();
-	FRotator SpawnRot = GetActorRotation();
-	for (auto& DropItemClass : DropItemClasses)
-		GetWorld()->SpawnActor(DropItemClass.Get(), &SpawnLo, &SpawnRot);
+	FRotator SpawnRot = FMath::VRand().Rotation();
+	for (int i = 0; i < DropItemClasses.Num(); i++)
+	{
+		FVector SpawnLo = GetActorLocation() + FVector(i % 2 ? 100 : -100, i % 2 ? 100 : -100, 0);
+		GetWorld()->SpawnActor(DropItemClasses[i].Get(), &SpawnLo, &SpawnRot);
+	}
 
 	//사망 모션 플레이
 	if (USkeletalMeshComponent* Mesh = GetComponentByClass<USkeletalMeshComponent>())
