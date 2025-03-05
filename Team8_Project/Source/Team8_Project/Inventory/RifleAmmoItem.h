@@ -14,8 +14,8 @@ class TEAM8_PROJECT_API ARifleAmmoItem : public ABaseItem
 public:
 	ARifleAmmoItem();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item|Component")
-	UStaticMeshComponent* StaticMesh;
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item|Component")
+	//UStaticMeshComponent* StaticMesh;
 	
 
 };

@@ -16,7 +16,7 @@ class TEAM8_PROJECT_API AConsumableItem : public ABaseItem
 public:
 	AConsumableItem();
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item|Component")
-	UStaticMeshComponent* StaticMesh;
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item|Component")
+	//UStaticMeshComponent* StaticMesh;
 	//
 };

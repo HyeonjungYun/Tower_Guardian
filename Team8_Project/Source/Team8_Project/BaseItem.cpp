@@ -7,11 +7,17 @@
 ABaseItem::ABaseItem()
 {
     PrimaryActorTick.bCanEverTick = false;
-    Scene = CreateDefaultSubobject<USceneComponent>(TEXT("Scene"));
-    SetRootComponent(Scene);
+    StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
+    SetRootComponent(StaticMesh);
+    
+    StaticMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+    StaticMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+    StaticMesh->SetCollisionProfileName(TEXT("PhysicsActor"));
+    StaticMesh->SetSimulatePhysics(true);
+
     Collision = CreateDefaultSubobject<USphereComponent>(TEXT("Collision"));
     Collision->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
-    Collision->SetupAttachment(Scene);
+    Collision->SetupAttachment(StaticMesh);
 
     Collision->OnComponentBeginOverlap.AddDynamic(this, &ABaseItem::OnItemOverlap);
     Collision->OnComponentEndOverlap.AddDynamic(this, &ABaseItem::OnItemEndOverlap);
