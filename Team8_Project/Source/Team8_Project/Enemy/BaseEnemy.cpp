@@ -4,6 +4,7 @@
 #include "EnemyAIController.h"
 #include "Team8_Project/Spawn/SpawnVolume.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Components/ShapeComponent.h"
 #include "Engine/OverlapResult.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/FloatingPawnMovement.h"
@@ -11,6 +12,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
+#include "Team8_Project/WorldSpawnUISubSystem.h"
 
 
 ABaseEnemy::ABaseEnemy()
@@ -89,7 +91,12 @@ float ABaseEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& Dama
 		return 0.f;
 
 	float RealDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	FVector DamageTextLoc = GetActorLocation();
+	DamageTextLoc.Z += GetComponentByClass<UShapeComponent>()->Bounds.BoxExtent.Z * 2;
+	
 	SetHP(HP - RealDamage);
+	GetGameInstance()->GetSubsystem<UWorldSpawnUISubSystem>()->SpawnDamageText(GetWorld(), RealDamage, DamageTextLoc);
 
 	if (HP > 0)
 		if (USkeletalMeshComponent* Mesh = GetComponentByClass<USkeletalMeshComponent>())
@@ -125,6 +132,8 @@ void ABaseEnemy::Tick(float DeltaSeconds)
 
 				SetActorRotation(ViewRot);
 			}
+
+	
 }
 
 bool ABaseEnemy::CanAttack()
@@ -151,7 +160,7 @@ bool ABaseEnemy::CanAttackWithType(TArray<FOverlapResult>& OutOverlapResults, TS
 	                                                     FCollisionShape::MakeSphere(MaxAttackRange),
 	                                                     Params);
 
-	// DrawDebugSphere(GetWorld(), GetActorLocation(), MaxAttackRange, 30, FColor::Red);
+	DrawDebugSphere(GetWorld(), GetActorLocation(), MaxAttackRange, 30, FColor::Red);
 
 	if (bOverlap)
 	{
@@ -206,7 +215,7 @@ void ABaseEnemy::Attack(TSubclassOf<AActor> AttackType, bool Shortest)
 	FRotator ViewRot = ViewVec.Rotation();
 	ViewRot.Roll = 0;
 	ViewRot.Pitch = 0;
-
+	
 	SetActorRotation(ViewRot);
 
 	TArray<FAttackPattern> Patterns = AttackPatterns.FilterByPredicate([NearRange](const FAttackPattern& Pattern)

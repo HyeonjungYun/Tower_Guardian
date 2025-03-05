@@ -120,7 +120,11 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	UCapsuleComponent* Capsule;
 
+	UPROPERTY(VisibleAnywhere)
+	UCapsuleComponent* LCapsule;
 
+	UPROPERTY(VisibleAnywhere)
+	UCapsuleComponent* RCapsule;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementSpeed")
 	float WalkSpeed = 400.0f;
