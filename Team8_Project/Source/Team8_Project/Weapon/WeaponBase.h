@@ -193,6 +193,9 @@ public:
 
 public:
     UFUNCTION()
+    void OnWeaponEquipped(AMyCharacter* _OwnerPlayerCharacter
+        ,AMyPlayerController* _OwnerPlayerController);
+    UFUNCTION()
     void Dropped();
 
     /***

@@ -5,6 +5,6 @@
 
 AOtherItem::AOtherItem()
 {
-    StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
-    StaticMesh->SetupAttachment(GetRootComponent());
+   /* StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
+    StaticMesh->SetupAttachment(GetRootComponent());*/
 }

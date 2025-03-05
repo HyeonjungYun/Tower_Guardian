@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "../BaseItem.h"
+#include "Team8_Project/BaseItem.h"
 #include "SniperAmmoItem.generated.h"
 
 UCLASS()
@@ -13,7 +13,7 @@ class TEAM8_PROJECT_API ASniperAmmoItem : public ABaseItem
 public:
 	ASniperAmmoItem();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item|Component")
-	UStaticMeshComponent* StaticMesh;
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item|Component")
+	//UStaticMeshComponent* StaticMesh;
 	
 };

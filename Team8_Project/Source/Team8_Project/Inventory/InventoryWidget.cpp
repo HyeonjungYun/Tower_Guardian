@@ -3,6 +3,7 @@
 #include "InventoryInterface.h"
 #include "InventorySubsystem.h"
 #include "InventoryComponent.h"
+#include "Team8_Project/GameState/CH8_GameState.h"
 #include "Components/UniformGridPanel.h"
 #include "Components/UniformGridSlot.h"
 #include "Components/Button.h"
@@ -56,6 +57,15 @@ void UInventoryWidget::NativeConstruct()
 		AmmoItemButton->OnClicked.AddDynamic(this, &UInventoryWidget::OnAmmoTabClicked);
 	}
 
+	if (UWorld* World = GetWorld())
+	{
+		// GameState를 가져오고, ACH8_GameState로 캐스팅
+		ACH8_GameState* MyGameState = Cast<ACH8_GameState>(World->GetGameState());
+		if (MyGameState)
+		{
+			MyGameState->OnGoldChanged.AddDynamic(this, &UInventoryWidget::UpdateInventoryUI);
+		}
+	}
 	InitInventorySlots();
 	InitInventoryUI();
 }

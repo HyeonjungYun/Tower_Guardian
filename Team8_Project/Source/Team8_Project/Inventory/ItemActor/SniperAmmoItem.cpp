@@ -5,8 +5,8 @@
 
 ASniperAmmoItem::ASniperAmmoItem()
 {
-	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
-	StaticMesh->SetupAttachment(GetRootComponent());
+	/*StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
+	StaticMesh->SetupAttachment(GetRootComponent());*/
 	SlotType = EItemType::Ammo;
 	FItemType = "SniperAmmo";
 	Quantity = 30;

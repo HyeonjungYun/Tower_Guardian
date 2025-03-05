@@ -16,6 +16,9 @@
 
 #include "TimerManager.h"
 
+#include "Engine/DataTable.h"
+#include "WeaponPartsTableRow.h"
+
 UPlayerCombatComponent::UPlayerCombatComponent()
 {
 
@@ -27,6 +30,9 @@ UPlayerCombatComponent::UPlayerCombatComponent()
 	CarriedAmmoMap.Add(EWeaponType::EWT_Sniper,30);
 	CarriedAmmoMap.Add(EWeaponType::EWT_Rifle, 100);
 	CarriedAmmoMap.Add(EWeaponType::EWT_RocketLauncher, 5);
+	CarriedAmmoMap.Add(EWeaponType::EWT_Shotgun,20);
+
+
 }
 
 void UPlayerCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
@@ -221,6 +227,8 @@ void UPlayerCombatComponent::BeginPlay()
 	
 	APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
 	PlayerController = Cast<AMyPlayerController>(PC);
+	
+	InitializeWeaponParts(); // 무기 정보들 넣기
 
 	if (PlayerCharacter)
 	{
@@ -265,7 +273,7 @@ void UPlayerCombatComponent::EquipWeapon(AWeaponBase* WeaponToEquip)
 		HandSocket->AttachActor(EquippedWeapon, PlayerCharacter->GetMesh());
 	}
 	EquippedWeapon->SetOwner(PlayerCharacter);
-	
+	EquippedWeapon->OnWeaponEquipped(PlayerCharacter,PlayerController);
 	// 새로운 무기에 대한 HUD 출력
 
 	if (PlayerController->GetWeaponCrosshairHUD())
@@ -391,6 +399,70 @@ void UPlayerCombatComponent::OnFinishWeaponReload()
 bool UPlayerCombatComponent::IsPlayerDead()
 {
 	return PlayerCurrentHealth <= 0;
+}
+
+EWeaponPartsType UPlayerCombatComponent::GetWeaponPartsTypefromFName(FName ItemKey)
+{
+	if (!WeaponPartsDataTable) return EWeaponPartsType::EWT_None;
+
+	for (FWeaponPartsTableRow* Row : WeaponpartsTableRows)
+	{
+		if (Row && Row->ItemKey == ItemKey)
+		{
+			return Row->WeaponPartsType;
+		}
+	}
+
+	return EWeaponPartsType::EWT_None; // 해당 ItemKey를 찾지 못한 경우
+}
+
+FName UPlayerCombatComponent::GetItemKeyFromWeaponPartsType(EWeaponPartsType WTP)
+{
+	if (!WeaponPartsDataTable) return NAME_None;
+
+	for (FWeaponPartsTableRow* Row : WeaponpartsTableRows)
+	{
+		if (Row && Row->WeaponPartsType == WTP)
+		{
+			return Row->ItemKey;
+		}
+	}
+
+	return NAME_None; // 해당 WeaponPartsType을 찾지 못한 경우
+}
+
+void UPlayerCombatComponent::UnlockWeaponParts(FName ItemKey)
+{
+	if (AvailableWeaponParts.Contains(ItemKey) && GetWeaponPartsTypefromFName(ItemKey) != EWeaponPartsType::EWT_None)
+	{
+		AvailableWeaponParts[ItemKey] = true; // 부착물 사용 가능하도록 설정
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("존재하지 않는 무기 파츠 ItemKey"));
+	}
+	
+}
+
+void UPlayerCombatComponent::InitializeWeaponParts()
+{
+	if (!WeaponPartsDataTable) return;
+
+	WeaponPartsDataTable->GetAllRows<FWeaponPartsTableRow>(TEXT("GetAllRowsFromWeaponPartsTable"), WeaponpartsTableRows);
+
+	for (FWeaponPartsTableRow* Row : WeaponpartsTableRows)
+	{
+		if (Row && GetWeaponPartsTypefromFName(Row->ItemKey) != EWeaponPartsType::EWT_None)
+		{	// 넘겨받은 ItemKey가 실제로 부품 테이블에 있는지 검증
+			//  TMap에 저장 (초기 상태는 false = 아직 사용 불가능)
+			AvailableWeaponParts.Add(Row->ItemKey, false);
+		}
+	}
+}
+
+bool UPlayerCombatComponent::IsWeaponPartsAvailable(FName ItemKey)
+{
+	return AvailableWeaponParts[ItemKey];
 }
 
 

@@ -2,6 +2,7 @@
 #include "InventorySubsystem.h"
 #include "InventoryWidget.h"
 #include "ItemObject/ItemEffectBase.h"
+#include "Team8_Project/GameState/CH8_GameState.h"
 #include "Engine/GameInstance.h"
 #include "Blueprint/UserWidget.h"
 
@@ -73,11 +74,20 @@ void UInventoryComponent::RemoveItemAt(int32 SlotIndex, EItemType InventoryType)
 
 int32 UInventoryComponent::GetGold() const
 {
-	if (InventorySubsystem)
+	if (UWorld* World = GetWorld())
+	{
+		if (ACH8_GameState* MyState = Cast<ACH8_GameState>(World->GetGameState()))
+		{
+			return MyState->GetGold();
+		}
+	}
+	return 0;
+
+	/*if (InventorySubsystem)
 	{
 		return InventorySubsystem->GetGold();
 	}
-	return 0;
+	return 0;*/
 }
 void UInventoryComponent::SetGold(int32 NewGold) 
 {

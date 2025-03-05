@@ -5,8 +5,8 @@
 
 ARifleAmmoItem::ARifleAmmoItem()
 {
-	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
-	StaticMesh->SetupAttachment(GetRootComponent());
+	/*StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
+	StaticMesh->SetupAttachment(GetRootComponent());*/
 	SlotType = EItemType::Ammo;
 	FItemType = "RifleAmmo";
 	Quantity = 100;

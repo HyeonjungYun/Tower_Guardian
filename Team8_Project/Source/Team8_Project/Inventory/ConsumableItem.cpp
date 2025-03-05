@@ -5,6 +5,6 @@
 
 AConsumableItem::AConsumableItem()
 {
-    StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
-    StaticMesh->SetupAttachment(GetRootComponent());
+  /*  StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
+    StaticMesh->SetupAttachment(GetRootComponent());*/
 }

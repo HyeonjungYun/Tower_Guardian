@@ -9,6 +9,7 @@ class ASpawnVolume;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnGameGetGold, int32);
 DECLARE_DELEGATE(FOnGameKillEnemy);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnGoldChanged);
 
 UCLASS()
 class TEAM8_PROJECT_API ACH8_GameState : public AGameState
@@ -76,7 +77,7 @@ public:
 	void UpdateGameTimer();
 
 	virtual void BeginPlay() override;
-
+	UFUNCTION(BlueprintCallable, Category = "InfinityAmmo")
 	void SetGold(int32 TempGold);
 	void StartGame();
 	void EndGame();
@@ -88,6 +89,8 @@ public:
 	void UpdatedInfinityAmmoDuration();
 	int32 GetGold();
 
+	UPROPERTY(BlueprintAssignable, Category = "Gold")
+	FOnGoldChanged OnGoldChanged;
 private:
 
 
