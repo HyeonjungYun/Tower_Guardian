@@ -22,13 +22,10 @@ bool UShopComponent::AttemptItemPurchase()
 	{
 		if (GameStateRef->GetGold() >= ItemCost)
 		{
-			if (GameStateRef->OnGameSetGold.IsBound())
-			{
-				GameStateRef->OnGameSetGold.Broadcast(-ItemCost);
-				Cast<AShopTrigger>(GetOwner())->UpdateShopUI();
+			GameStateRef->SetGold(-ItemCost);
+			Cast<AShopTrigger>(GetOwner())->UpdateShopUI();
 
-				return true;
-			}
+			return true;
 		}
 	}
 
