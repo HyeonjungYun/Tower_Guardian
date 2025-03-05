@@ -300,8 +300,9 @@ void AMyCharacter::OnPickupItem()
 			bool bAdded = AddItem(ItemKey, Quantity, SlotType);
 			if (bAdded)
 			{
-				UE_LOG(LogTemp, Log, TEXT("Character to Inventory %s added to inventory."), *ItemKey.ToString());
+				UE_LOG(LogTemp, Warning, TEXT("Character to Inventory %s added to inventory."), *ItemKey.ToString());
 				OverlappingItem->Destroy();
+				UE_LOG(LogTemp, Warning, TEXT("AfterDestory"));
 				OverlappingItem = nullptr;
 			}
 			else

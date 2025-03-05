@@ -14,6 +14,7 @@ ABaseItem::ABaseItem()
     StaticMesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
     StaticMesh->SetCollisionProfileName(TEXT("PhysicsActor"));
     StaticMesh->SetSimulatePhysics(true);
+   
 
     Collision = CreateDefaultSubobject<USphereComponent>(TEXT("Collision"));
     Collision->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
@@ -84,6 +85,8 @@ void ABaseItem::ActivateItem(AActor* Activator)
         );
     }
 }
+
+
 
 FName ABaseItem::GetItemType() const
 {
