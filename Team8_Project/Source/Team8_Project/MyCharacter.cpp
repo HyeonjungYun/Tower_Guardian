@@ -947,19 +947,16 @@ void AMyCharacter::ApplySpeedBoost(float BoostPercent, float Duration)
 			MoveComp->MaxWalkSpeed = BaseWalkSpeed;
 			SprintSpeed = BaseWalkSpeed * SprintSpeedMultiplier;
 		}
-
 		//Tick등에서 MoveComp->MaxWalkSpeed를 항상 업데이트를 해주는 방식이 아니기때문에 
 		//직접 값을 변경해줘야 한다.
-		/*float OriginalWalkSpeed = WalkSpeed;
-		float OriginalComponentWalkSpeed = MoveComp->MaxWalkSpeed;
-		float OriginalSprintSpeed = SprintSpeed;*/
+		float NewWalkSpeed = BaseWalkSpeed * (1.0f + BoostPercent / 100.0f);
+		float NewSprintSpeed = BaseWalkSpeed * SprintSpeedMultiplier * (1.0f + BoostPercent / 100.0f);
 
-		MoveComp->MaxWalkSpeed *= (1.0f + BoostPercent / 100.0f);
-		WalkSpeed *= (1.0f + BoostPercent / 100.0f);
-		SprintSpeed *= (1.0f + BoostPercent / 100.0f);
+		MoveComp->MaxWalkSpeed = NewWalkSpeed;
+		WalkSpeed = NewWalkSpeed;
+		SprintSpeed = NewSprintSpeed;
 
 		// 타이머 설정: 지속시간 후에 원래 속도로 복원
-		//, OriginalComponentWalkSpeed, OriginalWalkSpeed, OriginalSprintSpeed
 		GetWorldTimerManager().SetTimer(SpeedBoostTimerHandle, FTimerDelegate::CreateLambda([this]()
 			{
 				if (UCharacterMovementComponent* MoveCompInner = GetCharacterMovement())
@@ -969,7 +966,6 @@ void AMyCharacter::ApplySpeedBoost(float BoostPercent, float Duration)
 					SprintSpeed = BaseWalkSpeed * SprintSpeedMultiplier;
 				}
 			}), Duration, false);
-
 	}
 }
 //블루 프린트 용

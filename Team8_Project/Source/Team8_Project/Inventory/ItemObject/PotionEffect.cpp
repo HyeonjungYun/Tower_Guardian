@@ -9,17 +9,21 @@ void UPotionEffect::ApplyItemEffect(AActor* Target)
 {
     if (Target)
     {
-        if (IDamageable* DamageInterface = Cast<IDamageable>(Target))
+        TScriptInterface<IDamageable> DamageInterface = Target;
+        if (DamageInterface)
         {
-           
+            //Test Start
+            DamageInterface->SetHP(10);
+            //Test End
             float MaxHealth = 100.f;
             float CurrentHealth = DamageInterface->GetHP();
-            
+            UE_LOG(LogTemp, Warning, TEXT("Damagable Interface in Potion Before  Get Hp : %f"), CurrentHealth);
             float Value = MaxHealth * (HealAmount / 100.f);
             float NewHealth = FMath::Min(CurrentHealth + Value, MaxHealth);
 
             DamageInterface->SetHP(NewHealth);
-            
+            CurrentHealth = DamageInterface->GetHP();
+            UE_LOG(LogTemp, Warning, TEXT("Damagable Interface in Potion After Get Hp : %f"), CurrentHealth);
         }
     }
 }
