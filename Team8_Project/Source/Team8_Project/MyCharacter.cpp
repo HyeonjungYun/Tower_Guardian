@@ -15,6 +15,7 @@
 #include "Inventory/InventoryComponent.h"
 #include "Inventory/InventorySubsystem.h"
 #include "Team8_Project/Weapon/WeaponType.h"
+#include "Kismet/KismetMathLibrary.h"
 
 AMyCharacter::AMyCharacter()
 {
@@ -30,7 +31,7 @@ AMyCharacter::AMyCharacter()
 	Camera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	Camera->bUsePawnControlRotation = false;
 
-  Inventory = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory"));
+	Inventory = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory"));
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AMyCharacter::OnOverlapBegin);
 	GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &AMyCharacter::OnOverlapEnd);
   
@@ -584,7 +585,6 @@ void AMyCharacter::StartReload(const FInputActionValue& value)
 
 void AMyCharacter::StopReload(const FInputActionValue& value)
 {
-	PlayerStates = EPlayerStateType::EWT_Normal;
 }
 
 void AMyCharacter::StartFire(const FInputActionValue& value)

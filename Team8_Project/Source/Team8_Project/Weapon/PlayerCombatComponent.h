@@ -44,7 +44,6 @@ protected:
 
 	void FireButtonPressed(bool bPressed);
 
-
 	void SetAiming(bool _bIsAiming);
 	
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction);
