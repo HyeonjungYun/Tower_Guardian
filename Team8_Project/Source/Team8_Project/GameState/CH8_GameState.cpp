@@ -1,6 +1,7 @@
 ﻿#include "Team8_Project/GameState/CH8_GameState.h"
 #include "Team8_Project/Spawn/SpawnVolume.h"
 #include "Team8_Project/Spawn/EnemySpawnRow.h"
+#include "Team8_Project/Spawn/NeutralMonsterSpawnVolume.h"
 #include "Team8_Project/MyPlayerController.h"
 #include "Team8_Project/Enemy/BaseEnemy.h"
 #include "Components/TextBlock.h"
@@ -20,9 +21,8 @@ ACH8_GameState::ACH8_GameState()
 	, KilledEnemy(0)
 	, RemainingHeistTime(0)
 	, RemainingInfinityAmmoTime(0)
+	, SpawnNeutralEnemyTime(180.f)
 {
-	OnGameSetGold.AddUObject(this, &ACH8_GameState::SetGold);
-	OnGameKillEnemy.BindUObject(this, &ACH8_GameState::UpdatedKilledEnemy);
 }
 
 void ACH8_GameState::UpdateHUD()
@@ -135,6 +135,14 @@ void ACH8_GameState::StartGame()
 		true,
 		StartDuration
 	);
+
+	GetWorldTimerManager().SetTimer(
+		SpawnNeutralEnemyTimerHandle,
+		this,
+		&ACH8_GameState::SpawnNeutralEnemy,
+		SpawnNeutralEnemyTime,
+		false
+	);
 }
 
 void ACH8_GameState::SpawnWave()
@@ -150,14 +158,18 @@ void ACH8_GameState::SpawnWave()
 
 void ACH8_GameState::SpawnEnemyPerTime()
 {
+	//플레이어 테스트를 위한 주석
 	if (EnemySpawnConut < 5)	// 웨이브 당 생성될 Enemy 숫자는 별도로 수정 필요
 	{
-		if (ASpawnVolume* SpawnVolume = GetSpawnVolume())
+		for (ASpawnVolume* SpawnVolume : GetSpawnVolume())
 		{
-			SpawnVolume->SpawnEnemy(EnemyTypes[0]);
-			
-			UpdatedSpawnedEnemy();
-			EnemySpawnConut++;
+			if (SpawnVolume)
+			{
+				SpawnVolume->SpawnEnemy(EnemyTypes[0]);
+
+				UpdatedSpawnedEnemy();
+				EnemySpawnConut++;
+			}
 		}
 	}
 	else
@@ -170,6 +182,14 @@ void ACH8_GameState::SpawnEnemyPerTime()
 void ACH8_GameState::UpdatedSpawnedEnemy()
 {
 	SpawnedEnemy++;
+}
+
+void ACH8_GameState::SpawnNeutralEnemy()
+{
+	if (ANeutralMonsterSpawnVolume* NeurtalEnemySpawnVolume = GetNeutralEnemySpawnVolume())
+	{
+		//NeurtalEnemySpawnVolume->SpawnEnemy();
+	}
 }
 
 void ACH8_GameState::UpdatedKilledEnemy()
@@ -198,13 +218,38 @@ int32 ACH8_GameState::GetGold()
 	return Gold;
 }
 
-ASpawnVolume* ACH8_GameState::GetSpawnVolume() const
+TArray<ASpawnVolume*> ACH8_GameState::GetSpawnVolume() const
 {
 	TArray<AActor*> FoundVolumes;
+	TArray<ASpawnVolume*> FoundSpawnVolumes;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASpawnVolume::StaticClass(), FoundVolumes);
-	return (FoundVolumes.Num() > 0) ? Cast<ASpawnVolume>(FoundVolumes[0]) : nullptr;
+
+	for (AActor* Actor : FoundVolumes)
+	{
+		if (ASpawnVolume* SpawnVolume = Cast<ASpawnVolume>(Actor))
+		{
+			FoundSpawnVolumes.Add(SpawnVolume);
+		}
+	}
+
+	return FoundSpawnVolumes;
 }
 
+ANeutralMonsterSpawnVolume* ACH8_GameState::GetNeutralEnemySpawnVolume() const
+{
+	TArray<AActor*> FoundVolumes;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ANeutralMonsterSpawnVolume::StaticClass(), FoundVolumes);
+
+	for (AActor* Actor : FoundVolumes)
+	{
+		if (ANeutralMonsterSpawnVolume* NeutralEnemySpawnVolume = Cast<ANeutralMonsterSpawnVolume>(Actor))
+		{
+			return Cast<ANeutralMonsterSpawnVolume>(NeutralEnemySpawnVolume);
+		}
+	}
+
+	return nullptr;
+}
 
 void ACH8_GameState::UseHeistItem()
 {

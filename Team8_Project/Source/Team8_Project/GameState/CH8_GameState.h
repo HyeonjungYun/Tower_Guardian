@@ -6,9 +6,8 @@
 
 class ABaseEnemy;
 class ASpawnVolume;
+class ANeutralMonsterSpawnVolume;
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnGameGetGold, int32);
-DECLARE_DELEGATE(FOnGameKillEnemy);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnGoldChanged);
 
 UCLASS()
@@ -27,6 +26,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave")
 	float StartDuration;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave")
+	float SpawnNeutralEnemyTime;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave")
 	int32 ElapsedSeconds;
@@ -56,14 +58,12 @@ public:
 	int32 SpawnedEnemy;
 	int32 KilledEnemy;
 
-	FOnGameGetGold OnGameSetGold;
-	FOnGameKillEnemy OnGameKillEnemy;
-
 	FTimerHandle HeistTimerHandle;
 	FTimerHandle InfinityAmmoTimerHandle;
 	FTimerHandle GameTimerHandle;
 	FTimerHandle SpawnTimerHandle;
 	FTimerHandle SpawnDurationTimerHandle;
+	FTimerHandle SpawnNeutralEnemyTimerHandle;
 	FTimerHandle HUDUpdateTimerHandle;
 
 	UFUNCTION(BlueprintCallable, Category = "Heist")
@@ -84,6 +84,7 @@ public:
 	void SpawnWave();
 	void SpawnEnemyPerTime();
 	void UpdatedSpawnedEnemy();
+	void SpawnNeutralEnemy();
 	void UpdatedKilledEnemy();
 	void UpdatedHeistDuration();
 	void UpdatedInfinityAmmoDuration();
@@ -95,5 +96,6 @@ private:
 
 
 	// 헬퍼 함수
-	ASpawnVolume* GetSpawnVolume() const;
+	TArray<ASpawnVolume*> GetSpawnVolume() const;
+	ANeutralMonsterSpawnVolume* GetNeutralEnemySpawnVolume() const;
 };
