@@ -36,6 +36,13 @@ void AProjectileWeaponBase::Fire(const FVector& HitTarget, float CurrentWeaponSp
 			ProjectileSpawnParams.Owner = GetOwner();// 무기의 소유주에게 투사체의 소유권도 부여
 			ProjectileSpawnParams.Instigator = InstigatorPawn;
 
+			if (bIsWeaponHasSpread)
+			{
+				ReturnFinalSpread(DefaultSpread, FinalSpread);
+				TargetRotation.Pitch += FMath::RandRange(-FinalSpread, FinalSpread);
+				TargetRotation.Yaw += FMath::RandRange(-FinalSpread, FinalSpread);
+			}
+
 			UWorld* World = GetWorld();
 			if (World)
 			{

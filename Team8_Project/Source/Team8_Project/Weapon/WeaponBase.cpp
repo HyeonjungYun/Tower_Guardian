@@ -534,4 +534,28 @@ void AWeaponBase::EquipWeaponPart(EWeaponPartsType PartType, FName ItemKey)
 	
 }
 
+void AWeaponBase::ReturnFinalSpread(float& _DefaultSpread, float& _FinalSpread)
+{
+	if (OwnerPlayerCharacter->GetCombatComponent())
+	{
+		_FinalSpread = _DefaultSpread;
+		if (CurrentWeaponPartsKey.Contains(EWeaponPartsType::EWT_Muzzle))
+		{
+			FName MuzzleItemKey = CurrentWeaponPartsKey[EWeaponPartsType::EWT_Muzzle];
+			if (MuzzlePartsDataTable)
+			{
+				FMuzzleWeaponPartsTable* MuzzleData = MuzzlePartsDataTable->FindRow<FMuzzleWeaponPartsTable>(MuzzleItemKey, TEXT(""));
+				_FinalSpread *= MuzzleData->MuzzleSpread;
+			}
+		}
+
+		if (OwnerPlayerCharacter->GetCombatComponent()->bIsAiming)
+		{
+			_FinalSpread *= .5f;
+		}
+	}
+	
+
+}
+
 

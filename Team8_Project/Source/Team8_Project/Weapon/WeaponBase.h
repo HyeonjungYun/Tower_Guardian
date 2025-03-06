@@ -333,4 +333,11 @@ public:
     TSubclassOf<class UUserWidget> WeaponPartsUIClass;
 
     class UUWeaponPartsUI* WeaponPartsUI;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Spread")
+    bool bIsWeaponHasSpread = false;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Spread")
+    float DefaultSpread = 3.0f;
+    
+    float FinalSpread = 0.f;
+    void ReturnFinalSpread(float& DefaultSpread, float& FinalSpread);
   };

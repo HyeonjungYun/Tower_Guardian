@@ -74,16 +74,7 @@ void AHitScanWeaponBase::Fire(const FVector& HitTarget, float CurrentWeaponSprea
 				FireHit.ImpactNormal.Rotation()
 			);
 		}
-		//if (BeamParticles)
-		//{
 
-		//	// 무기 발사 후 후연 생성
-		//	UParticleSystemComponent* Beam =
-		//		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(),
-		//			BeamParticles,
-		//			SocketTransform);
-
-		//}
 		if (HitSound)
 		{
 			UGameplayStatics::PlaySoundAtLocation(
@@ -99,7 +90,15 @@ FVector AHitScanWeaponBase::TraceEndWithScatter(const FVector& TraceStart, const
 {
 	FVector ToTargetNormalized = (HitTarget - TraceStart).GetSafeNormal();
 	FVector SphereCenter = TraceStart + ToTargetNormalized * DistanceToSphere;
-	FVector RandVec = UKismetMathLibrary::RandomUnitVector() * FMath::FRandRange(0.f, SphereRadius);
+
+	// 분산도 적용하기
+	ReturnFinalSpread(DefaultSpread, FinalSpread);
+	float AdjustedSphereRadius = SphereRadius * FinalSpread;
+	if (WeaponType == EWeaponType::EWT_Shotgun)
+	{
+		AdjustedSphereRadius *= 2.f;
+	}
+	FVector RandVec = UKismetMathLibrary::RandomUnitVector() * FMath::FRandRange(0.f, AdjustedSphereRadius);
 	FVector EndLoc = SphereCenter + RandVec;
 	FVector ToEndLoc = EndLoc - TraceStart;
 

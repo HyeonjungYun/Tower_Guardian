@@ -51,7 +51,6 @@ protected:
 
 	void InterpFOV(float DeltaTime);
 
-
 protected:
 	class AMyCharacter* PlayerCharacter;
 	class AMyPlayerController* PlayerController;
@@ -60,8 +59,7 @@ protected:
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
 	AWeaponBase* EquippedWeapon;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	bool bIsAiming = false;
+
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bFireButtonPressed = false;
@@ -111,6 +109,10 @@ protected:
 
 
 public:
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	bool bIsAiming = false;
+
 	// 테스트용 더미 코드 인벤토리
 	TMap<EWeaponType, int32> CarriedAmmoMap;
 	// 현재 들고있는 무기에 맞는 탄이 더미 인벤토리에 몇개있는지 Map에서 빼올 변수
