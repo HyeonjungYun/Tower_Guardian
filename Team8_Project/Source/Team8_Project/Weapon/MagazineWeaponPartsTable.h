@@ -8,10 +8,10 @@
 #include "../BaseItem.h"
 #include "WeaponPartsType.h"
 #include "WeaponpartsActor.h"
-#include "WeaponPartsTableRow.generated.h"
+#include "MagazineWeaponPartsTable.generated.h"
 
 USTRUCT(BlueprintType)
-struct FWeaponPartsTableRow : public FTableRowBase
+struct FMagazineWeaponPartsTable : public FTableRowBase
 {
     GENERATED_BODY()
 public:
@@ -31,12 +31,13 @@ public:
     TSubclassOf<AWeaponpartsActor> WeaponPartsActorClass;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-    EWeaponPartsType WeaponPartsType = EWeaponPartsType::EWT_None;
+    EWeaponPartsType WeaponPartsType = EWeaponPartsType::EWT_Grip;
 
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
-    float ItemSalePrice;
+    // Magazine Spec
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+    int32 MagazineAmount;
 
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
-    float ItemPurchasePrice;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+    bool isSpecial = false;
 };
 

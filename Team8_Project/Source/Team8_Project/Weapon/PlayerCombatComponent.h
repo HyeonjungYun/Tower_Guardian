@@ -56,7 +56,7 @@ protected:
 	class AMyCharacter* PlayerCharacter;
 	class AMyPlayerController* PlayerController;
 	class AWeaponCrosshairHUD* PlayerCrosshairHUD;
-
+	class UInventoryComponent* PlayerInventory;
 	UPROPERTY(VisibleAnywhere,BlueprintReadWrite)
 	AWeaponBase* EquippedWeapon;
 
@@ -154,11 +154,18 @@ public:
 	
 	void OnFinishWeaponReload();
 
-	void OnItemInfiniteAmmo(); // 무한탄 아이템
+	// 무한탄 아이템
+	void OnInfiniteAmmoStart(float InfiniteTimerAmount);
+
+	void OnInfiniteAmmoEnd();
+
+	bool bIsInfiniteAmmo = false;
 protected:
 	bool bIsReloading = false;
 	
 	FTimerHandle FReloadTimerHandle;
+
+	FTimerHandle FInfiniteAmmo;
 public:
 	bool IsPlayerDead();
 

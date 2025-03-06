@@ -15,7 +15,8 @@ AMyPlayerController::AMyPlayerController()
 	HUDWidgetClass(nullptr),
 	HUDWidgetInstance(nullptr),
 	AimingAction(nullptr),
-	ShopOpenAction(nullptr)
+	ShopOpenAction(nullptr),
+	WeaponModifyingAction(nullptr)
 {
 	//WeaponCrosshairHUD = Cast<AWeaponCrosshairHUD>(GetHUD());
 }

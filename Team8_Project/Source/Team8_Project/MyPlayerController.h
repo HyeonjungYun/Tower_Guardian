@@ -69,6 +69,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inputs")
 	UInputAction* ShopOpenAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inputs")
+	UInputAction* WeaponModifyingAction;
+
 	UFUNCTION(BlueprintPure, Category = "HUD")
 	UUserWidget* GetHUDWidget() const;
 

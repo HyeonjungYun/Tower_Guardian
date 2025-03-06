@@ -4,13 +4,19 @@
 #include "WeaponBase.h"
 #include "Components/SphereComponent.h"
 #include "Animation/AnimationAsset.h"
-#include "Components/SkeletalMeshComponent.h"
 #include "BulletCaseBase.h"
 #include "Engine/SkeletalMeshSocket.h" // 탄피배출(BulletCase)
 #include "../MyCharacter.h"
 #include "../MyPlayerController.h"
 #include "Kismet/GameplayStatics.h"
 #include "PlayerCombatComponent.h"
+
+#include "OpticWeaponPartsTable.h"
+#include "MuzzleWeaponPartsTable.h"
+#include "GripWeaponPartsTable.h"
+#include "MagazineWeaponPartsTable.h"
+
+#include "../Inventory/InventoryComponent.h"
 
 AWeaponBase::AWeaponBase() :
 	WeaponState(EWeaponState::EWT_Dropped),
@@ -47,7 +53,7 @@ void AWeaponBase::BeginPlay()
 
 	AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	AreaSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
-
+	InitializeWeaponParts();
 	SetWeaponState(WeaponState);
 }
 
@@ -107,22 +113,28 @@ void AWeaponBase::ActivateItem(AActor* Activator)
 
 void AWeaponBase::SpendRound()
 {
-	if (bIsInfiniteAmmo)
-	{
 
-	}
-	else
+	OwnerPlayerCharacter = OwnerPlayerCharacter == nullptr ? Cast<AMyCharacter>(GetOwner()) : OwnerPlayerCharacter;
+	if (OwnerPlayerCharacter)
 	{
-		CurrentWeaponAmmo = FMath::Clamp(CurrentWeaponAmmo - 1, 0, MaxWeaponAmmo);
-		OwnerPlayerCharacter = OwnerPlayerCharacter == nullptr ? Cast<AMyCharacter>(GetOwner()) : OwnerPlayerCharacter;
-
-		if (OwnerPlayerCharacter)
+		// 탄소모없음
+		if (OwnerPlayerCharacter->GetCombatComponent()->bIsInfiniteAmmo)
 		{
-			OwnerPlayerController =
-				OwnerPlayerController == nullptr ? Cast<AMyPlayerController>(OwnerPlayerCharacter->Controller) : OwnerPlayerController;
-			if (OwnerPlayerController)
+
+		}
+		else
+		{
+			CurrentWeaponAmmo = FMath::Clamp(CurrentWeaponAmmo - 1, 0, MaxWeaponAmmo);
+			
+
+			if (OwnerPlayerCharacter)
 			{
-				OwnerPlayerController->SetHUDWeaponAmmo(CurrentWeaponAmmo);
+				OwnerPlayerController =
+					OwnerPlayerController == nullptr ? Cast<AMyPlayerController>(OwnerPlayerCharacter->Controller) : OwnerPlayerController;
+				if (OwnerPlayerController)
+				{
+					OwnerPlayerController->SetHUDWeaponAmmo(CurrentWeaponAmmo);
+				}
 			}
 		}
 	}
@@ -243,44 +255,33 @@ void AWeaponBase::Reload()
 			OwnerPlayerController == nullptr ? Cast<AMyPlayerController>(OwnerPlayerCharacter->Controller) : OwnerPlayerController;
 		if (OwnerPlayerController)
 		{
-			// 도중에 무기가 바뀌면 재장전완료가 안되어야함
-							// 테스트 인벤토리에서 재장전처리하기
-			UPlayerCombatComponent* PlayerCombatComponent = OwnerPlayerCharacter->GetCombatComponent();
-
-			if (PlayerCombatComponent->CarriedAmmoMap[WeaponType] >= 1)
+			UInventoryComponent* PlayerInventory
+				= OwnerPlayerCharacter->Inventory;
+			
+			if (PlayerInventory)
 			{
 				int32 AmmoForReload = MaxWeaponAmmo - CurrentWeaponAmmo;
-				if (PlayerCombatComponent->CarriedAmmoMap[WeaponType] < AmmoForReload)
+				int32 ReturnedAmmo = PlayerInventory->ReturnAmmo(AmmoForReload, WeaponType);
+				if (ReturnedAmmo != -1)
 				{
-					// 재장전 조건
-					CurrentWeaponAmmo += (PlayerCombatComponent->CarriedAmmoMap[WeaponType]);
-					PlayerCombatComponent->CarriedAmmoMap[WeaponType] = 0;
+					CurrentWeaponAmmo += ReturnedAmmo;
+					int32 InventoryAmmo
+						= PlayerInventory->ReturnCurrentAmmo(WeaponType);
+
+					// HUD 갱신필요
+					// 인벤토리 탄 현황
+					OwnerPlayerController->SetHUDCarriedAmmo(InventoryAmmo);
+					// 무기 탄 현황
+					OwnerPlayerController->SetHUDWeaponAmmo(CurrentWeaponAmmo);
+					// ammo UI: SetHUDWeaponAmmo(CurrentWeaponAmmo) / SetHUDCarriedAmmo(InventoryAmmo) 
 				}
 				else
 				{
-					CurrentWeaponAmmo += AmmoForReload;
-					PlayerCombatComponent->CarriedAmmoMap[WeaponType] -= AmmoForReload;
+					UE_LOG(LogTemp, Warning, TEXT("탄 없어서 재장전 불가"));
 				}
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("탄 없어서 재장전 불가"));
-			}
-			// HUD 갱신필요
-			// 인벤토리 탄 현황
-
-
-			OwnerPlayerCharacter = OwnerPlayerCharacter == nullptr ? Cast<AMyCharacter>(GetOwner()) : OwnerPlayerCharacter;
-
-
-			OwnerPlayerCharacter->GetCombatComponent()->CurWeaponInvenAmmo = OwnerPlayerCharacter->GetCombatComponent()->CarriedAmmoMap[WeaponType];
-			OwnerPlayerController->SetHUDCarriedAmmo(OwnerPlayerCharacter->GetCombatComponent()->CarriedAmmoMap[WeaponType]);
-			// 무기 탄 현황
-			OwnerPlayerController->SetHUDWeaponAmmo(CurrentWeaponAmmo);
+			}			
 		}
 	}
-
-
 }
 
 float AWeaponBase::GetTimeToFinishReload()
@@ -292,3 +293,62 @@ void AWeaponBase::SetTimeToFinishReload(float NewReloadTime)
 {
 	TimeToFinishReload = NewReloadTime;
 }
+
+void AWeaponBase::InitializeWeaponParts()
+{
+	if (!bIsWeaponCanModify) return;
+	// 조준경 테이블에서 조준경 관련 정보를 모두 저장 
+	if (!OpticPartsDataTable) return;
+	if (!GripPartsDataTable) return;
+	if (!MagazinePartsDataTable) return;
+	if (!MuzzlePartsDataTable) return;
+	OpticPartsDataTable->GetAllRows<FOpticWeaponPartsTable>(TEXT("GetAllRowsFromWeaponPartsTable"), OpticWeaponpartsTableRows);
+
+	// 손잡이 테이블에서 조준경 관련 정보를 모두 저장 
+	GripPartsDataTable->GetAllRows<FGripWeaponPartsTable>(TEXT("GetAllRowsFromWeaponPartsTable"), GripWeaponpartsTableRows);
+
+	// 탄창 테이블에서 조준경 관련 정보를 모두 저장 
+	MagazinePartsDataTable->GetAllRows<FMagazineWeaponPartsTable>(TEXT("GetAllRowsFromWeaponPartsTable"), MagzineWeaponpartsTableRows);
+
+	// 머즐 테이블에서 조준경 관련 정보를 모두 저장 
+	MuzzlePartsDataTable->GetAllRows<FMuzzleWeaponPartsTable>(TEXT("GetAllRowsFromWeaponPartsTable"), MuzzleWeaponpartsTableRows);
+
+	// 2. 각각의 부착물 Actor 생성 및 숨김 처리
+	SpawnAndStoreParts(OpticWeaponpartsTableRows, OpticActorContainer, TEXT("ModuleOpticSocket"));
+	SpawnAndStoreParts(GripWeaponpartsTableRows, GripActorContainer, TEXT("ModuleForeGripSocket"));
+	SpawnAndStoreParts(MagzineWeaponpartsTableRows, MagzineActorContainer, TEXT("ModuleMagazineSocket"));
+	SpawnAndStoreParts(MuzzleWeaponpartsTableRows, MuzzleActorContainer, TEXT("ModuleMuzzleSocket"));
+
+}
+
+void AWeaponBase::DebugEnableWeaponParts(FName ItemKey)
+{
+	// 부착물 타입별 컨테이너 배열
+	TArray<TMap<FName, AWeaponpartsActor*>*> PartContainers = {
+		&OpticActorContainer,
+		&GripActorContainer,
+		&MagzineActorContainer,
+		&MuzzleActorContainer
+	};
+
+	for (TMap<FName, AWeaponpartsActor*>* Container : PartContainers)
+	{
+		if (!Container) continue;
+
+		// ItemKey가 존재하는 경우
+		if (AWeaponpartsActor** FoundPart = Container->Find(ItemKey))
+		{
+			if (*FoundPart)
+			{
+				// 기존 부착물 비활성화
+				(*FoundPart)->SetActorHiddenInGame(false);
+				(*FoundPart)->SetActorEnableCollision(true);
+
+				// 로그 출력
+				UE_LOG(LogTemp, Warning, TEXT("Weapon Part %s is now visible"), *ItemKey.ToString());
+			}
+		}
+	}
+}
+
+
