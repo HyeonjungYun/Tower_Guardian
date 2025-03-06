@@ -267,7 +267,10 @@ void AWeaponBase::Reload()
 					CurrentWeaponAmmo += ReturnedAmmo;
 					int32 InventoryAmmo
 						= PlayerInventory->ReturnCurrentAmmo(WeaponType);
-
+					if (InventoryAmmo == -1)
+					{
+						InventoryAmmo = 0;
+					}
 					// HUD 갱신필요
 					// 인벤토리 탄 현황
 					OwnerPlayerController->SetHUDCarriedAmmo(InventoryAmmo);
