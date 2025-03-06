@@ -21,6 +21,8 @@ public:
 	AActor* SpawnEnemy(TSubclassOf<AActor> EnemyClass);
 
 	FVector GetWaypoint(int32 Index) const;
+	FVector GetLocationNearWaypoint(int32 Index) const;
+	
 	int32 WaypointCount() const;
 	
 private:
@@ -36,4 +38,7 @@ public:
 protected:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Waypoint", meta=(MakeEditWidget))
 	TArray<FVector> Waypoints;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Waypoint")
+	float WaypointRange;
 };
