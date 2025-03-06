@@ -42,6 +42,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Wave")
 	TArray<TSubclassOf<ABaseEnemy>> EnemyTypes;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Wave")
+	int32 GameClearWave;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Gold")
 	int32 Gold;
 
@@ -98,7 +101,7 @@ public:
 	virtual void BeginPlay() override;
 	void GetScore();
 	void SetGold(int32 TempGold);
-	void EndGame();
+	void EndGame(bool bIsGameClear);
 	void SpawnWave();
 	void SpawnEnemyPerTime();
 	void UpdatedSpawnedEnemy();

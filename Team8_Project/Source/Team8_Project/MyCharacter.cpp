@@ -775,7 +775,7 @@ void AMyCharacter::OnDeath()
 
 	if (ACH8_GameState* GameState = Cast<ACH8_GameState>(GetWorld()->GetGameState()))
 	{
-		GameState->EndGame();
+		GameState->EndGame(false);
 	}
 }
 
