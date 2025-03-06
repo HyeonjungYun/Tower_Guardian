@@ -70,7 +70,19 @@ public:
 	UInputAction* ShopOpenAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inputs")
-	UInputAction* WeaponModifyingAction;
+	UInputAction* WeaponModifyingUI;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inputs")
+	UInputAction* WeaponModifyingActionArrowUp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inputs")
+	UInputAction* WeaponModifyingActionArrowDown;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inputs")
+	UInputAction* WeaponModifyingActionArrowLeft;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inputs")
+	UInputAction* WeaponModifyingActionArrowRight;
 
 	UFUNCTION(BlueprintPure, Category = "HUD")
 	UUserWidget* GetHUDWidget() const;

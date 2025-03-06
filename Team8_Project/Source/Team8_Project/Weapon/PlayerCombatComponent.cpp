@@ -18,7 +18,7 @@
 
 #include "Engine/DataTable.h"
 #include "WeaponPartsTableRow.h"
-
+#include "UWeaponPartsUI.h"
 #include "../Inventory/InventoryComponent.h"
 
 UPlayerCombatComponent::UPlayerCombatComponent()
@@ -257,6 +257,11 @@ void UPlayerCombatComponent::EquipWeapon(AWeaponBase* WeaponToEquip)
 		UE_LOG(LogTemp, Warning, TEXT("재장전 중에는 무기를 새로 장비할 수 없습니다."));
 		return;
 	}
+	if (bIsWeaponNowModding)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("모딩 중에는 무기를 새로 장비할 수 없습니다."));
+		return;
+	}
 
 	// 소켓에 장비 장착
 	if (EquippedWeapon)
@@ -276,6 +281,7 @@ void UPlayerCombatComponent::EquipWeapon(AWeaponBase* WeaponToEquip)
 		HandSocket->AttachActor(EquippedWeapon, PlayerCharacter->GetMesh());
 	}
 	EquippedWeapon->SetOwner(PlayerCharacter);
+	
 	EquippedWeapon->OnWeaponEquipped(PlayerCharacter,PlayerController);
 	// 새로운 무기에 대한 HUD 출력
 
@@ -310,6 +316,11 @@ void UPlayerCombatComponent::FireButtonPressed(bool bPressed)
 {
 	// 발사
 	if (!EquippedWeapon) return;
+	if (bIsWeaponNowModding)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("모딩중엔 총기 발사 불가"));
+		return;
+	}
 	bFireButtonPressed = bPressed;
 	// 애니메이션 재생
 	if (PlayerCharacter&& bFireButtonPressed)
@@ -497,6 +508,41 @@ void UPlayerCombatComponent::InitializeWeaponParts()
 bool UPlayerCombatComponent::IsWeaponPartsAvailable(FName ItemKey)
 {
 	return AvailableWeaponParts[ItemKey];
+}
+
+void UPlayerCombatComponent::OnCombatComponentModifyingUI()
+{
+	if (EquippedWeapon==nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("껴진 무기 없어서 UI 안나옴"));
+	}
+	else
+	{
+		if (EquippedWeapon->bIsWeaponCanModify==false)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("모딩할 수 없는 무기 입니다."));
+		}
+		else
+		{
+			if (!bIsWeaponNowModding)
+			{
+				bIsWeaponNowModding = true;
+				if (EquippedWeapon->WeaponPartsUI)
+				{
+					EquippedWeapon->WeaponPartsUI->SetVisibility(ESlateVisibility::Visible);
+				}
+			}
+			else
+			{
+				bIsWeaponNowModding = false;
+				if (EquippedWeapon->WeaponPartsUI)
+				{
+					EquippedWeapon->WeaponPartsUI->SetVisibility(ESlateVisibility::Hidden);
+				}
+			}
+			
+		}
+	}
 }
 
 

@@ -316,4 +316,9 @@ public:
             }
         }
     }
+
+    UPROPERTY(EditAnywhere, Category = "CombatOverlay")
+    TSubclassOf<class UUserWidget> WeaponPartsUIClass;
+
+    class UUWeaponPartsUI* WeaponPartsUI;
   };
