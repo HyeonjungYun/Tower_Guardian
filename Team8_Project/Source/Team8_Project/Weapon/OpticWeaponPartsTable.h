@@ -8,10 +8,10 @@
 #include "../BaseItem.h"
 #include "WeaponPartsType.h"
 #include "WeaponpartsActor.h"
-#include "WeaponPartsTableRow.generated.h"
+#include "OpticWeaponPartsTable.generated.h"
 
 USTRUCT(BlueprintType)
-struct FWeaponPartsTableRow : public FTableRowBase
+struct FOpticWeaponPartsTable : public FTableRowBase
 {
     GENERATED_BODY()
 public:
@@ -31,12 +31,16 @@ public:
     TSubclassOf<AWeaponpartsActor> WeaponPartsActorClass;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-    EWeaponPartsType WeaponPartsType = EWeaponPartsType::EWT_None;
+    EWeaponPartsType WeaponPartsType = EWeaponPartsType::EWT_Optic;
+
+    // Optic Spec
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
+    float OpticZoomFOV;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
-    float ItemSalePrice;
+    float OpticZoomFOVSpeed;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
-    float ItemPurchasePrice;
+    float OpticSpread;
 };
 

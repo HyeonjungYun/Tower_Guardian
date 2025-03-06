@@ -5,6 +5,11 @@
 #include "Team8_Project/GameState/CH8_GameState.h"
 #include "Engine/GameInstance.h"
 #include "Blueprint/UserWidget.h"
+#include "../Weapon/PlayerCombatComponent.h"
+#include "../Weapon/WeaponType.h"
+#include "../MyCharacter.h"
+#include "../Weapon/AmmoType.h"
+#include "../MyPlayerController.h"
 
 UInventoryComponent::UInventoryComponent()
 {
@@ -44,6 +49,33 @@ bool UInventoryComponent::AddItem(const FName& ItemKey, int32 Quantity,EItemType
 	check(InventorySubsystem);
 	bool bIsResult = SelectDataTableAdd(ItemKey, Quantity, ItemType);
 	UpdateInventoryUI();
+
+	// 탄약인경우 && 지금 들고있는 무기의 탄인 경우
+	if (ItemType == EItemType::Ammo)
+	{
+		AMyCharacter* 
+			OwnerPlayerCharacter = nullptr;
+		OwnerPlayerCharacter = OwnerPlayerCharacter == nullptr ? Cast<AMyCharacter>(GetOwner()) : OwnerPlayerCharacter;
+		// => UI 업데이트
+		if (OwnerPlayerCharacter && OwnerPlayerCharacter->GetCombatComponent()->GetEquippedWeapon())
+		{
+			int32 CurWeaponAm = ReturnCurrentAmmo(OwnerPlayerCharacter->GetCombatComponent()
+				->GetEquippedWeapon()->GetWeaponType());
+			// 무기종류 : 탄종류 맵핑
+
+			AMyPlayerController* OnwerPlayerController
+				= nullptr;
+
+			OnwerPlayerController
+				= OnwerPlayerController == nullptr ? Cast<AMyPlayerController>(GetOwner()->GetInstigatorController()) : OnwerPlayerController;
+
+			if (OnwerPlayerController)
+			{
+				OnwerPlayerController->SetHUDCarriedAmmo(CurWeaponAm);
+			}
+		}
+	}
+
 
 	return bIsResult;
 
