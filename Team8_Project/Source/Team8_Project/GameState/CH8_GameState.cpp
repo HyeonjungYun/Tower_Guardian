@@ -23,6 +23,7 @@ ACH8_GameState::ACH8_GameState()
 	, SpawnNeutralEnemyTime(180.f)
 	, NumberOfEnemy(2)
 	, NumberOfEnemyMax(30)
+	, GameClearWave(15)
 {
 }
 
@@ -122,7 +123,7 @@ void ACH8_GameState::StartGame()
 
 	GetWorldTimerManager().SetTimer(
 		GameTimerHandle,
-		this, 
+		this,
 		&ACH8_GameState::UpdateGameTimer,
 		1.0f,
 		true
@@ -155,7 +156,7 @@ void ACH8_GameState::OpenStartWidget()
 		StartWidgetInstance = CreateWidget<UUserWidget>(PlayerController, StartWidgetClass);
 		if (StartWidgetInstance)
 		{
-			StartWidgetInstance->AddToViewport();
+			StartWidgetInstance->AddToViewport(999);
 
 			// 마우스 커서 표시 및 입력 모드 변경
 			PlayerController->bShowMouseCursor = true;
@@ -186,16 +187,24 @@ void ACH8_GameState::OpenEndWidget()
 	}
 }
 
-void ACH8_GameState::EndGame()
+void ACH8_GameState::EndGame(bool bIsGameClear)
 {
-
 	if (AMyPlayerController* PlayerController = Cast<AMyPlayerController>(GetWorld()->GetFirstPlayerController()))
 	{
 		PlayerController->SetPause(true);
 	}
 
 	GetWorldTimerManager().ClearAllTimersForObject(this);
-	OpenEndWidget();
+
+	if (bIsGameClear)
+	{
+
+	}
+	else
+	{
+		OpenEndWidget();
+	}
+
 	GetScore();
 }
 
@@ -248,6 +257,11 @@ void ACH8_GameState::SpawnEnemyPerTime()
 		}
 
 		GetWorldTimerManager().ClearTimer(SpawnDurationTimerHandle);
+
+		if (CurrentWaveIndex == GameClearWave)
+		{
+
+		}
 	}
 }
 

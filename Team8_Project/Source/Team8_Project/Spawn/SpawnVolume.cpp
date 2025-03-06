@@ -70,7 +70,6 @@ FVector ASpawnVolume::GetLocationNearWaypoint(int32 Index) const
 	return Result;
 }
 
-
 int32 ASpawnVolume::WaypointCount() const
 {
 	return Waypoints.Num();
