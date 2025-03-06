@@ -15,7 +15,7 @@ class UFloatingPawnMovement;
 class APatrolPath;
 class ABaseEnemy;
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FEnemyDeathDelegate, ABaseEnemy*)
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEnemyDeathDelegate, ABaseEnemy*, DeadEnemy);
 
 USTRUCT(BlueprintType)
 struct FAttackPattern
@@ -102,6 +102,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	float HP;
 
+	UPROPERTY(BlueprintAssignable)
 	FEnemyDeathDelegate OnDeath;
 	
 protected:

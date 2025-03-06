@@ -45,7 +45,7 @@ AActor* ASpawnVolume::SpawnEnemy(TSubclassOf<AActor> EnemyClass)
 	if (ABaseEnemy* Enemy = Cast<ABaseEnemy>(SpawnedActor))
 	{
 		Enemy->SetSpawnVolume(this);
-		Enemy->OnDeath.AddUObject(this, &ASpawnVolume::AddKillEnemyCount);
+		Enemy->OnDeath.AddDynamic(this, &ASpawnVolume::AddKillEnemyCount);
 	}
 	
 	return SpawnedActor;

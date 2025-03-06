@@ -100,7 +100,9 @@ float ABaseEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& Dama
 	DamageTextLoc.Z += GetComponentByClass<UShapeComponent>()->Bounds.BoxExtent.Z * 2;
 
 	SetHP(HP - RealDamage);
-	GetGameInstance()->GetSubsystem<UWorldSpawnUISubSystem>()->SpawnDamageText(GetWorld(), RealDamage, DamageTextLoc);
+
+	if (DamageCauser != this)
+		GetGameInstance()->GetSubsystem<UWorldSpawnUISubSystem>()->SpawnDamageText(GetWorld(), RealDamage, DamageTextLoc);
 
 	if (HP > 0)
 		if (USkeletalMeshComponent* Mesh = GetComponentByClass<USkeletalMeshComponent>())
