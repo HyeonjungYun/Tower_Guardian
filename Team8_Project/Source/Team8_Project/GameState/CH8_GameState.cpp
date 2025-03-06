@@ -123,7 +123,7 @@ void ACH8_GameState::StartGame()
 
 	GetWorldTimerManager().SetTimer(
 		GameTimerHandle,
-		this, 
+		this,
 		&ACH8_GameState::UpdateGameTimer,
 		1.0f,
 		true
@@ -156,7 +156,7 @@ void ACH8_GameState::OpenStartWidget()
 		StartWidgetInstance = CreateWidget<UUserWidget>(PlayerController, StartWidgetClass);
 		if (StartWidgetInstance)
 		{
-			StartWidgetInstance->AddToViewport();
+			StartWidgetInstance->AddToViewport(999);
 
 			// 마우스 커서 표시 및 입력 모드 변경
 			PlayerController->bShowMouseCursor = true;

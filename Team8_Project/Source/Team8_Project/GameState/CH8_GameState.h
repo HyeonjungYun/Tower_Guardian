@@ -92,6 +92,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "GameStart")
 	void StartGame();
 
+
 	void OpenStartWidget();
 	void OpenEndWidget();
 	
