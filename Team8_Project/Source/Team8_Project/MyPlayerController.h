@@ -72,6 +72,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "HUD")
 	UUserWidget* GetHUDWidget() const;
 
+	UFUNCTION(BlueprintCallable, Category = "HUD")
+	void DisplayHUD();
+
 	void SetHUDWeaponAmmo(int32 Ammo);
 	void SetHUDCarriedAmmo(int32 Ammo);
 

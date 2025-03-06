@@ -16,6 +16,7 @@
 #include "Inventory/InventorySubsystem.h"
 #include "Team8_Project/Weapon/WeaponType.h"
 #include "Team8_Project/WorldSpawnUISubSystem.h"
+#include "Team8_Project/GameState/CH8_GameState.h"
 
 AMyCharacter::AMyCharacter()
 {
@@ -736,10 +737,13 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 
 void AMyCharacter::OnDeath()
 {
-	// 사망관련 Character에서 해야할 것 수행
-	//상태만 바꿔주고 움직임까지 막을지는 GameState에 따라서
 	PlayerStates = EPlayerStateType::EWT_Dead;
 	UE_LOG(LogTemp, Warning, TEXT("플레이어 사망 확인"));
+
+	if (ACH8_GameState* GameState = Cast<ACH8_GameState>(GetWorld()->GetGameState()))
+	{
+		GameState->EndGame();
+	}
 }
 
 
