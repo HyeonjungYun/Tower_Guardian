@@ -262,13 +262,49 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 					&AMyCharacter::ToggleInventory
 				);
 			}
-			if (PlayerController->WeaponModifyingAction)
+			if (PlayerController->WeaponModifyingUI)
 			{
 				EnhancedInput->BindAction(
-					PlayerController->WeaponModifyingAction,
+					PlayerController->WeaponModifyingUI,
 					ETriggerEvent::Started,
 					this,
 					&AMyCharacter::OnWeaponModifyingInput
+				);
+			}
+			if (PlayerController->WeaponModifyingActionArrowUp)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->WeaponModifyingActionArrowUp,
+					ETriggerEvent::Started,
+					this,
+					&AMyCharacter::OnWeaponModArrowUp
+				);
+			}
+			if (PlayerController->WeaponModifyingActionArrowDown)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->WeaponModifyingActionArrowDown,
+					ETriggerEvent::Started,
+					this,
+					&AMyCharacter::OnWeaponModArrowDown
+				);
+			}
+			if (PlayerController->WeaponModifyingActionArrowLeft)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->WeaponModifyingActionArrowLeft,
+					ETriggerEvent::Started,
+					this,
+					&AMyCharacter::OnWeaponModArrowLeft
+				);
+			}
+			if (PlayerController->WeaponModifyingActionArrowRight)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->WeaponModifyingActionArrowRight,
+					ETriggerEvent::Started,
+					this,
+					&AMyCharacter::OnWeaponModArrowRight
 				);
 			}
 		}
@@ -696,6 +732,31 @@ void AMyCharacter::ReleaseAiming()
 void AMyCharacter::OnWeaponModifyingInput()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Button WeaponModifying started"));
+	CombatComponent->OnCombatComponentModifyingUI();
+}
+
+void AMyCharacter::OnWeaponModArrowUp()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Button OnWeaponModArrowUp started"));
+	CombatComponent->OnCombatComponentModArrowUp();
+}
+
+void AMyCharacter::OnWeaponModArrowDown()
+{
+	UE_LOG(LogTemp, Warning, TEXT("ButtonOnWeaponModArrowDown started"));
+	CombatComponent->OnCombatComponentModArrowDown();
+}
+
+void AMyCharacter::OnWeaponModArrowLeft()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Button OnWeaponModArrowLeft started"));
+	CombatComponent->OnCombatComponentModArrowLeft();
+}
+
+void AMyCharacter::OnWeaponModArrowRight()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Button OnWeaponModArrowRight started"));
+	CombatComponent->OnCombatComponentModArrowLeft();
 }
 
 void AMyCharacter::HideCameraIfCharacterClose()

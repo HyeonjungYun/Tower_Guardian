@@ -232,8 +232,16 @@ protected:
 
 	UFUNCTION()
 	void OnWeaponModifyingInput();
-
 	bool bIsWMUIOpened = false;
+
+	UFUNCTION()
+	void OnWeaponModArrowUp();
+	UFUNCTION()
+	void OnWeaponModArrowDown();
+	UFUNCTION()
+	void OnWeaponModArrowLeft();
+	UFUNCTION()
+	void OnWeaponModArrowRight();
 	/*
 	전투를 위한 기능들
 	*/

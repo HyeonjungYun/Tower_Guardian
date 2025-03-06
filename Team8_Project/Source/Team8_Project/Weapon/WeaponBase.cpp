@@ -15,6 +15,7 @@
 #include "MuzzleWeaponPartsTable.h"
 #include "GripWeaponPartsTable.h"
 #include "MagazineWeaponPartsTable.h"
+#include "UWeaponPartsUI.h"
 
 #include "../Inventory/InventoryComponent.h"
 
@@ -55,6 +56,7 @@ void AWeaponBase::BeginPlay()
 	AreaSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 	InitializeWeaponParts();
 	SetWeaponState(WeaponState);
+
 }
 
 void AWeaponBase::SetWeaponState(EWeaponState CurWeaponState)
@@ -160,6 +162,17 @@ void AWeaponBase::OnWeaponEquipped(AMyCharacter* _OwnerPlayerCharacter
 {
 	OwnerPlayerCharacter = _OwnerPlayerCharacter;
 	OwnerPlayerController = _OwnerPlayerController;
+	if (bIsWeaponCanModify)
+	{
+		WeaponPartsUI = CreateWidget<UUWeaponPartsUI>(OwnerPlayerController, WeaponPartsUIClass);
+		if (WeaponPartsUI)
+		{
+			WeaponPartsUI->AddToViewport(-50);
+			WeaponPartsUI->SetVisibility(ESlateVisibility::Hidden);
+			WeaponPartsUI->InitializeAttachmentUI(this);
+		}
+
+	}
 }
 
 void AWeaponBase::Dropped()
@@ -170,6 +183,11 @@ void AWeaponBase::Dropped()
 	SetOwner(nullptr);
 	OwnerPlayerCharacter = nullptr	;
 	OwnerPlayerController = nullptr;
+	
+	if (WeaponPartsUI)
+	{
+		WeaponPartsUI->RemoveFromParent();
+	}
 }
 
 FName AWeaponBase::GetItemType() const

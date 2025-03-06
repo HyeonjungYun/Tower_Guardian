@@ -190,4 +190,13 @@ public:
 
 	void InitializeWeaponParts();
 	bool IsWeaponPartsAvailable(FName ItemKey);
+
+
+	void OnCombatComponentModifyingUI();
+	void OnCombatComponentModArrowUp() {};
+	void OnCombatComponentModArrowDown() {};
+	void OnCombatComponentModArrowLeft() {};
+	void OnCombatComponentModArrowRight() {};
+
+	bool bIsWeaponNowModding = false;
 };
