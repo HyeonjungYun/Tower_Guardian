@@ -16,7 +16,7 @@ public:
 	UShopComponent();
 
 	UFUNCTION(BlueprintCallable, Category = "Shop")
-	bool AttemptItemPurchase();
+	bool AttemptItemPurchase(int32 ItemCost);
 
 	ACH8_GameState* GameStateRef;
 

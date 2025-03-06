@@ -14,10 +14,8 @@ void UShopComponent::BeginPlay()
 	GameStateRef = Cast<ACH8_GameState>(GetWorld()->GetGameState());
 }
 
-bool UShopComponent::AttemptItemPurchase()
+bool UShopComponent::AttemptItemPurchase(int32 ItemCost)
 {
-	int ItemCost = 100;
-
 	if (GameStateRef)
 	{
 		if (GameStateRef->GetGold() >= ItemCost)

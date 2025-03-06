@@ -57,6 +57,8 @@ public:
 	
 	int32 SpawnedEnemy;
 	int32 KilledEnemy;
+	int32 NumberOfEnemy;
+	int32 NumberOfEnemyMax;
 
 	FTimerHandle HeistTimerHandle;
 	FTimerHandle InfinityAmmoTimerHandle;
@@ -71,7 +73,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "InfinityAmmo")
 	void UseInfinityAmmoItem();
-	
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "NeutralEnemy")
+	void SpawnNeutralEnemy();
 	
 	void UpdateHUD();
 	void UpdateGameTimer();
@@ -84,7 +88,6 @@ public:
 	void SpawnWave();
 	void SpawnEnemyPerTime();
 	void UpdatedSpawnedEnemy();
-	void SpawnNeutralEnemy();
 	void UpdatedKilledEnemy();
 	void UpdatedHeistDuration();
 	void UpdatedInfinityAmmoDuration();
@@ -97,5 +100,7 @@ private:
 
 	// 헬퍼 함수
 	TArray<ASpawnVolume*> GetSpawnVolume() const;
+
+	UFUNCTION(BlueprintCallable, Category = "NeutralEnemy")
 	ANeutralMonsterSpawnVolume* GetNeutralEnemySpawnVolume() const;
 };

@@ -16,24 +16,20 @@ ANeutralMonsterSpawnVolume::ANeutralMonsterSpawnVolume()
 
 AActor* ANeutralMonsterSpawnVolume::SpawnEnemy(TSubclassOf<AActor> EnemyClass)
 {
-	//if (!EnemyClass)
-	//{
-	//	return nullptr;
-	//}
+	if (!EnemyClass)
+	{
+		return nullptr;
+	}
 
-	//FVector SpawnPosition = GetSpawnPosition();
+	FVector SpawnPosition = GetSpawnPosition();
 
-	//AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(
-	//	EnemyClass,
-	//	SpawnPosition,
-	//	FRotator::ZeroRotator
-	//);
+	AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(
+		EnemyClass,
+		SpawnPosition,
+		FRotator::ZeroRotator
+	);
 
-	///*if (ABaseEnemy* Enemy = Cast<ABaseEnemy>(SpawnedActor))
-	//	Enemy->SetSpawnVolume(this);*/
-
-	//return SpawnedActor;
-	return nullptr;
+	return SpawnedActor;
 }
 
 FVector ANeutralMonsterSpawnVolume::GetSpawnPosition()
