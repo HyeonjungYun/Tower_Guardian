@@ -57,14 +57,20 @@ public:
 	UPROPERTY(EditAnywhere, Category = "GameUI")
 	TSubclassOf<UUserWidget> StartWidgetClass;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, Category = "GameUI")
 	UUserWidget* StartWidgetInstance;
 
 	UPROPERTY(EditAnywhere, Category = "GameUI")
 	TSubclassOf<UUserWidget> EndWidgetClass;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, Category = "GameUI")
 	UUserWidget* EndWidgetInstance;
+
+	UPROPERTY(EditAnywhere, Category = "GameUI")
+	TSubclassOf<UUserWidget> ClearWidgetClass;
+
+	UPROPERTY(EditAnywhere, Category = "GameUI")
+	UUserWidget* ClearWidgetInstance;
 
 	
 	int32 SpawnedEnemy;
@@ -94,13 +100,13 @@ public:
 
 
 	void OpenStartWidget();
+	void OpenClearWidget();
 	void OpenEndWidget();
 	
 	void UpdateHUD();
 	void UpdateGameTimer();
 
 	virtual void BeginPlay() override;
-	void GetScore();
 	void SetGold(int32 TempGold);
 	void EndGame(bool bIsGameClear);
 	void SpawnWave();

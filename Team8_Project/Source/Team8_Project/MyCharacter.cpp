@@ -830,8 +830,8 @@ void AMyCharacter::OnDeath()
 	UE_LOG(LogTemp, Warning, TEXT("플레이어 사망 확인"));
 
 	//사망시 인풋 연결을 끊음
-	MyPlayerController->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>()->RemoveMappingContext(
-		MyPlayerController->GetMappingContext());
+	/*MyPlayerController->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>()->RemoveMappingContext(
+		MyPlayerController->GetMappingContext());*/
 
 	if (ACH8_GameState* GameState = Cast<ACH8_GameState>(GetWorld()->GetGameState()))
 	{

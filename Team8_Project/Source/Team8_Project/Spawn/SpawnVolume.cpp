@@ -42,6 +42,11 @@ AActor* ASpawnVolume::SpawnEnemy(TSubclassOf<AActor> EnemyClass)
 		FRotator::ZeroRotator
 	);
 
+	if (ACH8_GameState* GameState = Cast<ACH8_GameState>(GetWorld()->GetGameState()))
+	{
+		GameState->UpdatedSpawnedEnemy();
+	}
+
 	if (ABaseEnemy* Enemy = Cast<ABaseEnemy>(SpawnedActor))
 	{
 		Enemy->SetSpawnVolume(this);
