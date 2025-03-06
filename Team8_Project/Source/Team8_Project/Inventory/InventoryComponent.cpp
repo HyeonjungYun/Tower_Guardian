@@ -38,6 +38,21 @@ void UInventoryComponent::BeginPlay()
 			UpdateInventoryUI();
 		}
 	}
+	if (InventorySubsystem && AmmoItemDataTable)
+	{
+		FName Ammo = "RifleAmmo";
+		InventorySubsystem->AddAmmoItem(Ammo, 100, AmmoItemDataTable);
+		
+		Ammo = "SniperAmmo";
+		InventorySubsystem->AddAmmoItem(Ammo, 100, AmmoItemDataTable);
+		
+		Ammo = "ShotgunAmmo";
+		InventorySubsystem->AddAmmoItem(Ammo, 100, AmmoItemDataTable);
+		
+		Ammo = "RocketAmmo";
+		InventorySubsystem->AddAmmoItem(Ammo, 100, AmmoItemDataTable);
+	}
+	
 }
 
 bool UInventoryComponent::AddItem(const FName& ItemKey, int32 Quantity,EItemType ItemType)

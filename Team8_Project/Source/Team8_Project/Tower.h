@@ -6,6 +6,7 @@
 #include "Tower.generated.h"
 
 class UBoxComponent;
+class UWidgetComponent;
 
 UCLASS()
 class TEAM8_PROJECT_API ATower : public AActor, public IDamageable
@@ -29,8 +30,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Collision")
 	UBoxComponent* BoxCollision;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HPBar")
+	UWidgetComponent* TowerHPBar;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TowerHP")
 	float TowerHP;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TowerHP")
+	float TowerMaxHP;
 
 	virtual float TakeDamage(
 		float DamageAmount, 

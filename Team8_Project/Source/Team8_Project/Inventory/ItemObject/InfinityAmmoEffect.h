@@ -16,7 +16,7 @@ class TEAM8_PROJECT_API UInfinityAmmoEffect : public UItemEffectBase
 public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
-	float Duration = 0.f;
+	float Duration = 10.f;
 
 	virtual void ApplyItemEffect(AActor* Target) override;
 	

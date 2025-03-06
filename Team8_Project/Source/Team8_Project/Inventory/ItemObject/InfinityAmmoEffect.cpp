@@ -3,14 +3,19 @@
 
 #include "InfinityAmmoEffect.h"
 #include "Team8_Project/MyCharacter.h"
+#include "Team8_Project/Weapon/PlayerCombatComponent.h"
+#include "Team8_Project/GameState/CH8_GameState.h"
 
 void UInfinityAmmoEffect::ApplyItemEffect(AActor* Target)
 {
     if (Target)
     {
-        if (AMyCharacter* player = Cast<AMyCharacter>(Target))
+        if (AMyCharacter* Player = Cast<AMyCharacter>(Target))
         {
-            //TODO :: CombatComponent Method
+           
+            Player->GetCombatComponent()->OnInfiniteAmmoStart(Duration);
+            ACH8_GameState* GameStateRef = Cast<ACH8_GameState>(GetWorld()->GetGameState());
+            GameStateRef->UseInfinityAmmoItem();
         }
     }
 }

@@ -16,7 +16,7 @@ public:
 	float SpeedAmount = 0.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect")
-	float Duration = 0.f;
+	float Duration = 90.f;
 
 	virtual void ApplyItemEffect(AActor* Target) override;
 };

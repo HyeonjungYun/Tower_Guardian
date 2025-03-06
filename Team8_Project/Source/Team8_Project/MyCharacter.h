@@ -156,8 +156,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
 	bool bIsSlowWalking = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
-	bool bIsInventoryVisible = false;
+	
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
 	int32 ShotgunReloadCount = 0;
@@ -313,4 +312,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Speed")
 	float GetPlayerSpeed();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
+	bool bIsInventoryVisible = false;
+	//
 };

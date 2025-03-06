@@ -9,8 +9,7 @@
 #include "Kismet/GameplayStatics.h"
 
 ACH8_GameState::ACH8_GameState()
-	: Score(0)
-	, Gold(1000)
+	: Gold(1000)
 	, CurrentWaveIndex(0)
 	, WaveDuration(20.0f)
 	, StartDuration(5.0f)
@@ -22,8 +21,8 @@ ACH8_GameState::ACH8_GameState()
 	, RemainingHeistTime(0)
 	, RemainingInfinityAmmoTime(0)
 	, SpawnNeutralEnemyTime(180.f)
-	, NumberOfEnemy(10)
-	, NumberOfEnemyMax(60)
+	, NumberOfEnemy(2)
+	, NumberOfEnemyMax(30)
 {
 }
 
@@ -101,16 +100,8 @@ void ACH8_GameState::UpdateGameTimer()
 void ACH8_GameState::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	GetWorldTimerManager().SetTimer(
-		HUDUpdateTimerHandle,
-		this,
-		&ACH8_GameState::UpdateHUD,
-		0.1f,
-		true
-	);
 
-	StartGame();
+	OpenStartWidget();
 }
 
 void ACH8_GameState::SetGold(int32 TempGold)
@@ -121,6 +112,14 @@ void ACH8_GameState::SetGold(int32 TempGold)
 
 void ACH8_GameState::StartGame()
 {
+	GetWorldTimerManager().SetTimer(
+		HUDUpdateTimerHandle,
+		this,
+		&ACH8_GameState::UpdateHUD,
+		0.1f,
+		true
+	);
+
 	GetWorldTimerManager().SetTimer(
 		GameTimerHandle,
 		this, 
@@ -145,6 +144,59 @@ void ACH8_GameState::StartGame()
 		SpawnNeutralEnemyTime,
 		false
 	);
+}
+
+void ACH8_GameState::OpenStartWidget()
+{
+	if (StartWidgetClass)
+	{
+		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+
+		StartWidgetInstance = CreateWidget<UUserWidget>(PlayerController, StartWidgetClass);
+		if (StartWidgetInstance)
+		{
+			StartWidgetInstance->AddToViewport();
+
+			// 마우스 커서 표시 및 입력 모드 변경
+			PlayerController->bShowMouseCursor = true;
+			FInputModeUIOnly InputMode;
+			InputMode.SetWidgetToFocus(StartWidgetInstance->TakeWidget());
+			PlayerController->SetInputMode(InputMode);
+		}
+	}
+}
+
+void ACH8_GameState::OpenEndWidget()
+{
+	if (EndWidgetClass)
+	{
+		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+
+		EndWidgetInstance = CreateWidget<UUserWidget>(PlayerController, EndWidgetClass);
+		if (EndWidgetInstance)
+		{
+			EndWidgetInstance->AddToViewport();
+
+			// 마우스 커서 표시 및 입력 모드 변경
+			PlayerController->bShowMouseCursor = true;
+			FInputModeUIOnly InputMode;
+			InputMode.SetWidgetToFocus(EndWidgetInstance->TakeWidget());
+			PlayerController->SetInputMode(InputMode);
+		}
+	}
+}
+
+void ACH8_GameState::EndGame()
+{
+
+	if (AMyPlayerController* PlayerController = Cast<AMyPlayerController>(GetWorld()->GetFirstPlayerController()))
+	{
+		PlayerController->SetPause(true);
+	}
+
+	GetWorldTimerManager().ClearAllTimersForObject(this);
+	OpenEndWidget();
+	GetScore();
 }
 
 void ACH8_GameState::SpawnWave()
@@ -180,7 +232,7 @@ void ACH8_GameState::SpawnEnemyPerTime()
 
 		if (NumberOfEnemy < NumberOfEnemyMax)
 		{
-			NumberOfEnemy += 10;
+			NumberOfEnemy += 2;
 		}
 		CurrentWaveIndex++;
 
@@ -194,6 +246,7 @@ void ACH8_GameState::SpawnEnemyPerTime()
 				}
 			}
 		}
+
 		GetWorldTimerManager().ClearTimer(SpawnDurationTimerHandle);
 	}
 }
@@ -262,6 +315,19 @@ ANeutralMonsterSpawnVolume* ACH8_GameState::GetNeutralEnemySpawnVolume() const
 	return nullptr;
 }
 
+void ACH8_GameState::GetScore()
+{
+
+	if (EndWidgetInstance)
+	{
+		if (UTextBlock* ScoreText = Cast<UTextBlock>(EndWidgetInstance->GetWidgetFromName(TEXT("Score"))))
+		{
+			int32 Score = (ElapsedSeconds * 10) + (KilledEnemy * 100);
+			ScoreText->SetText(FText::FromString(FString::Printf(TEXT("Score:%d"), Score)));
+		}
+	}
+}
+
 void ACH8_GameState::UseHeistItem()
 {
 	if (GetWorldTimerManager().IsTimerActive(HeistTimerHandle))
@@ -286,7 +352,7 @@ void ACH8_GameState::UseInfinityAmmoItem()
 		GetWorldTimerManager().ClearTimer(InfinityAmmoTimerHandle);
 	}
 	
-	RemainingInfinityAmmoTime = 5;
+	RemainingInfinityAmmoTime = 10;
 	GetWorldTimerManager().SetTimer(
 		InfinityAmmoTimerHandle,
 		this,

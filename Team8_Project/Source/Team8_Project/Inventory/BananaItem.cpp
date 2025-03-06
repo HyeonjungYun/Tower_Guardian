@@ -3,7 +3,7 @@
 
 ABananaItem::ABananaItem()
 {
-    FItemType = "SpeedUp";
+    FItemType = "InfinityAmmo";
     SlotType = EItemType::Consumable;
 }
 

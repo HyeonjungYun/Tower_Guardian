@@ -3,6 +3,7 @@
 
 #include "SpeedItemEffect.h"
 #include "Team8_Project/MyCharacter.h"
+#include "Team8_Project/GameState/CH8_GameState.h"
 
 void USpeedItemEffect::ApplyItemEffect(AActor* Target)
 {
@@ -11,7 +12,8 @@ void USpeedItemEffect::ApplyItemEffect(AActor* Target)
         if (AMyCharacter* player = Cast<AMyCharacter>(Target))
         {
             player->ApplySpeedBoost(SpeedAmount, Duration);
-            // UseHeistItem
+            ACH8_GameState* GameStateRef = Cast<ACH8_GameState>(GetWorld()->GetGameState());
+            GameStateRef->UseHeistItem();
         }
     }
 }
