@@ -2,6 +2,7 @@
 #include "Components/BoxComponent.h"
 #include "Team8_Project/Enemy/BaseEnemy.h"
 #include "Team8_Project/Enemy/EnemyAIController.h"
+#include "Team8_Project/GameState/CH8_GameState.h"
 
 ASpawnVolume::ASpawnVolume()
 {
@@ -42,7 +43,10 @@ AActor* ASpawnVolume::SpawnEnemy(TSubclassOf<AActor> EnemyClass)
 	);
 
 	if (ABaseEnemy* Enemy = Cast<ABaseEnemy>(SpawnedActor))
+	{
 		Enemy->SetSpawnVolume(this);
+		Enemy->OnDeath.AddUObject(this, &ASpawnVolume::AddKillEnemyCount);
+	}
 	
 	return SpawnedActor;
 }
@@ -70,4 +74,10 @@ FVector ASpawnVolume::GetLocationNearWaypoint(int32 Index) const
 int32 ASpawnVolume::WaypointCount() const
 {
 	return Waypoints.Num();
+}
+
+void ASpawnVolume::AddKillEnemyCount(ABaseEnemy* DeadEnemy)
+{
+	if (ACH8_GameState* GameState = GetWorld()->GetGameState<ACH8_GameState>())
+		GameState->UpdatedKilledEnemy();
 }

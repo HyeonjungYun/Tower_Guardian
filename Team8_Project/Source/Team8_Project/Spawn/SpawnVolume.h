@@ -4,6 +4,7 @@
 #include "GameFramework/Actor.h"
 #include "SpawnVolume.generated.h"
 
+class ABaseEnemy;
 class UBehaviorTree;
 class APatrolPath;
 class UBoxComponent;
@@ -26,6 +27,9 @@ public:
 	int32 WaypointCount() const;
 	
 private:
+	UFUNCTION()
+	void AddKillEnemyCount(ABaseEnemy* DeadEnemy);
+	
 	FVector GetSpawnPosition();
 	
 public:
