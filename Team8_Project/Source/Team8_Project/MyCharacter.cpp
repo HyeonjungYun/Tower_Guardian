@@ -11,6 +11,7 @@
 #include "Components/WidgetComponent.h"
 #include "Components/TextBlock.h"
 #include "BaseItem.h"
+#include "EnhancedInputSubsystems.h"
 #include "Inventory/InventoryWidget.h"
 #include "Inventory/InventoryComponent.h"
 #include "Inventory/InventorySubsystem.h"
@@ -28,7 +29,7 @@ AMyCharacter::AMyCharacter()
 	CameraBoom->TargetArmLength = 350.0f;
 	CameraBoom->SetupAttachment(GetMesh());
 	CameraBoom->bUsePawnControlRotation = true;
-	
+
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	Camera->bUsePawnControlRotation = false;
@@ -36,7 +37,7 @@ AMyCharacter::AMyCharacter()
 	Inventory = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory"));
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AMyCharacter::OnOverlapBegin);
 	GetCapsuleComponent()->OnComponentEndOverlap.AddDynamic(this, &AMyCharacter::OnOverlapEnd);
-  
+
 
 	//Capsule컴포넌트 -> Overlap에 이벤트 바인딩
 	CombatComponent = CreateDefaultSubobject<UPlayerCombatComponent>(TEXT("CombatComponent"));
@@ -283,8 +284,8 @@ void AMyCharacter::Tick(float DeltaTime)
 }
 
 void AMyCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-	bool bFromSweep, const FHitResult& SweepResult)
+                                  UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+                                  bool bFromSweep, const FHitResult& SweepResult)
 {
 	UE_LOG(LogTemp, Log, TEXT("Overl"));
 	if (OtherActor && OtherActor != this)
@@ -300,7 +301,6 @@ void AMyCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 
 void AMyCharacter::OnPickupItem()
 {
-
 	if (OverlappingItem)
 	{
 		FName ItemKey = OverlappingItem->GetItemType();
@@ -325,17 +325,15 @@ void AMyCharacter::OnPickupItem()
 				UE_LOG(LogTemp, Warning, TEXT("Failed to add item %s."), *ItemKey.ToString());
 			}
 		}
-
 	}
 	else
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("No overlapping item to pick up."));
 	}
-
-
 }
+
 void AMyCharacter::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+                                UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	if (OtherActor && OtherActor == OverlappingItem)
 	{
@@ -343,6 +341,7 @@ void AMyCharacter::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Oth
 		OverlappingItem = nullptr;
 	}
 }
+
 void AMyCharacter::ToggleInventory(const FInputActionValue& Value = FInputActionValue())
 {
 	APlayerController* PC = Cast<APlayerController>(GetController());
@@ -359,8 +358,6 @@ void AMyCharacter::ToggleInventory(const FInputActionValue& Value = FInputAction
 		FInputModeGameOnly InputMode;
 		PC->SetInputMode(InputMode);
 		PC->bShowMouseCursor = false;
-		
-	
 	}
 	else
 	{
@@ -368,16 +365,15 @@ void AMyCharacter::ToggleInventory(const FInputActionValue& Value = FInputAction
 		Inventory->InventoryWidget->SetVisibility(ESlateVisibility::Visible);
 		Inventory->InventoryWidget->UpdateInventoryUI();
 		//입력이 ui에 전달되고 그다음 게임쪽으로 전달된다
-		FInputModeGameAndUI  InputMode;
+		FInputModeGameAndUI InputMode;
 		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 		/*InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::LockInFullscreen);*/
-		InputMode.SetHideCursorDuringCapture(false);  // Added this line
+		InputMode.SetHideCursorDuringCapture(false); // Added this line
 		/*InputMode.SetWidgetToFocus(Inventory->InventoryWidget->TakeWidget());*/
 		PC->SetInputMode(InputMode);
 		PC->bShowMouseCursor = true;
 		//뷰포트에 붙였을 때 
 	}
-
 }
 
 void AMyCharacter::PostInitializeComponents()
@@ -447,8 +443,6 @@ void AMyCharacter::Look(const FInputActionValue& value)
 	{
 		AddControllerPitchInput(LookInput.Y * MouseSensitivity);
 	}
-
-
 }
 
 void AMyCharacter::StartSprint(const FInputActionValue& value)
@@ -510,7 +504,7 @@ void AMyCharacter::StartPickUp(const FInputActionValue& value)
 			if (ABaseItem* ItemToPickUp =
 				Cast<ABaseItem>(PickableItem))
 			{
-				OnPickupItem();// 인벤토리용
+				OnPickupItem(); // 인벤토리용
 			}
 		}
 	}
@@ -535,7 +529,6 @@ void AMyCharacter::StartCrouch(const FInputActionValue& value)
 		}
 		Crouch(bIsCrouching);
 	}
-
 }
 
 void AMyCharacter::StopCrouch(const FInputActionValue& value)
@@ -674,9 +667,7 @@ void AMyCharacter::OnAiming()
 	else
 	{
 		CombatComponent->SetAiming(true);
-
 	}
-
 }
 
 void AMyCharacter::ReleaseAiming()
@@ -689,7 +680,6 @@ void AMyCharacter::ReleaseAiming()
 	else
 	{
 		CombatComponent->SetAiming(false);
-
 	}
 }
 
@@ -700,7 +690,7 @@ void AMyCharacter::OnWeaponModifyingInput()
 
 void AMyCharacter::HideCameraIfCharacterClose()
 {
-	if ((Camera->GetComponentLocation()-GetActorLocation()).Size()<CameraThreshold)
+	if ((Camera->GetComponentLocation() - GetActorLocation()).Size() < CameraThreshold)
 	{
 		GetMesh()->SetVisibility(false);
 		if (CombatComponent && CombatComponent->EquippedWeapon && CombatComponent->EquippedWeapon->GetWeaponMesh())
@@ -742,13 +732,14 @@ UPlayerCombatComponent* AMyCharacter::GetCombatComponent()
 	return CombatComponent;
 }
 
-float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
+                               AActor* DamageCauser)
 {
-	float CurrentHealth =  FMath::Clamp(
+	float CurrentHealth = FMath::Clamp(
 		CombatComponent->GetCurrentPlayerHealth() - DamageAmount
-		,0
-		,CombatComponent->GetMaxPlayerHealth());
-	
+		, 0
+		, CombatComponent->GetMaxPlayerHealth());
+
 	SetHP(CurrentHealth);
 
 	PlayerStates = EPlayerStateType::EWT_Damaged;
@@ -768,7 +759,7 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 		// 사망 처리 애니메이션 재생, UI 출력, GameState 호출 등등 처리 해주세요
 		OnDeath();
 	}
-	
+
 	return DamageAmount;
 }
 
@@ -776,6 +767,10 @@ void AMyCharacter::OnDeath()
 {
 	PlayerStates = EPlayerStateType::EWT_Dead;
 	UE_LOG(LogTemp, Warning, TEXT("플레이어 사망 확인"));
+
+	//사망시 인풋 연결을 끊음
+	MyPlayerController->GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>()->RemoveMappingContext(
+		MyPlayerController->GetMappingContext());
 
 	if (ACH8_GameState* GameState = Cast<ACH8_GameState>(GetWorld()->GetGameState()))
 	{
@@ -795,7 +790,6 @@ void AMyCharacter::SetPickableWeapon(AWeaponBase* OverlappedWeapon)
 	{
 		PickableWeapon = OverlappedWeapon;
 	}
-
 }
 
 void AMyCharacter::SortEquipmentItems(bool bIsAscending)
@@ -805,6 +799,7 @@ void AMyCharacter::SortEquipmentItems(bool bIsAscending)
 		Inventory->SortEquipmentItems(bIsAscending);
 	}
 }
+
 void AMyCharacter::SortConsumableItems(bool bIsAscending)
 {
 	if (Inventory)
@@ -812,6 +807,7 @@ void AMyCharacter::SortConsumableItems(bool bIsAscending)
 		Inventory->SortConsumableItems(bIsAscending);
 	}
 }
+
 void AMyCharacter::SortOthersItems(bool bIsAscending)
 {
 	if (Inventory)
@@ -819,6 +815,7 @@ void AMyCharacter::SortOthersItems(bool bIsAscending)
 		Inventory->SortOthersItems(bIsAscending);
 	}
 }
+
 int32 AMyCharacter::GetGold() const
 {
 	if (Inventory)
@@ -827,6 +824,7 @@ int32 AMyCharacter::GetGold() const
 	}
 	return 0;
 }
+
 const TArray<FInventoryConsumable>& AMyCharacter::GetConsumableItems() const
 {
 	if (Inventory)
@@ -836,6 +834,7 @@ const TArray<FInventoryConsumable>& AMyCharacter::GetConsumableItems() const
 	static TArray<FInventoryConsumable> EmptyConsumables;
 	return EmptyConsumables;
 }
+
 const TArray<FInventoryEquipment>& AMyCharacter::GetEquipmentItems() const
 {
 	if (Inventory)
@@ -845,6 +844,7 @@ const TArray<FInventoryEquipment>& AMyCharacter::GetEquipmentItems() const
 	static TArray<FInventoryEquipment> EmptyEquipments;
 	return EmptyEquipments;
 }
+
 const TArray<FInventoryOthers>& AMyCharacter::GetOthersItems() const
 {
 	if (Inventory)
@@ -866,14 +866,14 @@ float AMyCharacter::GetHP() const
 		UE_LOG(LogTemp, Warning, TEXT("컴뱃 컴포넌트 없음"));
 		return -1;
 	}
-
 }
+
 void AMyCharacter::SetHP(float Value)
 {
 	CombatComponent->SetCurrentPlayerHealth(Value);
 }
 
-bool AMyCharacter::AddItem(const FName& ItemKey, int32 Quantity,EItemType ItemType)
+bool AMyCharacter::AddItem(const FName& ItemKey, int32 Quantity, EItemType ItemType)
 {
 	if (Inventory)
 	{
@@ -881,6 +881,7 @@ bool AMyCharacter::AddItem(const FName& ItemKey, int32 Quantity,EItemType ItemTy
 	}
 	return false;
 }
+
 bool AMyCharacter::RemoveItem(const FName& ItemKey, int32 Quantity)
 {
 	if (Inventory)
@@ -889,6 +890,7 @@ bool AMyCharacter::RemoveItem(const FName& ItemKey, int32 Quantity)
 	}
 	return false;
 }
+
 bool AMyCharacter::UseItem(int32 SlotIndex, EItemType ItemType)
 {
 	if (Inventory)
@@ -897,6 +899,7 @@ bool AMyCharacter::UseItem(int32 SlotIndex, EItemType ItemType)
 	}
 	return false;
 }
+
 void AMyCharacter::SetGold(int32 NewGold)
 {
 	if (Inventory)
@@ -904,11 +907,13 @@ void AMyCharacter::SetGold(int32 NewGold)
 		Inventory->SetGold(NewGold);
 	}
 }
+
 void AMyCharacter::SwapItem(int32 PrevIndex, int32 CurrentIndex, EItemType PrevSlotType, EItemType CurrentSlotType)
 {
 	check(Inventory);
 	Inventory->SwapItem(PrevIndex, CurrentIndex, PrevSlotType, CurrentSlotType);
 }
+
 const TArray<FInventoryAmmo>& AMyCharacter::GetAmmoItems() const
 {
 	if (Inventory)
@@ -918,15 +923,17 @@ const TArray<FInventoryAmmo>& AMyCharacter::GetAmmoItems() const
 	static TArray<FInventoryAmmo> EmptyAmmos;
 	return EmptyAmmos;
 }
+
 int32 AMyCharacter::SearchItemByNameAndType(const FName& ItemKey, const EItemType& ItemType) const
 {
-	if (Inventory) 
+	if (Inventory)
 	{
 		int32 Result = Inventory->SearchItemByNameAndType(ItemKey, ItemType);
 		return Result;
 	}
 	return INDEX_NONE;
 }
+
 int32 AMyCharacter::SearchItemByName(const FName& ItemKey) const
 {
 	if (Inventory)
@@ -936,6 +943,7 @@ int32 AMyCharacter::SearchItemByName(const FName& ItemKey) const
 	}
 	return INDEX_NONE;
 }
+
 void AMyCharacter::SortAmmoItems(bool bIsAscending)
 {
 	if (Inventory)
@@ -958,7 +966,7 @@ void AMyCharacter::FunchCombo(int32 AnimIndex)
 	{
 		AnimInstance->Montage_Play(PunchMontages[FunchAnimIndex]);
 	}
-	
+
 	//1초 안에 누르면 카운트 증가
 	FunchAnimIndex++;
 	if (FunchAnimIndex >= FunchAnimMaxIndex)
@@ -1007,16 +1015,17 @@ void AMyCharacter::ApplySpeedBoost(float BoostPercent, float Duration)
 
 		// 타이머 설정: 지속시간 후에 원래 속도로 복원
 		GetWorldTimerManager().SetTimer(SpeedBoostTimerHandle, FTimerDelegate::CreateLambda([this]()
+		{
+			if (UCharacterMovementComponent* MoveCompInner = GetCharacterMovement())
 			{
-				if (UCharacterMovementComponent* MoveCompInner = GetCharacterMovement())
-				{
-					MoveCompInner->MaxWalkSpeed = BaseWalkSpeed;
-					WalkSpeed = BaseWalkSpeed;
-					SprintSpeed = BaseWalkSpeed * SprintSpeedMultiplier;
-				}
-			}), Duration, false);
+				MoveCompInner->MaxWalkSpeed = BaseWalkSpeed;
+				WalkSpeed = BaseWalkSpeed;
+				SprintSpeed = BaseWalkSpeed * SprintSpeedMultiplier;
+			}
+		}), Duration, false);
 	}
 }
+
 //블루 프린트 용
 float AMyCharacter::GetPlayerSpeed()
 {

@@ -99,6 +99,11 @@ void AMyPlayerController::InitHUDWeaponAmmo(int32 CurrentAmmo, int32 MaxAmmo)
 	}
 }
 
+UInputMappingContext* AMyPlayerController::GetMappingContext() const
+{
+	return InputMappingContext;
+}
+
 AWeaponCrosshairHUD* AMyPlayerController::GetWeaponCrosshairHUD()
 {
 	return WeaponCrosshairHUD;

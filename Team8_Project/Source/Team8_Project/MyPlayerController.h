@@ -80,7 +80,10 @@ public:
 
 	void InitHUDWeaponAmmo(int32 CurrentAmmo,int32 MaxAmmo);
 
+	UInputMappingContext* GetMappingContext() const;
+	
 	class AWeaponCrosshairHUD* GetWeaponCrosshairHUD();
+	
 protected:
 	 AWeaponCrosshairHUD* WeaponCrosshairHUD;
 };
