@@ -41,9 +41,6 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Wave")
 	TArray<TSubclassOf<ABaseEnemy>> EnemyTypes;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Score")
-	int32 Score;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Gold")
 	int32 Gold;
@@ -53,6 +50,18 @@ public:
 
 	UPROPERTY()
 	int32 RemainingInfinityAmmoTime;
+
+	UPROPERTY(EditAnywhere, Category = "GameUI")
+	TSubclassOf<UUserWidget> StartWidgetClass;
+
+	UPROPERTY()
+	UUserWidget* StartWidgetInstance;
+
+	UPROPERTY(EditAnywhere, Category = "GameUI")
+	TSubclassOf<UUserWidget> EndWidgetClass;
+
+	UPROPERTY()
+	UUserWidget* EndWidgetInstance;
 
 	
 	int32 SpawnedEnemy;
@@ -69,21 +78,26 @@ public:
 	FTimerHandle HUDUpdateTimerHandle;
 
 	UFUNCTION(BlueprintCallable, Category = "Heist")
-	void UseHeistItem();
+	void UseHeistItem(float Duration);
 
 	UFUNCTION(BlueprintCallable, Category = "InfinityAmmo")
-	void UseInfinityAmmoItem();
+	void UseInfinityAmmoItem(float Duration);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "NeutralEnemy")
 	void SpawnNeutralEnemy();
+
+	UFUNCTION(BlueprintCallable, Category = "GameStart")
+	void StartGame();
+
+	void OpenStartWidget();
+	void OpenEndWidget();
 	
 	void UpdateHUD();
 	void UpdateGameTimer();
 
 	virtual void BeginPlay() override;
-	UFUNCTION(BlueprintCallable, Category = "InfinityAmmo")
+	void GetScore();
 	void SetGold(int32 TempGold);
-	void StartGame();
 	void EndGame();
 	void SpawnWave();
 	void SpawnEnemyPerTime();

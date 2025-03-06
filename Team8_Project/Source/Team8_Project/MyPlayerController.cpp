@@ -36,15 +36,6 @@ void AMyPlayerController::BeginPlay()
 		}
 	}
 
-	if (HUDWidgetClass)
-	{
-		HUDWidgetInstance = CreateWidget<UUserWidget>(this, HUDWidgetClass);
-		if (HUDWidgetInstance)
-		{
-			HUDWidgetInstance->AddToViewport();
-		}
-	}
-
 	if (ACH8_GameState* CH8GameState = GetWorld() ? GetWorld()->GetGameState<ACH8_GameState>() : nullptr)
 	{
 		CH8GameState->UpdateHUD();
@@ -56,6 +47,18 @@ void AMyPlayerController::BeginPlay()
 UUserWidget* AMyPlayerController::GetHUDWidget() const
 {
 	return HUDWidgetInstance;
+}
+
+void AMyPlayerController::DisplayHUD()
+{
+	if (HUDWidgetClass)
+	{
+		HUDWidgetInstance = CreateWidget<UUserWidget>(this, HUDWidgetClass);
+		if (HUDWidgetInstance)
+		{
+			HUDWidgetInstance->AddToViewport();
+		}
+	}
 }
 
 void AMyPlayerController::SetHUDWeaponAmmo(int32 Ammo)
