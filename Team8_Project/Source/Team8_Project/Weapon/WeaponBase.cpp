@@ -261,8 +261,8 @@ void AWeaponBase::Reload()
 			if (PlayerInventory)
 			{
 				int32 AmmoForReload = MaxWeaponAmmo - CurrentWeaponAmmo;
-
-				if (int32 ReturnedAmmo = PlayerInventory->ReturnAmmo(AmmoForReload, WeaponType) != -1)
+				int32 ReturnedAmmo = PlayerInventory->ReturnAmmo(AmmoForReload, WeaponType);
+				if (ReturnedAmmo != -1)
 				{
 					CurrentWeaponAmmo += ReturnedAmmo;
 					int32 InventoryAmmo

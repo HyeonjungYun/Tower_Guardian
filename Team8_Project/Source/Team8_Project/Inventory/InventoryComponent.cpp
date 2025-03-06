@@ -71,6 +71,7 @@ bool UInventoryComponent::AddItem(const FName& ItemKey, int32 Quantity,EItemType
 
 			if (OnwerPlayerController)
 			{
+				CurWeaponAm = CurWeaponAm == -1 ? 0 : CurWeaponAm;
 				OnwerPlayerController->SetHUDCarriedAmmo(CurWeaponAm);
 			}
 		}

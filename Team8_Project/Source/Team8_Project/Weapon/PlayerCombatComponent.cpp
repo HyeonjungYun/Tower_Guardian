@@ -290,8 +290,9 @@ void UPlayerCombatComponent::EquipWeapon(AWeaponBase* WeaponToEquip)
 	{
 		if (PlayerController->GetWeaponCrosshairHUD())
 		{
-			if (int32 InvenAmmo =
-				PlayerInventory->ReturnCurrentAmmo(EquippedWeapon->GetWeaponType()) != -1)
+			int32 InvenAmmo =
+				PlayerInventory->ReturnCurrentAmmo(EquippedWeapon->GetWeaponType());
+			if (InvenAmmo != -1)
 			{
 				PlayerController->SetHUDCarriedAmmo(InvenAmmo);
 			}
