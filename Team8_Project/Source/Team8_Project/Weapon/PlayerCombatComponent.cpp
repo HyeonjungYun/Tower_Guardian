@@ -19,6 +19,8 @@
 #include "Engine/DataTable.h"
 #include "WeaponPartsTableRow.h"
 
+#include "../Inventory/InventoryComponent.h"
+
 UPlayerCombatComponent::UPlayerCombatComponent()
 {
 
@@ -239,7 +241,8 @@ void UPlayerCombatComponent::BeginPlay()
 		}
 		
 	}
-	
+
+	PlayerInventory = PlayerCharacter->Inventory;
 }
 
 void UPlayerCombatComponent::EquipWeapon(AWeaponBase* WeaponToEquip)
@@ -283,15 +286,22 @@ void UPlayerCombatComponent::EquipWeapon(AWeaponBase* WeaponToEquip)
 		PlayerController->SetHUDWeaponAmmo(EquippedWeapon->GetCurrrentWeaponAmmo());
 	}
 
-	// 새로운 무기에 맞는 탄종 UI 출력
-	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType()))
+	if (PlayerInventory)
 	{
-		CurWeaponInvenAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
-	}
-
-	if (PlayerController->GetWeaponCrosshairHUD())
-	{
-		PlayerController->SetHUDCarriedAmmo(CurWeaponInvenAmmo);
+		if (PlayerController->GetWeaponCrosshairHUD())
+		{
+			if (int32 InvenAmmo =
+				PlayerInventory->ReturnCurrentAmmo(EquippedWeapon->GetWeaponType()) != -1)
+			{
+				PlayerController->SetHUDCarriedAmmo(InvenAmmo);
+			}
+			else
+			{
+				PlayerController->SetHUDCarriedAmmo(0);
+				UE_LOG(LogTemp, Warning, TEXT("인벤토리에 탄 없음"));
+			}
+			
+		}
 	}
 }
 
@@ -352,7 +362,7 @@ void UPlayerCombatComponent::StartWeaponReload()
 {
 	if (EquippedWeapon && !bIsReloading)
 	{
-		if (CarriedAmmoMap[EquippedWeapon->GetWeaponType()] <= 0)
+		if (PlayerInventory->ReturnCurrentAmmo(EquippedWeapon->GetWeaponType())<=0)
 		{// 탄없음
 			UE_LOG(LogTemp, Warning, TEXT("탄없음 재장전 불가"));
 			return;
@@ -393,6 +403,29 @@ void UPlayerCombatComponent::OnFinishWeaponReload()
 		EquippedWeapon->Reload();
 		DeApplyReloadUI();
 		bIsReloading = false;
+	}
+}
+
+void UPlayerCombatComponent::OnInfiniteAmmoStart(float InfiniteTimerAmount)
+{
+	if (PlayerCharacter)
+	{
+		bIsInfiniteAmmo = true;
+		PlayerCharacter->GetWorldTimerManager().SetTimer(
+			FInfiniteAmmo,
+			this,
+			&UPlayerCombatComponent::OnInfiniteAmmoEnd,
+			InfiniteTimerAmount,
+			false);
+	}
+}
+
+void UPlayerCombatComponent::OnInfiniteAmmoEnd()
+{
+	if (PlayerCharacter)
+	{
+		bIsInfiniteAmmo = false;
+		PlayerCharacter->GetWorldTimerManager().ClearTimer(FInfiniteAmmo);
 	}
 }
 

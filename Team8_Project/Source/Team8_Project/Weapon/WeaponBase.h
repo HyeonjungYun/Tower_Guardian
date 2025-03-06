@@ -9,6 +9,7 @@
 #include "WeaponType.h"
 #include "WeaponpartsActor.h"
 #include "Engine/DataTable.h"
+
 #include "WeaponBase.generated.h"
 
 
@@ -156,6 +157,7 @@ protected:
         탄약
     */
 public:
+
     UFUNCTION()
     void SpendRound();
 

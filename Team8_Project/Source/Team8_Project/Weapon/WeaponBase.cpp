@@ -16,6 +16,8 @@
 #include "GripWeaponPartsTable.h"
 #include "MagazineWeaponPartsTable.h"
 
+#include "../Inventory/InventoryComponent.h"
+
 AWeaponBase::AWeaponBase() :
 	WeaponState(EWeaponState::EWT_Dropped),
 	OwnerPlayerCharacter(nullptr),
@@ -111,22 +113,28 @@ void AWeaponBase::ActivateItem(AActor* Activator)
 
 void AWeaponBase::SpendRound()
 {
-	if (bIsInfiniteAmmo)
-	{
 
-	}
-	else
+	OwnerPlayerCharacter = OwnerPlayerCharacter == nullptr ? Cast<AMyCharacter>(GetOwner()) : OwnerPlayerCharacter;
+	if (OwnerPlayerCharacter)
 	{
-		CurrentWeaponAmmo = FMath::Clamp(CurrentWeaponAmmo - 1, 0, MaxWeaponAmmo);
-		OwnerPlayerCharacter = OwnerPlayerCharacter == nullptr ? Cast<AMyCharacter>(GetOwner()) : OwnerPlayerCharacter;
-
-		if (OwnerPlayerCharacter)
+		// 탄소모없음
+		if (OwnerPlayerCharacter->GetCombatComponent()->bIsInfiniteAmmo)
 		{
-			OwnerPlayerController =
-				OwnerPlayerController == nullptr ? Cast<AMyPlayerController>(OwnerPlayerCharacter->Controller) : OwnerPlayerController;
-			if (OwnerPlayerController)
+
+		}
+		else
+		{
+			CurrentWeaponAmmo = FMath::Clamp(CurrentWeaponAmmo - 1, 0, MaxWeaponAmmo);
+			
+
+			if (OwnerPlayerCharacter)
 			{
-				OwnerPlayerController->SetHUDWeaponAmmo(CurrentWeaponAmmo);
+				OwnerPlayerController =
+					OwnerPlayerController == nullptr ? Cast<AMyPlayerController>(OwnerPlayerCharacter->Controller) : OwnerPlayerController;
+				if (OwnerPlayerController)
+				{
+					OwnerPlayerController->SetHUDWeaponAmmo(CurrentWeaponAmmo);
+				}
 			}
 		}
 	}
@@ -247,44 +255,33 @@ void AWeaponBase::Reload()
 			OwnerPlayerController == nullptr ? Cast<AMyPlayerController>(OwnerPlayerCharacter->Controller) : OwnerPlayerController;
 		if (OwnerPlayerController)
 		{
-			// 도중에 무기가 바뀌면 재장전완료가 안되어야함
-							// 테스트 인벤토리에서 재장전처리하기
-			UPlayerCombatComponent* PlayerCombatComponent = OwnerPlayerCharacter->GetCombatComponent();
-
-			if (PlayerCombatComponent->CarriedAmmoMap[WeaponType] >= 1)
+			UInventoryComponent* PlayerInventory
+				= OwnerPlayerCharacter->Inventory;
+			
+			if (PlayerInventory)
 			{
 				int32 AmmoForReload = MaxWeaponAmmo - CurrentWeaponAmmo;
-				if (PlayerCombatComponent->CarriedAmmoMap[WeaponType] < AmmoForReload)
+
+				if (int32 ReturnedAmmo = PlayerInventory->ReturnAmmo(AmmoForReload, WeaponType) != -1)
 				{
-					// 재장전 조건
-					CurrentWeaponAmmo += (PlayerCombatComponent->CarriedAmmoMap[WeaponType]);
-					PlayerCombatComponent->CarriedAmmoMap[WeaponType] = 0;
+					CurrentWeaponAmmo += ReturnedAmmo;
+					int32 InventoryAmmo
+						= PlayerInventory->ReturnCurrentAmmo(WeaponType);
+
+					// HUD 갱신필요
+					// 인벤토리 탄 현황
+					OwnerPlayerController->SetHUDCarriedAmmo(InventoryAmmo);
+					// 무기 탄 현황
+					OwnerPlayerController->SetHUDWeaponAmmo(CurrentWeaponAmmo);
+					// ammo UI: SetHUDWeaponAmmo(CurrentWeaponAmmo) / SetHUDCarriedAmmo(InventoryAmmo) 
 				}
 				else
 				{
-					CurrentWeaponAmmo += AmmoForReload;
-					PlayerCombatComponent->CarriedAmmoMap[WeaponType] -= AmmoForReload;
+					UE_LOG(LogTemp, Warning, TEXT("탄 없어서 재장전 불가"));
 				}
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("탄 없어서 재장전 불가"));
-			}
-			// HUD 갱신필요
-			// 인벤토리 탄 현황
-
-
-			OwnerPlayerCharacter = OwnerPlayerCharacter == nullptr ? Cast<AMyCharacter>(GetOwner()) : OwnerPlayerCharacter;
-
-
-			OwnerPlayerCharacter->GetCombatComponent()->CurWeaponInvenAmmo = OwnerPlayerCharacter->GetCombatComponent()->CarriedAmmoMap[WeaponType];
-			OwnerPlayerController->SetHUDCarriedAmmo(OwnerPlayerCharacter->GetCombatComponent()->CarriedAmmoMap[WeaponType]);
-			// 무기 탄 현황
-			OwnerPlayerController->SetHUDWeaponAmmo(CurrentWeaponAmmo);
+			}			
 		}
 	}
-
-
 }
 
 float AWeaponBase::GetTimeToFinishReload()
