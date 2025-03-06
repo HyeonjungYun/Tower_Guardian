@@ -51,9 +51,6 @@ void UInventoryComponent::BeginPlay()
 		
 		Ammo = "RocketAmmo";
 		InventorySubsystem->AddAmmoItem(Ammo, 100, AmmoItemDataTable);
-		
-		Ammo = "PistolAmmo";
-		InventorySubsystem->AddAmmoItem(Ammo, 100, AmmoItemDataTable);
 	}
 	
 }
