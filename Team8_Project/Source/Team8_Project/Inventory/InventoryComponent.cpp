@@ -258,6 +258,7 @@ int32 UInventoryComponent::ReturnAmmo(int32 RequiredAmmo, EWeaponType WeaponType
 	}
 	if (InventorySubsystem) 
 	{
+		
 		int32 RemainAmmo = InventorySubsystem->SearchItemByNameAndType(AmmoName, EItemType::Ammo);
 		if (RemainAmmo == INDEX_NONE)
 		{
