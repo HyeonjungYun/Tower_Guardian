@@ -78,10 +78,10 @@ public:
 	FTimerHandle HUDUpdateTimerHandle;
 
 	UFUNCTION(BlueprintCallable, Category = "Heist")
-	void UseHeistItem(float Duration);
+	void UseHeistItem();
 
 	UFUNCTION(BlueprintCallable, Category = "InfinityAmmo")
-	void UseInfinityAmmoItem(float Duration);
+	void UseInfinityAmmoItem();
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "NeutralEnemy")
 	void SpawnNeutralEnemy();

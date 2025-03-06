@@ -328,14 +328,14 @@ void ACH8_GameState::GetScore()
 	}
 }
 
-void ACH8_GameState::UseHeistItem(float Duration)
+void ACH8_GameState::UseHeistItem()
 {
 	if (GetWorldTimerManager().IsTimerActive(HeistTimerHandle))
 	{
 		GetWorldTimerManager().ClearTimer(HeistTimerHandle);
 	}
 
-	RemainingHeistTime = Duration;
+	RemainingHeistTime = 90;
 	GetWorldTimerManager().SetTimer(
 		HeistTimerHandle,
 		this,
