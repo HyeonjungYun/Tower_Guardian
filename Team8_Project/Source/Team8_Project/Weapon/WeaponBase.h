@@ -193,6 +193,9 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Ammo")
     int32 MaxWeaponAmmo;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Ammo")
+    int32 DefaultMaxAmmo;
+
 public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|Fire")
     bool bIsWeaponAutomatic = true;

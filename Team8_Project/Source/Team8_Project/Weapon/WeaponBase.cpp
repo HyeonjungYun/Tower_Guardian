@@ -63,10 +63,12 @@ void AWeaponBase::BeginPlay()
 	if (bIsWeaponCanModify)
 	{
 		EquipWeaponPart(EWeaponPartsType::EWT_Optic, FName("NoOptic"));
-		EquipWeaponPart(EWeaponPartsType::EWT_Magazine, FName("NoMuzzle"));
-		EquipWeaponPart(EWeaponPartsType::EWT_Grip, FName("NoMagazine"));
-		EquipWeaponPart(EWeaponPartsType::EWT_Muzzle, FName("NoGrip"));
+		EquipWeaponPart(EWeaponPartsType::EWT_Magazine, FName("NoMagazine"));
+		EquipWeaponPart(EWeaponPartsType::EWT_Grip, FName("NoGrip"));
+		EquipWeaponPart(EWeaponPartsType::EWT_Muzzle, FName("NoMuzzle"));
 	}
+
+	DefaultMaxAmmo = MaxWeaponAmmo;
 }
 
 void AWeaponBase::SetWeaponState(EWeaponState CurWeaponState)
@@ -453,6 +455,58 @@ void AWeaponBase::EquipWeaponPart(EWeaponPartsType PartType, FName ItemKey)
 	}
 
 	if (!TargetContainer || !EquippedPart) return;
+
+	if (PartType == EWeaponPartsType::EWT_Magazine )
+	{
+		// 탄창 변경에 따른 적용
+		if (CurrentWeaponPartsKey.Contains(PartType))
+		{	
+			if (CurrentWeaponPartsKey[PartType] == FName("LargeMagazine"))
+			{
+				// 지금 낀탄창이 대탄
+			// 남은탄 > 최대탄 * magazineAmount
+			// 무기 탄 = 최대탄 * magazineAmount
+			// 남은탄 - 최대탄 => 인벤토리에 추가
+				for (int i = 0; i < MagzineWeaponpartsTableRows.Num(); ++i)
+				{
+					if (MagzineWeaponpartsTableRows[i]->ItemKey == ItemKey)
+					{
+						int32 Amount = MagzineWeaponpartsTableRows[i]->MagazineAmount;
+						if (Amount == 1)
+						{
+							MaxWeaponAmmo = DefaultMaxAmmo;
+						}
+						
+
+						if (CurrentWeaponAmmo > MaxWeaponAmmo)
+						{
+							int32 SubAmmo = CurrentWeaponAmmo - MaxWeaponAmmo;
+							if (OwnerPlayerCharacter)
+							{
+								FName CurAmmoItemKey = OwnerPlayerCharacter->Inventory->ReturnAmmoName(WeaponType);
+								OwnerPlayerCharacter->Inventory->AddItem(CurAmmoItemKey, SubAmmo, EItemType::Ammo);
+								CurrentWeaponAmmo = MaxWeaponAmmo;
+								OwnerPlayerController->SetHUDWeaponAmmo(CurrentWeaponAmmo);
+							}
+						}
+					}
+				}
+			}
+			else if (ItemKey == FName("LargeMagazine"))
+			{// 대탄으로 변경
+				// 최대탄 *= 최대탄 * magazineAmount;
+				for (int i = 0; i < MagzineWeaponpartsTableRows.Num(); ++i)
+				{
+					if (MagzineWeaponpartsTableRows[i]->ItemKey == ItemKey)
+					{
+						int32 Amount = MagzineWeaponpartsTableRows[i]->MagazineAmount;
+						MaxWeaponAmmo *= Amount;
+					}
+				}
+			}
+		}
+
+	}
 
 	// 2️⃣ 기존 부착물 해제 (투명화 & 충돌 제거)
 	if (*EquippedPart)
