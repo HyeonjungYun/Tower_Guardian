@@ -159,6 +159,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MovementState")
 	bool bIsInventoryVisible = false;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	int32 ShotgunReloadCount = 0;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UCameraShakeBase> CameraShakeClass;
+
 	ABaseItem* PickableItem;
 
 	UFUNCTION()
@@ -211,6 +217,9 @@ protected:
 
 	UFUNCTION() //이동 시 캐릭터 보간 회전, turn in place 를 위한 
 	void CalculateRotation(float DeltaTime);
+
+	UFUNCTION()
+	int32 GetShotgunReloadCount();
 
 	UFUNCTION()
 	void OnAiming();

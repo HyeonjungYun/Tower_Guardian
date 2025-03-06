@@ -46,9 +46,6 @@ public:
 	UInputAction* PickUpAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inputs")
-	UInputAction* ProneAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inputs")
 	UInputAction* CrouchAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inputs")
