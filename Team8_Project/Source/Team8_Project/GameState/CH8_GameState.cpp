@@ -11,8 +11,8 @@
 ACH8_GameState::ACH8_GameState()
 	: Score(0)
 	, Gold(1000)
-	, CurrentWaveIndex(10)
-	, WaveDuration(5.0f)
+	, CurrentWaveIndex(0)
+	, WaveDuration(20.0f)
 	, StartDuration(5.0f)
 	, EnemySpawnDuration(0.5f)
 	, EnemySpawnConut(0)
@@ -22,6 +22,8 @@ ACH8_GameState::ACH8_GameState()
 	, RemainingHeistTime(0)
 	, RemainingInfinityAmmoTime(0)
 	, SpawnNeutralEnemyTime(180.f)
+	, NumberOfEnemy(10)
+	, NumberOfEnemyMax(60)
 {
 }
 
@@ -159,7 +161,7 @@ void ACH8_GameState::SpawnWave()
 void ACH8_GameState::SpawnEnemyPerTime()
 {
 	//플레이어 테스트를 위한 주석
-	if (EnemySpawnConut < 5)	// 웨이브 당 생성될 Enemy 숫자는 별도로 수정 필요
+	if (EnemySpawnConut < NumberOfEnemy)	// 웨이브 당 생성될 Enemy 숫자는 별도로 수정 필요
 	{
 		for (ASpawnVolume* SpawnVolume : GetSpawnVolume())
 		{
@@ -175,6 +177,23 @@ void ACH8_GameState::SpawnEnemyPerTime()
 	else
 	{
 		EnemySpawnConut = 0;
+
+		if (NumberOfEnemy < NumberOfEnemyMax)
+		{
+			NumberOfEnemy += 10;
+		}
+		CurrentWaveIndex++;
+
+		if (CurrentWaveIndex % 3 == 0)
+		{
+			for (ASpawnVolume* SpawnVolume : GetSpawnVolume())
+			{
+				if (SpawnVolume)
+				{
+					SpawnVolume->SpawnEnemy(EnemyTypes[1]);
+				}
+			}
+		}
 		GetWorldTimerManager().ClearTimer(SpawnDurationTimerHandle);
 	}
 }
@@ -182,14 +201,6 @@ void ACH8_GameState::SpawnEnemyPerTime()
 void ACH8_GameState::UpdatedSpawnedEnemy()
 {
 	SpawnedEnemy++;
-}
-
-void ACH8_GameState::SpawnNeutralEnemy()
-{
-	if (ANeutralMonsterSpawnVolume* NeurtalEnemySpawnVolume = GetNeutralEnemySpawnVolume())
-	{
-		//NeurtalEnemySpawnVolume->SpawnEnemy();
-	}
 }
 
 void ACH8_GameState::UpdatedKilledEnemy()
