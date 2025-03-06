@@ -69,6 +69,21 @@ void AShopTrigger::OnOverlapEnd(
 	}
 }
 
+void AShopTrigger::SpawnGun(TSubclassOf<AActor> GunBaseClass)
+{
+	FVector BoxExtent = TriggerBox->GetScaledBoxExtent();
+	FVector BoxOrigin = TriggerBox->GetComponentLocation();
+
+	FVector SpawnPosition = FVector(BoxOrigin.X + FMath::RandRange(-BoxExtent.X, BoxExtent.X),
+		BoxOrigin.Y + FMath::RandRange(-BoxExtent.Y, BoxExtent.Y),
+		BoxOrigin.Z - BoxExtent.Z);
+
+	AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(
+		GunBaseClass, 
+		SpawnPosition,
+		FRotator::ZeroRotator);
+}
+
 void AShopTrigger::SetupInputComponent()
 {
 	// 플레이어 컨트롤러 가져오기

@@ -9,9 +9,9 @@
 #include "Kismet/GameplayStatics.h"
 
 ACH8_GameState::ACH8_GameState()
-	: Gold(1000)
+	: Gold(100)
 	, CurrentWaveIndex(0)
-	, WaveDuration(20.0f)
+	, WaveDuration(30.0f)
 	, StartDuration(5.0f)
 	, EnemySpawnDuration(0.5f)
 	, EnemySpawnConut(0)
@@ -22,7 +22,8 @@ ACH8_GameState::ACH8_GameState()
 	, RemainingInfinityAmmoTime(0)
 	, SpawnNeutralEnemyTime(180.f)
 	, NumberOfEnemy(2)
-	, NumberOfEnemyMax(30)
+	, NumberOfEnemyMax(60)
+	, GameClearWave(12)
 {
 }
 
@@ -94,7 +95,6 @@ void ACH8_GameState::UpdateHUD()
 void ACH8_GameState::UpdateGameTimer()
 {
 	ElapsedSeconds++;
-	UpdateHUD();
 }
 
 void ACH8_GameState::BeginPlay()
@@ -122,7 +122,7 @@ void ACH8_GameState::StartGame()
 
 	GetWorldTimerManager().SetTimer(
 		GameTimerHandle,
-		this, 
+		this,
 		&ACH8_GameState::UpdateGameTimer,
 		1.0f,
 		true
@@ -155,12 +155,32 @@ void ACH8_GameState::OpenStartWidget()
 		StartWidgetInstance = CreateWidget<UUserWidget>(PlayerController, StartWidgetClass);
 		if (StartWidgetInstance)
 		{
-			StartWidgetInstance->AddToViewport();
+			StartWidgetInstance->AddToViewport(999);
 
 			// 마우스 커서 표시 및 입력 모드 변경
 			PlayerController->bShowMouseCursor = true;
 			FInputModeUIOnly InputMode;
 			InputMode.SetWidgetToFocus(StartWidgetInstance->TakeWidget());
+			PlayerController->SetInputMode(InputMode);
+		}
+	}
+}
+
+void ACH8_GameState::OpenClearWidget()
+{
+	if (ClearWidgetClass)
+	{
+		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+
+		ClearWidgetInstance = CreateWidget<UUserWidget>(PlayerController, ClearWidgetClass);
+		if (ClearWidgetInstance)
+		{
+			ClearWidgetInstance->AddToViewport();
+
+			// 마우스 커서 표시 및 입력 모드 변경
+			PlayerController->bShowMouseCursor = true;
+			FInputModeUIOnly InputMode;
+			InputMode.SetWidgetToFocus(ClearWidgetInstance->TakeWidget());
 			PlayerController->SetInputMode(InputMode);
 		}
 	}
@@ -186,21 +206,50 @@ void ACH8_GameState::OpenEndWidget()
 	}
 }
 
-void ACH8_GameState::EndGame()
+void ACH8_GameState::EndGame(bool bIsGameClear)
 {
-
 	if (AMyPlayerController* PlayerController = Cast<AMyPlayerController>(GetWorld()->GetFirstPlayerController()))
 	{
 		PlayerController->SetPause(true);
 	}
 
 	GetWorldTimerManager().ClearAllTimersForObject(this);
-	OpenEndWidget();
-	GetScore();
+
+	if (bIsGameClear)
+	{
+		OpenClearWidget();
+
+		if (ClearWidgetInstance)
+		{
+			if (UTextBlock* ScoreText = Cast<UTextBlock>(ClearWidgetInstance->GetWidgetFromName(TEXT("Score"))))
+			{
+				int32 Score = (ElapsedSeconds * 10) + (KilledEnemy * 100);
+				ScoreText->SetText(FText::FromString(FString::Printf(TEXT("Score:%d"), Score)));
+			}
+		}
+	}
+	else
+	{
+		OpenEndWidget();
+
+		if (EndWidgetInstance)
+		{
+			if (UTextBlock* ScoreText = Cast<UTextBlock>(EndWidgetInstance->GetWidgetFromName(TEXT("Score"))))
+			{
+				int32 Score = (ElapsedSeconds * 10) + (KilledEnemy * 100);
+				ScoreText->SetText(FText::FromString(FString::Printf(TEXT("Score:%d"), Score)));
+			}
+		}
+	}
 }
 
 void ACH8_GameState::SpawnWave()
 {
+	if (CurrentWaveIndex == GameClearWave)
+	{
+		EndGame(true);
+	}
+
 	GetWorldTimerManager().SetTimer(
 		SpawnDurationTimerHandle,
 		this,
@@ -212,6 +261,7 @@ void ACH8_GameState::SpawnWave()
 
 void ACH8_GameState::SpawnEnemyPerTime()
 {
+
 	//플레이어 테스트를 위한 주석
 	if (EnemySpawnConut < NumberOfEnemy)	// 웨이브 당 생성될 Enemy 숫자는 별도로 수정 필요
 	{
@@ -221,7 +271,6 @@ void ACH8_GameState::SpawnEnemyPerTime()
 			{
 				SpawnVolume->SpawnEnemy(EnemyTypes[0]);
 
-				UpdatedSpawnedEnemy();
 				EnemySpawnConut++;
 			}
 		}
@@ -313,19 +362,6 @@ ANeutralMonsterSpawnVolume* ACH8_GameState::GetNeutralEnemySpawnVolume() const
 	}
 
 	return nullptr;
-}
-
-void ACH8_GameState::GetScore()
-{
-
-	if (EndWidgetInstance)
-	{
-		if (UTextBlock* ScoreText = Cast<UTextBlock>(EndWidgetInstance->GetWidgetFromName(TEXT("Score"))))
-		{
-			int32 Score = (ElapsedSeconds * 10) + (KilledEnemy * 100);
-			ScoreText->SetText(FText::FromString(FString::Printf(TEXT("Score:%d"), Score)));
-		}
-	}
 }
 
 void ACH8_GameState::UseHeistItem()

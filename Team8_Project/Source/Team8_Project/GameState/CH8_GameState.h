@@ -42,6 +42,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Wave")
 	TArray<TSubclassOf<ABaseEnemy>> EnemyTypes;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Wave")
+	int32 GameClearWave;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Gold")
 	int32 Gold;
 
@@ -54,14 +57,20 @@ public:
 	UPROPERTY(EditAnywhere, Category = "GameUI")
 	TSubclassOf<UUserWidget> StartWidgetClass;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, Category = "GameUI")
 	UUserWidget* StartWidgetInstance;
 
 	UPROPERTY(EditAnywhere, Category = "GameUI")
 	TSubclassOf<UUserWidget> EndWidgetClass;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, Category = "GameUI")
 	UUserWidget* EndWidgetInstance;
+
+	UPROPERTY(EditAnywhere, Category = "GameUI")
+	TSubclassOf<UUserWidget> ClearWidgetClass;
+
+	UPROPERTY(EditAnywhere, Category = "GameUI")
+	UUserWidget* ClearWidgetInstance;
 
 	
 	int32 SpawnedEnemy;
@@ -89,16 +98,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "GameStart")
 	void StartGame();
 
+
 	void OpenStartWidget();
+	void OpenClearWidget();
 	void OpenEndWidget();
 	
 	void UpdateHUD();
 	void UpdateGameTimer();
 
 	virtual void BeginPlay() override;
-	void GetScore();
 	void SetGold(int32 TempGold);
-	void EndGame();
+	void EndGame(bool bIsGameClear);
 	void SpawnWave();
 	void SpawnEnemyPerTime();
 	void UpdatedSpawnedEnemy();

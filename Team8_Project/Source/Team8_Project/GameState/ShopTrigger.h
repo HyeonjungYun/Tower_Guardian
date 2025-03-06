@@ -55,6 +55,9 @@ public:
 		int32 OtherBodyIndex
 	);
 
+	UFUNCTION(BlueprintCallable, Category = "SpawnGun")
+	void SpawnGun(TSubclassOf<AActor> GunBaseClass);
+
 	void SetupInputComponent();
 	void OpenShop();
 	void UpdateShopUI();

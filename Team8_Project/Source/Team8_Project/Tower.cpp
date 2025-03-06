@@ -65,11 +65,11 @@ void ATower::SetHP(float value)
 		TowerHP = 0;
 	}
 
-	if (TowerHP < 0)
+	if (TowerHP <= 0)
 	{
 		if (ACH8_GameState* GameState = Cast<ACH8_GameState>(GetWorld()->GetGameState()))
 		{
-			GameState->EndGame();
+			GameState->EndGame(false);
 		}
 	}
 }
