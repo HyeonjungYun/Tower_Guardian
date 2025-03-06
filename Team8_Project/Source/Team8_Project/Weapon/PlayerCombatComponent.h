@@ -177,6 +177,7 @@ public:
 	// 플레이어가 가지고 있을 웨폰 파츠들
 	// 해당 파츠에 대한 사용 여부를 가진다.
 	TMap<FName, bool> AvailableWeaponParts;
+	bool IsThisPartsAvailable(FName ItemKey);
 	EWeaponPartsType GetWeaponPartsTypefromFName(FName ItemKey);
 	FName GetItemKeyFromWeaponPartsType(EWeaponPartsType WTP);
 
@@ -193,10 +194,10 @@ public:
 
 
 	void OnCombatComponentModifyingUI();
-	void OnCombatComponentModArrowUp() {};
-	void OnCombatComponentModArrowDown() {};
-	void OnCombatComponentModArrowLeft() {};
-	void OnCombatComponentModArrowRight() {};
+	void OnCombatComponentModArrowUp();
+	void OnCombatComponentModArrowDown();
+	void OnCombatComponentModArrowLeft();
+	void OnCombatComponentModArrowRight();
 
 	bool bIsWeaponNowModding = false;
 };

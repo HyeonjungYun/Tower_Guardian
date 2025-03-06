@@ -232,7 +232,6 @@ protected:
 
 	UFUNCTION()
 	void OnWeaponModifyingInput();
-	bool bIsWMUIOpened = false;
 
 	UFUNCTION()
 	void OnWeaponModArrowUp();
@@ -242,8 +241,9 @@ protected:
 	void OnWeaponModArrowLeft();
 	UFUNCTION()
 	void OnWeaponModArrowRight();
+	
 	/*
-	전투를 위한 기능들
+		전투를 위한 기능들
 	*/
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)

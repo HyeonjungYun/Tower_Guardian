@@ -21,6 +21,8 @@
 #include "UWeaponPartsUI.h"
 #include "../Inventory/InventoryComponent.h"
 
+
+
 UPlayerCombatComponent::UPlayerCombatComponent()
 {
 
@@ -446,6 +448,11 @@ bool UPlayerCombatComponent::IsPlayerDead()
 	return PlayerCurrentHealth <= 0;
 }
 
+bool UPlayerCombatComponent::IsThisPartsAvailable(FName ItemKey)
+{
+	return AvailableWeaponParts[ItemKey];
+}
+
 EWeaponPartsType UPlayerCombatComponent::GetWeaponPartsTypefromFName(FName ItemKey)
 {
 	if (!WeaponPartsDataTable) return EWeaponPartsType::EWT_None;
@@ -503,6 +510,15 @@ void UPlayerCombatComponent::InitializeWeaponParts()
 			AvailableWeaponParts.Add(Row->ItemKey, false);
 		}
 	}
+
+	AvailableWeaponParts.Add(FName("NoOptic"), true);
+
+	AvailableWeaponParts.Add(FName("NoMuzzle"), true);
+
+	AvailableWeaponParts.Add(FName("NoMagazine"), true);
+
+	AvailableWeaponParts.Add(FName("NoGrip"), true);
+
 }
 
 bool UPlayerCombatComponent::IsWeaponPartsAvailable(FName ItemKey)
@@ -541,6 +557,106 @@ void UPlayerCombatComponent::OnCombatComponentModifyingUI()
 				}
 			}
 			
+		}
+	}
+}
+
+void UPlayerCombatComponent::OnCombatComponentModArrowUp()
+{
+	if (bIsWeaponNowModding)
+	{
+		if (EquippedWeapon == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("껴진 무기 없어서 UI 안나옴"));
+		}
+		else
+		{
+			if (EquippedWeapon->bIsWeaponCanModify == false)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("모딩할 수 없는 무기 입니다."));
+			}
+			else
+			{
+				if (EquippedWeapon->WeaponPartsUI)
+				{
+					EquippedWeapon->WeaponPartsUI->SelectUp();
+				}
+			}
+		}
+	}
+}
+
+void UPlayerCombatComponent::OnCombatComponentModArrowDown()
+{
+	if (bIsWeaponNowModding)
+	{
+		if (EquippedWeapon == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("껴진 무기 없어서 UI 안나옴"));
+		}
+		else
+		{
+			if (EquippedWeapon->bIsWeaponCanModify == false)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("모딩할 수 없는 무기 입니다."));
+			}
+			else
+			{
+				if (EquippedWeapon->WeaponPartsUI)
+				{
+					EquippedWeapon->WeaponPartsUI->SelectDown();
+				}
+			}
+		}
+	}
+}
+
+void UPlayerCombatComponent::OnCombatComponentModArrowLeft()
+{
+	if (bIsWeaponNowModding)
+	{
+		if (EquippedWeapon == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("껴진 무기 없어서 UI 안나옴"));
+		}
+		else
+		{
+			if (EquippedWeapon->bIsWeaponCanModify == false)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("모딩할 수 없는 무기 입니다."));
+			}
+			else
+			{
+				if (EquippedWeapon->WeaponPartsUI)
+				{
+					EquippedWeapon->WeaponPartsUI->SelectLeft();
+				}
+			}
+		}
+	}
+}
+
+void UPlayerCombatComponent::OnCombatComponentModArrowRight()
+{
+	if (bIsWeaponNowModding)
+	{
+		if (EquippedWeapon == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("껴진 무기 없어서 UI 안나옴"));
+		}
+		else
+		{
+			if (EquippedWeapon->bIsWeaponCanModify == false)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("모딩할 수 없는 무기 입니다."));
+			}
+			else
+			{
+				if (EquippedWeapon->WeaponPartsUI)
+				{
+					EquippedWeapon->WeaponPartsUI->SelectRight();
+				}
+			}
 		}
 	}
 }
