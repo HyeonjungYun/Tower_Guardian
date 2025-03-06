@@ -448,6 +448,11 @@ bool UPlayerCombatComponent::IsPlayerDead()
 	return PlayerCurrentHealth <= 0;
 }
 
+bool UPlayerCombatComponent::IsThisPartsAvailable(FName ItemKey)
+{
+	return AvailableWeaponParts[ItemKey];
+}
+
 EWeaponPartsType UPlayerCombatComponent::GetWeaponPartsTypefromFName(FName ItemKey)
 {
 	if (!WeaponPartsDataTable) return EWeaponPartsType::EWT_None;
@@ -505,6 +510,15 @@ void UPlayerCombatComponent::InitializeWeaponParts()
 			AvailableWeaponParts.Add(Row->ItemKey, false);
 		}
 	}
+
+	AvailableWeaponParts.Add(FName("NoOptic"), true);
+
+	AvailableWeaponParts.Add(FName("NoMuzzle"), true);
+
+	AvailableWeaponParts.Add(FName("NoMagazine"), true);
+
+	AvailableWeaponParts.Add(FName("NoGrip"), true);
+
 }
 
 bool UPlayerCombatComponent::IsWeaponPartsAvailable(FName ItemKey)

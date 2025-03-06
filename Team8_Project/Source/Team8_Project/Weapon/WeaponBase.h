@@ -102,7 +102,13 @@ protected:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties")
     class UAnimationAsset* FireAnimation;
-   
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties")
+    class UAnimationAsset* ModWeaponFireAnimation;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Properties")
+    class USoundCue* WeaponFireSound;
+
+    void ModWeaponPlayFireSound();
     //UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item|Component")
     //USceneComponent* Scene;
     

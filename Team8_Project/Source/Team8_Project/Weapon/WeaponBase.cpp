@@ -17,7 +17,10 @@
 #include "MagazineWeaponPartsTable.h"
 #include "UWeaponPartsUI.h"
 
+#include "Sound/SoundCue.h"
 #include "../Inventory/InventoryComponent.h"
+
+
 
 AWeaponBase::AWeaponBase() :
 	WeaponState(EWeaponState::EWT_Dropped),
@@ -226,16 +229,49 @@ void AWeaponBase::SetMaxWeaponAmmo(int32 _Ammo)
 {
 	MaxWeaponAmmo = _Ammo;
 }
+void AWeaponBase::ModWeaponPlayFireSound()
+{
+	if (!WeaponFireSound) return;
+	if (!bIsWeaponCanModify) return;
 
+	float FinalVolume = 1.0f; 
+	float FinalPitch = 1.0f; 
+	if (CurrentWeaponPartsKey.Contains(EWeaponPartsType::EWT_Muzzle))
+	{
+		FName CurrentMuzzleItemKey = CurrentWeaponPartsKey[EWeaponPartsType::EWT_Muzzle];
+
+		for (int i = 0; i < MuzzleWeaponpartsTableRows.Num(); i++)
+		{
+			if (MuzzleWeaponpartsTableRows[i]->ItemKey == CurrentMuzzleItemKey)
+			{
+				FinalVolume *=  MuzzleWeaponpartsTableRows[i]->MuzzleSoundAmount;
+				FinalPitch *= MuzzleWeaponpartsTableRows[i]->MuzzleSoundAmount;
+			}
+		}
+	}
+	UGameplayStatics::PlaySoundAtLocation(this, WeaponFireSound, GetActorLocation(), FinalVolume, FinalPitch);
+}
 void AWeaponBase::Fire(const FVector& HitTarget, float CurrentWeaponSpread)
 {
-	
-	// 무기 발사
-	if (FireAnimation)
+	if (bIsWeaponCanModify)
 	{
-		// 스켈레탈 애니메이션을 반복하지 않고 재생
-		WeaponSkeletalMesh->PlayAnimation(FireAnimation, false);
+		ModWeaponPlayFireSound();
+		if (ModWeaponFireAnimation)
+		{
+			// 스켈레탈 애니메이션을 반복하지 않고 재생
+			WeaponSkeletalMesh->PlayAnimation(ModWeaponFireAnimation, false);
+		}
 	}
+	else
+	{
+		// 무기 발사
+		if (FireAnimation)
+		{
+			// 스켈레탈 애니메이션을 반복하지 않고 재생
+			WeaponSkeletalMesh->PlayAnimation(FireAnimation, false);
+		}
+	}
+	
 
 	if (BulletCaseClass)
 	{
@@ -381,6 +417,15 @@ void AWeaponBase::DebugEnableWeaponParts(FName ItemKey)
 
 void AWeaponBase::EquipWeaponPart(EWeaponPartsType PartType, FName ItemKey)
 {
+	if (OwnerPlayerCharacter)
+	{
+		if (!OwnerPlayerCharacter->GetCombatComponent()->IsThisPartsAvailable(ItemKey))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("사용 불가능한 파츠"));
+			return;
+		}
+	}
+
 	// 1️⃣ 부착물 타입별 컨테이너 & 현재 장착된 부착물 액터 선택
 	TMap<FName, AWeaponpartsActor*>* TargetContainer = nullptr;
 	AWeaponpartsActor** EquippedPart = nullptr;
