@@ -163,7 +163,7 @@ bool ABaseEnemy::CanAttackWithType(TArray<FOverlapResult>& OutOverlapResults, TS
 	                                                     FCollisionShape::MakeSphere(MaxAttackRange),
 	                                                     Params);
 
-	DrawDebugSphere(GetWorld(), GetActorLocation(), MaxAttackRange, 30, FColor::Red);
+	// DrawDebugSphere(GetWorld(), GetActorLocation(), MaxAttackRange, 30, FColor::Red);
 
 	if (bOverlap)
 	{
@@ -366,6 +366,12 @@ void ABaseEnemy::Death()
 
 	AI_Perception->SetSenseEnabled(UAISenseConfig_Sight::StaticClass(), false);
 
+	//죽었을 시 충돌 제거
+	auto& Components = GetComponents();
+	for (auto& Comp : Components)
+		if (UShapeComponent* Shape = Cast<UShapeComponent>(Comp))
+			Shape->SetCollisionProfileName("NoCollision");
+	
 	OnDeath.Broadcast(this);
 }
 

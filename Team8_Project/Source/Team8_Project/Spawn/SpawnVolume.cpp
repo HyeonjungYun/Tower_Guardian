@@ -50,7 +50,7 @@ AActor* ASpawnVolume::SpawnEnemy(TSubclassOf<AActor> EnemyClass)
 FVector ASpawnVolume::GetWaypoint(int32 Index) const
 {
 	if (Waypoints.IsValidIndex(Index))
-		return GetActorLocation() + Waypoints[Index] * GetActorScale();
+		return GetActorLocation() + GetActorRotation().RotateVector(Waypoints[Index] * GetActorScale());
 
 	UE_LOG(LogTemp, Warning, TEXT("Waypoint 반환 실패"));
 	return FVector::Zero();
@@ -61,7 +61,7 @@ FVector ASpawnVolume::GetLocationNearWaypoint(int32 Index) const
 	FVector Result = GetWaypoint(Index);
 	Result += FVector(FMath::RandPointInCircle(WaypointRange), 0);
 
-	DrawDebugSphere(GetWorld(), Result, 40, 10, FColor::Red, false, 10);
+	// DrawDebugSphere(GetWorld(), Result, 40, 10, FColor::Red, false, 10);
 	
 	return Result;
 }
