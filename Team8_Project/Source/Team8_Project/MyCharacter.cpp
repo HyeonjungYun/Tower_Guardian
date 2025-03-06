@@ -14,6 +14,7 @@
 #include "Inventory/InventoryWidget.h"
 #include "Inventory/InventoryComponent.h"
 #include "Inventory/InventorySubsystem.h"
+#include "Kismet/GameplayStatics.h"
 #include "Team8_Project/Weapon/WeaponType.h"
 #include "Team8_Project/WorldSpawnUISubSystem.h"
 
@@ -277,7 +278,7 @@ void AMyCharacter::Tick(float DeltaTime)
 {
 	HideCameraIfCharacterClose();
 	CalculateRotation(DeltaTime);
-	OnPickupItem();
+	// OnPickupItem();
 }
 
 void AMyCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
@@ -314,6 +315,9 @@ void AMyCharacter::OnPickupItem()
 				OverlappingItem->Destroy();
 				UE_LOG(LogTemp, Warning, TEXT("AfterDestory"));
 				OverlappingItem = nullptr;
+
+				if (PickupSound)
+					UGameplayStatics::PlaySound2D(GetWorld(), PickupSound);
 			}
 			else
 			{

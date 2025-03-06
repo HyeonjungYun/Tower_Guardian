@@ -124,7 +124,7 @@ protected:
 	float DropGold = 300;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<TSubclassOf<ABaseItem>> DropItemClasses;
+	TArray<TSubclassOf<ABaseItem>> DropableItemClasses;
 	
 	TObjectPtr<ASpawnVolume> SpawnVolume;
 	int32 WaypointIndex;

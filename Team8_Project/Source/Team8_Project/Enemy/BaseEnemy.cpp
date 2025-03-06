@@ -28,7 +28,6 @@ ABaseEnemy::ABaseEnemy()
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
 	PawnMovement = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("FloatingPawnMovement"));
-
 	AI_Perception = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AI_Perception"));
 
 	// AI 시야 구성 설정
@@ -218,7 +217,7 @@ void ABaseEnemy::Attack(TSubclassOf<AActor> AttackType, bool Shortest)
 	FVector TargetLoc = NearActor->GetActorLocation();
 	TargetLoc.Z = NowLoc.Z;
 	TargetLoc = TargetLoc - NowLoc;
-	
+
 	FRotator NowRot = GetActorRotation();
 	FRotator ViewRot = TargetLoc.Rotation();
 
@@ -227,7 +226,7 @@ void ABaseEnemy::Attack(TSubclassOf<AActor> AttackType, bool Shortest)
 	GetWorldTimerManager().SetTimer(RotationTimer, [&, NowRot, ViewRot]()
 	{
 		RotationTime += 0.01f;
-		
+
 		float EndTime = 1 / RotationMul;
 		if (RotationTime >= EndTime)
 			GetWorldTimerManager().ClearTimer(RotationTimer);
@@ -336,11 +335,20 @@ void ABaseEnemy::Death()
 		GameState->SetGold(DropGold); //더하는 거임
 
 	//아이템 떨굼
-	FRotator SpawnRot = FMath::VRand().Rotation();
-	for (int i = 0; i < DropItemClasses.Num(); i++)
+	FRotator SpawnRot = FRotator::ZeroRotator;
+	int MaxDropItemCount = FMath::RandRange(1, 2);
+	
+	for (int i = 0; i < MaxDropItemCount; i++)
 	{
-		FVector SpawnLo = GetActorLocation() + FVector(i % 2 ? 100 : -100, i % 2 ? 100 : -100, 0);
-		GetWorld()->SpawnActor(DropItemClasses[i].Get(), &SpawnLo, &SpawnRot);
+		int32 DropItemIndex = GetWeightRandomIndex(DropableItemClasses.Num());
+		FVector SpawnLo = GetActorLocation() + FVector((i % 2 ? 100 : -100), 0, 100);
+		
+		AActor* SpawnItem = GetWorld()->SpawnActor(DropableItemClasses[DropItemIndex], &SpawnLo, &SpawnRot);
+
+		//아이템 튀어오름
+		if (UStaticMeshComponent* Comp = SpawnItem->GetComponentByClass<UStaticMeshComponent>())
+			if (Comp->IsSimulatingPhysics())
+				Comp->AddImpulse(FVector(0, 0, FMath::RandRange(1000, 3000)));
 	}
 
 	//사망 모션 플레이
@@ -371,7 +379,7 @@ void ABaseEnemy::Death()
 	for (auto& Comp : Components)
 		if (UShapeComponent* Shape = Cast<UShapeComponent>(Comp))
 			Shape->SetCollisionProfileName("NoCollision");
-	
+
 	OnDeath.Broadcast(this);
 }
 
@@ -412,7 +420,9 @@ int ABaseEnemy::GetWeightRandomIndex(int ArraySize) const
 	for (int i = 0; i <= LastIndex; i++)
 	{
 		float Weight = (LastIndex - i) + 1; // 예: 5, 4, 3, 2, 1 식으로 줄어듦
-		Weights.Add(Weight * Weight); // 제곱해서 낮은 숫자가 더 잘 걸리게 가중치를 설정
+		Weight *= Weight;// 제곱해서 낮은 숫자가 더 잘 걸리게 가중치를 설정
+		
+		Weights.Add(Weight);
 		TotalWeight += Weight;
 	}
 
@@ -436,7 +446,7 @@ int ABaseEnemy::GetWeightRandomIndex(int ArraySize) const
 
 void ABaseEnemy::OnDeathMontageEnd_Implementation()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Death_Default"));
+	// GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Death_Default"));
 	Destroy();
 }
 

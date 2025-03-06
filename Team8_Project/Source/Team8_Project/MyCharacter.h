@@ -165,7 +165,11 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UCameraShakeBase> CameraShakeClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	TObjectPtr<USoundBase> PickupSound;
+	
 	ABaseItem* PickableItem;
+	
 
 	UFUNCTION()
 	void Move(const FInputActionValue& value);
