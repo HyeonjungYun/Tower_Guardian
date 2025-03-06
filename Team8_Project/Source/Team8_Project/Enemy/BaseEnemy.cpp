@@ -335,14 +335,11 @@ void ABaseEnemy::Death()
 		GameState->SetGold(DropGold); //더하는 거임
 
 	//아이템 떨굼
-	FRotator SpawnRot = FRotator::ZeroRotator;
-	int MaxDropItemCount = FMath::RandRange(1, 2);
-	
-	for (int i = 0; i < MaxDropItemCount; i++)
+	if (FMath::FRand() < 0.1f && DropableItemClasses.Num() > 0)
 	{
+		FRotator SpawnRot = FRotator::ZeroRotator;
 		int32 DropItemIndex = GetWeightRandomIndex(DropableItemClasses.Num());
-		FVector SpawnLo = GetActorLocation() + FVector((i % 2 ? 100 : -100), 0, 100);
-		
+		FVector SpawnLo = GetActorLocation() + FVector(FMath::RandRange(-100, 100), 0, 100);
 		AActor* SpawnItem = GetWorld()->SpawnActor(DropableItemClasses[DropItemIndex], &SpawnLo, &SpawnRot);
 
 		//아이템 튀어오름
@@ -350,6 +347,7 @@ void ABaseEnemy::Death()
 			if (Comp->IsSimulatingPhysics())
 				Comp->AddImpulse(FVector(0, 0, FMath::RandRange(1000, 3000)));
 	}
+
 
 	//사망 모션 플레이
 	if (USkeletalMeshComponent* Mesh = GetComponentByClass<USkeletalMeshComponent>())
@@ -420,8 +418,8 @@ int ABaseEnemy::GetWeightRandomIndex(int ArraySize) const
 	for (int i = 0; i <= LastIndex; i++)
 	{
 		float Weight = (LastIndex - i) + 1; // 예: 5, 4, 3, 2, 1 식으로 줄어듦
-		Weight *= Weight;// 제곱해서 낮은 숫자가 더 잘 걸리게 가중치를 설정
-		
+		Weight *= Weight; // 제곱해서 낮은 숫자가 더 잘 걸리게 가중치를 설정
+
 		Weights.Add(Weight);
 		TotalWeight += Weight;
 	}
