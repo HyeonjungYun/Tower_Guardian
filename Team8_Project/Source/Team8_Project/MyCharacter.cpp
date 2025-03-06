@@ -348,7 +348,7 @@ void AMyCharacter::ToggleInventory(const FInputActionValue& Value = FInputAction
 
 	if (Inventory->InventoryWidget->IsVisible())
 	{
-		bIsInventoryVisible = true;
+		bIsInventoryVisible = false;
 		//상태 추가 
 		Inventory->InventoryWidget->SetVisibility(ESlateVisibility::Collapsed);
 		FInputModeGameOnly InputMode;
@@ -359,6 +359,7 @@ void AMyCharacter::ToggleInventory(const FInputActionValue& Value = FInputAction
 	}
 	else
 	{
+		bIsInventoryVisible = true;
 		Inventory->InventoryWidget->SetVisibility(ESlateVisibility::Visible);
 		Inventory->InventoryWidget->UpdateInventoryUI();
 		//입력이 ui에 전달되고 그다음 게임쪽으로 전달된다

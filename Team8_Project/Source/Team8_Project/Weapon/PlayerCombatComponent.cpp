@@ -574,7 +574,8 @@ bool UPlayerCombatComponent::WeaponCanFire()
 {
 	if (EquippedWeapon == nullptr) return false;
 
-	return !EquippedWeapon->IsWeaponMagEmpty() && bIsCanFireinRate && !bIsReloading;
+	return !EquippedWeapon->IsWeaponMagEmpty() && bIsCanFireinRate && !bIsReloading
+		&& !PlayerCharacter->bIsInventoryVisible;		
 }
 
 void UPlayerCombatComponent::StartFireTimer()
