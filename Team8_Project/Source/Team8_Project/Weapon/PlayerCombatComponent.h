@@ -193,10 +193,10 @@ public:
 
 
 	void OnCombatComponentModifyingUI();
-	void OnCombatComponentModArrowUp() {};
-	void OnCombatComponentModArrowDown() {};
-	void OnCombatComponentModArrowLeft() {};
-	void OnCombatComponentModArrowRight() {};
+	void OnCombatComponentModArrowUp();
+	void OnCombatComponentModArrowDown();
+	void OnCombatComponentModArrowLeft();
+	void OnCombatComponentModArrowRight();
 
 	bool bIsWeaponNowModding = false;
 };

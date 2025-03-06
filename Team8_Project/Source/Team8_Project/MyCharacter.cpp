@@ -721,32 +721,27 @@ void AMyCharacter::ReleaseAiming()
 
 void AMyCharacter::OnWeaponModifyingInput()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Button WeaponModifying started"));
 	CombatComponent->OnCombatComponentModifyingUI();
 }
 
 void AMyCharacter::OnWeaponModArrowUp()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Button OnWeaponModArrowUp started"));
 	CombatComponent->OnCombatComponentModArrowUp();
 }
 
 void AMyCharacter::OnWeaponModArrowDown()
 {
-	UE_LOG(LogTemp, Warning, TEXT("ButtonOnWeaponModArrowDown started"));
 	CombatComponent->OnCombatComponentModArrowDown();
 }
 
 void AMyCharacter::OnWeaponModArrowLeft()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Button OnWeaponModArrowLeft started"));
 	CombatComponent->OnCombatComponentModArrowLeft();
 }
 
 void AMyCharacter::OnWeaponModArrowRight()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Button OnWeaponModArrowRight started"));
-	CombatComponent->OnCombatComponentModArrowLeft();
+	CombatComponent->OnCombatComponentModArrowRight();
 }
 
 void AMyCharacter::HideCameraIfCharacterClose()

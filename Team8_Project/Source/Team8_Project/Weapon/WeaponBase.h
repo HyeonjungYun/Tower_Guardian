@@ -282,6 +282,8 @@ public:
     AWeaponpartsActor* EquippedMagazinePart = nullptr;
     AWeaponpartsActor* EquippedMuzzlePart = nullptr;
 
+    TMap<EWeaponPartsType,FName> CurrentWeaponPartsKey;
+
     UFUNCTION(BlueprintCallable)
     void DebugEnableWeaponParts(FName ItemKey);
 
@@ -316,6 +318,7 @@ public:
             }
         }
     }
+    void EquipWeaponPart(EWeaponPartsType PartType, FName ItemKey);
 
     UPROPERTY(EditAnywhere, Category = "CombatOverlay")
     TSubclassOf<class UUserWidget> WeaponPartsUIClass;

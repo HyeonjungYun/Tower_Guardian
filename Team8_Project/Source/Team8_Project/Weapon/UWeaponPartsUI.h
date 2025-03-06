@@ -50,7 +50,6 @@ public:
             SizeBox->SetWidthOverride(100.0f);
             SizeBox->SetHeightOverride(100.0f);
 
-
             UImage* NewImage = NewObject<UImage>(this);
             NewImage->SetBrushFromTexture(Row->ItemImage);
             NewImage->SetVisibility(ESlateVisibility::Visible);
@@ -64,26 +63,26 @@ public:
             {
             case EWeaponPartsType::EWT_Optic:
                 VerticalBox_Optic->AddChild(SizeBox);
-                OpticPart.Add(Row->ItemKey, NewImage);
                 OpticPartImages.Add(NewImage);
+                OpticPartItemKey.Add(Row->ItemKey);
                 break;
 
             case EWeaponPartsType::EWT_Magazine:
                 VerticalBox_Magazine->AddChild(SizeBox);
-                MagazinePart.Add(Row->ItemKey, NewImage);
                 MagazinePartImages.Add(NewImage);
+                MagazinePartItemKey.Add(Row->ItemKey);
                 break;
 
             case EWeaponPartsType::EWT_Grip:
                 HorizontalBox_Grip->AddChild(SizeBox);
                 GripPartImages.Add(NewImage);
-                GripPart.Add(Row->ItemKey, NewImage);
+                GripPartItemKey.Add(Row->ItemKey);
                 break;
 
             case EWeaponPartsType::EWT_Muzzle:
                 HorizontalBox_Muzzle->AddChild(SizeBox);
-                MuzzlePart.Add(Row->ItemKey, NewImage);
                 MuzzlePartImages.Add(NewImage);
+                MuzzlePartItemKey.Add(Row->ItemKey);
                 break;
 
             default:
@@ -127,19 +126,19 @@ public:
     int32 CurrentMagazineIndex = 0;
     int32 CurrentGripIndex = 0;
     int32 CurrentMuzzleIndex = 0;
-
-    TMap<FName, UImage*> OpticPart;
-
-    TMap<FName, UImage*> MagazinePart;
-
-    TMap<FName, UImage*> GripPart;
-
-    TMap<FName, UImage*>  MuzzlePart;
-
+    // 
     TArray<UImage*> OpticPartImages;
     TArray<UImage*> MagazinePartImages;
     TArray<UImage*> GripPartImages;
     TArray<UImage*> MuzzlePartImages;
-    
+
+    TArray<FName> OpticPartItemKey;
+    TArray<FName> MagazinePartItemKey;
+    TArray<FName> GripPartItemKey;
+    TArray<FName> MuzzlePartItemKey;
+
     bool bIsOnceUICreated = false;
+
+    void WeaponAttachmentUpdate(EWeaponPartsType PartType, int32 index);
+
 };

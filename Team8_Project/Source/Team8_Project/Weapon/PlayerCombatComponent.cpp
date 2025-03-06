@@ -21,6 +21,8 @@
 #include "UWeaponPartsUI.h"
 #include "../Inventory/InventoryComponent.h"
 
+
+
 UPlayerCombatComponent::UPlayerCombatComponent()
 {
 
@@ -541,6 +543,106 @@ void UPlayerCombatComponent::OnCombatComponentModifyingUI()
 				}
 			}
 			
+		}
+	}
+}
+
+void UPlayerCombatComponent::OnCombatComponentModArrowUp()
+{
+	if (bIsWeaponNowModding)
+	{
+		if (EquippedWeapon == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("껴진 무기 없어서 UI 안나옴"));
+		}
+		else
+		{
+			if (EquippedWeapon->bIsWeaponCanModify == false)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("모딩할 수 없는 무기 입니다."));
+			}
+			else
+			{
+				if (EquippedWeapon->WeaponPartsUI)
+				{
+					EquippedWeapon->WeaponPartsUI->SelectUp();
+				}
+			}
+		}
+	}
+}
+
+void UPlayerCombatComponent::OnCombatComponentModArrowDown()
+{
+	if (bIsWeaponNowModding)
+	{
+		if (EquippedWeapon == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("껴진 무기 없어서 UI 안나옴"));
+		}
+		else
+		{
+			if (EquippedWeapon->bIsWeaponCanModify == false)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("모딩할 수 없는 무기 입니다."));
+			}
+			else
+			{
+				if (EquippedWeapon->WeaponPartsUI)
+				{
+					EquippedWeapon->WeaponPartsUI->SelectDown();
+				}
+			}
+		}
+	}
+}
+
+void UPlayerCombatComponent::OnCombatComponentModArrowLeft()
+{
+	if (bIsWeaponNowModding)
+	{
+		if (EquippedWeapon == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("껴진 무기 없어서 UI 안나옴"));
+		}
+		else
+		{
+			if (EquippedWeapon->bIsWeaponCanModify == false)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("모딩할 수 없는 무기 입니다."));
+			}
+			else
+			{
+				if (EquippedWeapon->WeaponPartsUI)
+				{
+					EquippedWeapon->WeaponPartsUI->SelectLeft();
+				}
+			}
+		}
+	}
+}
+
+void UPlayerCombatComponent::OnCombatComponentModArrowRight()
+{
+	if (bIsWeaponNowModding)
+	{
+		if (EquippedWeapon == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("껴진 무기 없어서 UI 안나옴"));
+		}
+		else
+		{
+			if (EquippedWeapon->bIsWeaponCanModify == false)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("모딩할 수 없는 무기 입니다."));
+			}
+			else
+			{
+				if (EquippedWeapon->WeaponPartsUI)
+				{
+					EquippedWeapon->WeaponPartsUI->SelectRight();
+				}
+			}
 		}
 	}
 }

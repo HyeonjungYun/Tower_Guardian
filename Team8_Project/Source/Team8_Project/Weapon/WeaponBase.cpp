@@ -57,6 +57,13 @@ void AWeaponBase::BeginPlay()
 	InitializeWeaponParts();
 	SetWeaponState(WeaponState);
 
+	if (bIsWeaponCanModify)
+	{
+		EquipWeaponPart(EWeaponPartsType::EWT_Optic, FName("NoOptic"));
+		EquipWeaponPart(EWeaponPartsType::EWT_Magazine, FName("NoMuzzle"));
+		EquipWeaponPart(EWeaponPartsType::EWT_Grip, FName("NoMagazine"));
+		EquipWeaponPart(EWeaponPartsType::EWT_Muzzle, FName("NoGrip"));
+	}
 }
 
 void AWeaponBase::SetWeaponState(EWeaponState CurWeaponState)
@@ -370,6 +377,62 @@ void AWeaponBase::DebugEnableWeaponParts(FName ItemKey)
 			}
 		}
 	}
+}
+
+void AWeaponBase::EquipWeaponPart(EWeaponPartsType PartType, FName ItemKey)
+{
+	// 1️⃣ 부착물 타입별 컨테이너 & 현재 장착된 부착물 액터 선택
+	TMap<FName, AWeaponpartsActor*>* TargetContainer = nullptr;
+	AWeaponpartsActor** EquippedPart = nullptr;
+
+	switch (PartType)
+	{
+	case EWeaponPartsType::EWT_Optic:
+		TargetContainer = &OpticActorContainer;
+		EquippedPart = &EquippedOpticPart;
+		break;
+	case EWeaponPartsType::EWT_Grip:
+		TargetContainer = &GripActorContainer;
+		EquippedPart = &EquippedGripPart;
+		break;
+	case EWeaponPartsType::EWT_Magazine:
+		TargetContainer = &MagzineActorContainer;
+		EquippedPart = &EquippedMagazinePart;
+		break;
+	case EWeaponPartsType::EWT_Muzzle:
+		TargetContainer = &MuzzleActorContainer;
+		EquippedPart = &EquippedMuzzlePart;
+		break;
+	default:
+		return;
+	}
+
+	if (!TargetContainer || !EquippedPart) return;
+
+	// 2️⃣ 기존 부착물 해제 (투명화 & 충돌 제거)
+	if (*EquippedPart)
+	{
+		(*EquippedPart)->SetActorHiddenInGame(true);
+		//(*EquippedPart)->SetActorEnableCollision(false);
+		UE_LOG(LogTemp, Warning, TEXT("Unequipped %s"), *CurrentWeaponPartsKey[PartType].ToString());
+	}
+
+	// 3️⃣ 새로운 부착물 장착 (투명 해제 & 충돌 활성화)
+	if (AWeaponpartsActor** NewPart = TargetContainer->Find(ItemKey))
+	{
+		if (*NewPart)
+		{
+			(*NewPart)->SetActorHiddenInGame(false);
+			//(*NewPart)->SetActorEnableCollision(true);
+
+			// 4️⃣ 현재 장착된 부착물 정보 업데이트
+			*EquippedPart = *NewPart;
+			CurrentWeaponPartsKey.Add(PartType, ItemKey);
+
+			UE_LOG(LogTemp, Warning, TEXT("Equipped %s"), *ItemKey.ToString());
+		}
+	}
+	
 }
 
 
