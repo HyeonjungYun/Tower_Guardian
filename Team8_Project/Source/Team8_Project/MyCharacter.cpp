@@ -584,6 +584,10 @@ void AMyCharacter::StartReload(const FInputActionValue& value)
 			PlayerStates = EPlayerStateType::EWT_Normal;
 			return;
 		}
+		if (CombatComponent->GetEquippedWeapon()->GetWeaponType() == EWeaponType::EWT_Shotgun)
+		{
+			ShotgunReloadCount = max - cur;
+		}
 	}
 
 	PlayerStates = EPlayerStateType::EWT_Reload;
@@ -598,6 +602,11 @@ void AMyCharacter::StopReload(const FInputActionValue& value)
 {
 }
 
+int32 AMyCharacter::GetShotgunReloadCount()
+{
+	return ShotgunReloadCount;
+}
+
 void AMyCharacter::StartFire(const FInputActionValue& value)
 {
 	//장전중 발사 막음
@@ -610,6 +619,15 @@ void AMyCharacter::StartFire(const FInputActionValue& value)
 	{
 		CombatComponent->FireButtonPressed(true);
 		PlayerStates = EPlayerStateType::EWT_Fire;
+
+		if (CombatComponent->GetEquippedWeapon())
+		{
+			if (AMyPlayerController* PlayerController = Cast<AMyPlayerController>(GetController()))
+			{
+				if (APlayerCameraManager* CameraManager = PlayerController->PlayerCameraManager)
+					CameraManager->StartCameraShake(CameraShakeClass, 1.f);
+			}
+		}
 	}
 
 	//펀치 발동 조건
