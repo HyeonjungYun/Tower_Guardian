@@ -286,7 +286,7 @@ void ACH8_GameState::UseInfinityAmmoItem()
 		GetWorldTimerManager().ClearTimer(InfinityAmmoTimerHandle);
 	}
 	
-	RemainingInfinityAmmoTime = 5;
+	RemainingInfinityAmmoTime = 10;
 	GetWorldTimerManager().SetTimer(
 		InfinityAmmoTimerHandle,
 		this,
