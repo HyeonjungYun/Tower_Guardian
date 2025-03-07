@@ -104,7 +104,7 @@ private:
 
 	TObjectPtr<class UBorder> Border;
 
-	uint8 bIsDragging;
+	bool bIsDragging;
 	FVector2D InitialOffset;
 	FVector2D InitialPos;
 	

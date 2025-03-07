@@ -76,10 +76,10 @@ void UInventoryWidget::InitInventorySlots()
 	WidgetTree->GetAllWidgets(TempWidgets);
 	for (UWidget* widget : TempWidgets)
 	{
-		UBorder* border = Cast<UBorder>(widget);
-		if (border)
+		UBorder* Findedborder = Cast<UBorder>(widget);
+		if (Findedborder)
 		{
-			Border = border;
+			Border = Findedborder;
 			break;
 		}
 	}
@@ -263,16 +263,15 @@ void UInventoryWidget::MoveStart()
 
 	//Get Boarder Position
 	FVector2D WidgetPos;
-	UCanvasPanelSlot* slot = UWidgetLayoutLibrary::SlotAsCanvasSlot(Border);
-	if (slot)
+	UCanvasPanelSlot* Borderslot = UWidgetLayoutLibrary::SlotAsCanvasSlot(Border);
+	if (Borderslot)
 	{
-		WidgetPos = slot->GetPosition();
+		WidgetPos = Borderslot->GetPosition();
 	}
 	InitialPos = WidgetPos;
 
 	//Get Mouse Position
 	InitialOffset = UWidgetLayoutLibrary::GetMousePositionOnViewport(this);
-
 }
 
 void UInventoryWidget::MoveEnd()
